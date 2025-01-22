@@ -31,3 +31,7 @@ C:\Users\Ritvik Prakash\Desktop\RateMyCollegeClub\server\obj\Debug\net9.0\refint
 C:\Users\Ritvik Prakash\Desktop\RateMyCollegeClub\server\obj\Debug\net9.0\server.pdb
 C:\Users\Ritvik Prakash\Desktop\RateMyCollegeClub\server\obj\Debug\net9.0\server.genruntimeconfig.cache
 C:\Users\Ritvik Prakash\Desktop\RateMyCollegeClub\server\obj\Debug\net9.0\ref\server.dll
+C:\Users\Ritvik Prakash\Desktop\RateMyCollegeClub\server\obj\Debug\net9.0\server.sourcelink.json
+C:\Users\Ritvik Prakash\Desktop\RateMyCollegeClub\server\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\Ritvik Prakash\Desktop\RateMyCollegeClub\server\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\Ritvik Prakash\Desktop\RateMyCollegeClub\server\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
