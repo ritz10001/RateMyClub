@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RateMyCollegeClub.Models;
 
-class Review {
+public class Review {
     public int Id { get; set; }
     public int LeadershipRating { get; set; }
     public int InclusivityRating { get; set; }

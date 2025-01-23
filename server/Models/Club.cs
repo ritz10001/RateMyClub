@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace RateMyCollegeClub.Models;
 
-class Club {
+public class Club {
     public int Id { get; set; }
     [Required]
     [MaxLength(100)]

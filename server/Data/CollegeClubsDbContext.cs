@@ -5,11 +5,15 @@ using System.Diagnostics;
 
 namespace RateMyCollegeClub.Data;
 
-class CollegeClubsDbContext : DbContext{
+public class CollegeClubsDbContext : DbContext{
     public CollegeClubsDbContext(DbContextOptions options) : base(options)
     {
         
     }
+    public DbSet<Club> Clubs { get; set; }
+    public DbSet<Category> Category { get; set; }
+    public DbSet<Review> Reviews { get; set; }
+    public DbSet<SavedClub> SavedClubs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -17,11 +21,6 @@ class CollegeClubsDbContext : DbContext{
             warnings.Ignore(RelationalEventId.PendingModelChangesWarning);
         });
     }
-    
-    public DbSet<Club> Clubs { get; set; }
-    public DbSet<Category> Category { get; set; }
-    public DbSet<Review> Reviews { get; set; }
-    public DbSet<SavedClub> SavedClubs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

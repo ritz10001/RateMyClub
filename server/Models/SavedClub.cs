@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RateMyCollegeClub.Models;
 
-class SavedClub {
+public class SavedClub {
     public int Id { get; set;}
     // public string UserId {get; set;}
     [ForeignKey(nameof(ClubId))]
