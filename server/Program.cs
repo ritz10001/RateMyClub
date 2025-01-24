@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RateMyCollegeClub.Configurations;
 using RateMyCollegeClub.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,9 @@ builder.Services.AddSwaggerGen();  // Adding Swagger support
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", b => b.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 });
+
+
+builder.Services.AddAutoMapper(typeof(MapperConfig));
 
 var app = builder.Build();
 
