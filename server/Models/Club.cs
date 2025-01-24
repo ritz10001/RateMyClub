@@ -17,7 +17,7 @@ public class Club {
     [ForeignKey(nameof(CategoryId))]
     public int CategoryId { get; set; }
     public Category Category { get; set; }
-    public virtual ICollection<Review> Reviews { get; set; }
-    public virtual ICollection<SavedClub> SavedClubs { get; set; }
+    public virtual ICollection<Review> Reviews { get; set; } = [];
+    public virtual ICollection<SavedClub> SavedClubs { get; set; } = [];
 
 }

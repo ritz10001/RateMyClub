@@ -1,8 +1,10 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Validations;
 using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Models;
+using RateMyCollegeClub.Models.Clubs;
 
 namespace RateMyCollegeClub.Controllers;
 
@@ -10,29 +12,41 @@ namespace RateMyCollegeClub.Controllers;
 [ApiController]
 public class ClubController : ControllerBase {
     private readonly CollegeClubsDbContext _context;
-    public ClubController(CollegeClubsDbContext context)
+    private readonly IMapper _mapper;
+    public ClubController(CollegeClubsDbContext context, IMapper mapper)
     {
         _context = context;   
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Club>>> GetAllClubs(){
-        return await _context.Clubs.ToListAsync();
+    public async Task<ActionResult<IEnumerable<GetClubsDTO>>> GetAllClubs(){
+        var clubs = await _context.Clubs.Include(q => q.Category).ToListAsync();
+        var countriesDTO = _mapper.Map<List<GetClubsDTO>>(clubs);
+        return Ok(countriesDTO);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Club>> GetClub(int id){
-        var club = await _context.Clubs.FindAsync(id);
+    public async Task<ActionResult<GetClubDTO>> GetClub(int id){
+        var club = await _context.Clubs
+        .Include(q => q.Category)
+        .Include(q => q.Reviews)
+        .FirstOrDefaultAsync(q => q.Id == id);
 
         if(club is null){
             return NotFound();
         }
 
-        return Ok(club);
+        var countryDTO = _mapper.Map<GetClubDTO>(club);
+
+        return Ok(countryDTO);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Club>> CreateClub(Club club){
+    public async Task<ActionResult<CreateClubDTO>> CreateClub(CreateClubDTO createClubDTO){
+
+        var club = _mapper.Map<Club>(createClubDTO);
+
         _context.Clubs.Add(club);
 
         await _context.SaveChangesAsync();
@@ -55,12 +69,18 @@ public class ClubController : ControllerBase {
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutClub(int id, Club club){
-        if(id != club.Id){
-            return BadRequest("Id's don't match!");
+    public async Task<IActionResult> UpdateClub(int id, UpdateClubDTO updateClubDTO){
+        // if(id != updateClubDTO.Id){
+        //     return BadRequest("Id's don't match!");
+        // }
+        
+        var club = await _context.Clubs.FindAsync(id);
+        
+        if(club is null){
+            return NotFound();
         }
 
-        _context.Entry(club).State = EntityState.Modified;
+        _mapper.Map(updateClubDTO, club);
 
         try{
             await _context.SaveChangesAsync();

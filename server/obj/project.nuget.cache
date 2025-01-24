@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "KCd0/CBfZbs=",
+  "dgSpecHash": "MgbBI4xktSo=",
   "success": true,
   "projectFilePath": "C:\\Users\\Ritvik Prakash\\Desktop\\RateMyCollegeClub\\server\\server.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Ritvik Prakash\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\Ritvik Prakash\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Ritvik Prakash\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
     "C:\\Users\\Ritvik Prakash\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
