@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Validations;
 using RateMyCollegeClub.Data;
+using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Clubs;
 
@@ -11,27 +12,25 @@ namespace RateMyCollegeClub.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class ClubController : ControllerBase {
-    private readonly CollegeClubsDbContext _context;
+    
     private readonly IMapper _mapper;
-    public ClubController(CollegeClubsDbContext context, IMapper mapper)
-    {
-        _context = context;   
+    private readonly IClubsRepository _clubsRepository;
+    public ClubController(IMapper mapper, IClubsRepository clubsRepository)
+    { 
         _mapper = mapper;
+        _clubsRepository = clubsRepository;  
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GetClubsDTO>>> GetAllClubs(){
-        var clubs = await _context.Clubs.Include(q => q.Category).ToListAsync();
+        var clubs = await _clubsRepository.GetClubDetails();
         var countriesDTO = _mapper.Map<List<GetClubsDTO>>(clubs);
         return Ok(countriesDTO);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GetClubDTO>> GetClub(int id){
-        var club = await _context.Clubs
-        .Include(q => q.Category)
-        .Include(q => q.Reviews)
-        .FirstOrDefaultAsync(q => q.Id == id);
+        var club = await _clubsRepository.GetIndividualClubDetails(id);
 
         if(club is null){
             return NotFound();
@@ -47,23 +46,20 @@ public class ClubController : ControllerBase {
 
         var club = _mapper.Map<Club>(createClubDTO);
 
-        _context.Clubs.Add(club);
-
-        await _context.SaveChangesAsync();
+        await _clubsRepository.AddAsync(club);
 
         return CreatedAtAction("GetClub", new {Id = club.Id}, club);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteClub(int id){
-        var club = await _context.Clubs.FindAsync(id);
+        var club = _clubsRepository.GetAsync(id);
 
         if(club is null){
             return NotFound();
         }
 
-        _context.Clubs.Remove(club);
-        await _context.SaveChangesAsync();
+        await _clubsRepository.DeleteAsync(id);
 
         return NoContent();
     }
@@ -74,7 +70,7 @@ public class ClubController : ControllerBase {
         //     return BadRequest("Id's don't match!");
         // }
         
-        var club = await _context.Clubs.FindAsync(id);
+        var club = await _clubsRepository.GetAsync(id);
         
         if(club is null){
             return NotFound();
@@ -83,10 +79,10 @@ public class ClubController : ControllerBase {
         _mapper.Map(updateClubDTO, club);
 
         try{
-            await _context.SaveChangesAsync();
+            await _clubsRepository.UpdateAsync(club);
         }
         catch(DbUpdateConcurrencyException){
-            if(!ClubExists(id)){
+            if(!await ClubExists(id)){
                 return NotFound();
             }
             else{
@@ -96,8 +92,8 @@ public class ClubController : ControllerBase {
         return NoContent();
 
     }
-    private bool ClubExists(int id){
+    private async Task<bool> ClubExists(int id){
 
-        return _context.Clubs.Any(e => e.Id == id);
+        return await _clubsRepository.Exists(id);
     }
 }
