@@ -1,2 +1,3 @@
-bin/
-obj/
+server/obj/
+server/bin/
+
