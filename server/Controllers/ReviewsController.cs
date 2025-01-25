@@ -16,17 +16,17 @@ namespace RateMyCollegeClub.Controllers;
 
 public class ReviewsController : ControllerBase {
     private readonly IMapper _mapper;
-    private readonly CollegeClubsDbContext _context;
+    private readonly IReviewsRepository _reviewsRepository;
 
-    public ReviewsController(IMapper mapper, CollegeClubsDbContext context)
+    public ReviewsController(IMapper mapper, IReviewsRepository reviewsRepository)
     {
         _mapper = mapper;
-        _context = context;
+        _reviewsRepository = reviewsRepository;
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Review>> GetReview(int id) {
-        var review = await _context.Reviews.FindAsync(id);
+        var review = await _reviewsRepository.GetAsync(id);
         
         if(review is null){
             return NotFound();
@@ -37,28 +37,26 @@ public class ReviewsController : ControllerBase {
     [HttpPost]
     public async Task<ActionResult<CreateReviewDTO>> CreateReview(CreateReviewDTO createReviewDTO) {
         var review = _mapper.Map<Review>(createReviewDTO);
-        await _context.Reviews.AddAsync(review);
-        await _context.SaveChangesAsync();
+        await _reviewsRepository.AddAsync(review);
         return CreatedAtAction("GetReview", new {id = review.Id}, review);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteReview(int id){
-        var review = await _context.Reviews.FindAsync(id);
+        var review = await _reviewsRepository.GetAsync(id);
 
         if(review is null){
             return NotFound();
         }
 
-        _context.Reviews.Remove(review);
-        await _context.SaveChangesAsync();
+        await _reviewsRepository.DeleteAsync(id);
 
         return NoContent();
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO updateReviewDTO){
-        var review = await _context.Reviews.FindAsync(id);
+        var review = await _reviewsRepository.GetAsync(id);
 
         if(review is null){
             return NotFound();
@@ -67,10 +65,10 @@ public class ReviewsController : ControllerBase {
         _mapper.Map(updateReviewDTO, review);
         
         try{
-            await _context.SaveChangesAsync();
+            await _reviewsRepository.UpdateAsync(review);
         }
         catch(DbUpdateConcurrencyException){
-            if(!ReviewExists(id)){
+            if(!await ReviewExists(id)){
                 return NotFound();
             }
             else{
@@ -81,8 +79,8 @@ public class ReviewsController : ControllerBase {
         return NoContent();
     }
 
-    private bool ReviewExists(int id){
-        return _context.Reviews.Any(r => r.Id == id);
+    private async Task<bool> ReviewExists(int id){
+        return await _reviewsRepository.Exists(id);
     }
 
 }

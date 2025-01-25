@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Configurations;
 using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
+using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,7 @@ builder.Services.AddCors(options => {
 builder.Services.AddAutoMapper(typeof(MapperConfig));
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IClubsRepository, ClubsRepository>();
+builder.Services.AddScoped<IReviewsRepository, ReviewsRepository>();
 
 var app = builder.Build();
 
