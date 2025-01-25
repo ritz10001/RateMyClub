@@ -14,11 +14,11 @@ namespace RateMyCollegeClub.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 
-public class ReviewsController : ControllerBase {
+public class ReviewController : ControllerBase {
     private readonly IMapper _mapper;
     private readonly IReviewsRepository _reviewsRepository;
 
-    public ReviewsController(IMapper mapper, IReviewsRepository reviewsRepository)
+    public ReviewController(IMapper mapper, IReviewsRepository reviewsRepository)
     {
         _mapper = mapper;
         _reviewsRepository = reviewsRepository;
