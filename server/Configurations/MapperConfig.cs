@@ -1,5 +1,6 @@
 using AutoMapper;
 using RateMyCollegeClub.Models;
+using RateMyCollegeClub.Models.Categories;
 using RateMyCollegeClub.Models.Clubs;
 using RateMyCollegeClub.Models.Reviews;
 
@@ -12,8 +13,13 @@ public class MapperConfig : Profile {
         CreateMap<Club, GetClubDTO>().ReverseMap();
         CreateMap<Club, GetClubsDTO>().ReverseMap();
         CreateMap<Club, UpdateClubDTO>().ReverseMap();
-        CreateMap<Review, GetReviewDTO>().ReverseMap();
+        CreateMap<Club, ClubDTO>().ReverseMap();
         CreateMap<Review, CreateReviewDTO>().ReverseMap();
+        CreateMap<Review, GetReviewDTO>().ReverseMap();
         CreateMap<Review, UpdateReviewDTO>().ReverseMap();
+        CreateMap<Category, CreateCategoryDTO>().ReverseMap();
+        CreateMap<Category, GetCategoryDTO>().ReverseMap();
+        CreateMap<Category, GetCategoriesDTO>().ReverseMap();
+        CreateMap<Category, UpdateCategoryDTO>().ReverseMap();
     }
 }

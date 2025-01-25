@@ -48,7 +48,7 @@ public class ClubController : ControllerBase {
 
         await _clubsRepository.AddAsync(club);
 
-        return CreatedAtAction("GetClub", new {Id = club.Id}, club);
+        return CreatedAtAction("GetClub", new {id = club.Id}, club);
     }
 
     [HttpDelete("{id}")]
