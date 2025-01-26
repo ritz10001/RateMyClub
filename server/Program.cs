@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Configurations;
 using RateMyCollegeClub.Data;
@@ -13,6 +14,10 @@ var connectionString = builder.Configuration.GetConnectionString("CollegeClubsDb
 builder.Services.AddDbContext<CollegeClubsDbContext>(options => {
     options.UseSqlServer(connectionString);
 });
+
+builder.Services.AddIdentityCore<IdentityUser>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<CollegeClubsDbContext>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
