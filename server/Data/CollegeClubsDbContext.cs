@@ -14,6 +14,7 @@ public class CollegeClubsDbContext : DbContext{
     public DbSet<Category> Category { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<SavedClub> SavedClubs { get; set; }
+    public DbSet<University> University { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -47,7 +48,8 @@ public class CollegeClubsDbContext : DbContext{
                 Description = "Robotics Club", 
                 IsActive = true,
                 ClubLocation = "Engineering Center Basement, Room 100",
-                CategoryId = 1
+                CategoryId = 1,
+                UniversityId = 1
             },
             new Club 
             {
@@ -56,7 +58,8 @@ public class CollegeClubsDbContext : DbContext{
                 Description = "Software Engineering Club", 
                 IsActive = true,
                 ClubLocation = "Livermore Center, Room 101",
-                CategoryId = 1
+                CategoryId = 1,
+                UniversityId = 1
             },
             new Club 
             {
@@ -65,7 +68,8 @@ public class CollegeClubsDbContext : DbContext{
                 Description = "A club for playing chess", 
                 IsActive = true,
                 ClubLocation = "The SUB, Second floor, Room 237.",
-                CategoryId = 2
+                CategoryId = 2,
+                UniversityId = 1
             }
         );
         modelBuilder.Entity<Review>().HasData(
@@ -101,6 +105,20 @@ public class CollegeClubsDbContext : DbContext{
                 OverallRating = 3,
                 Comment = "The GDSC club has its ups and downs. Networking is one of its prime benefits.",
                 ClubId = 2
+            }
+        );
+        modelBuilder.Entity<University>().HasData(
+            new University
+            {
+                Id = 1,
+                Name = "Texas Tech University",
+                Location = "Lubbock, TX"
+            },
+            new University
+            {
+                Id = 2,
+                Name = "University of Texas at Dallas",
+                Location = "Dallas, TX"
             }
         );
     } 
