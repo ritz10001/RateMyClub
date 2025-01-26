@@ -14,13 +14,17 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository {
 
     public async Task<List<Club>> GetClubDetails()
     {
-        return await _context.Clubs.Include(q => q.Category).ToListAsync();
+        return await _context.Clubs
+        .Include(q => q.Category)
+        .Include(q => q.University)
+        .ToListAsync();
     }
 
     public async Task<Club> GetIndividualClubDetails(int id)
     {
         return await _context.Clubs
         .Include(q => q.Category)
+        .Include(q => q.University)
         .Include(q => q.Reviews)
         .FirstOrDefaultAsync(q => q.Id == id);
     }
