@@ -39,7 +39,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<IEnumerable<IdentityError>> Register(UserDTO userDTO)
+    public async Task<IEnumerable<IdentityError>> Register(UserDTO userDTO, string role = "User")
     {
         var user = _mapper.Map<User>(userDTO);
         
@@ -48,7 +48,7 @@ public class AuthService : IAuthService
         var result = await _userManager.CreateAsync(user, userDTO.Password);
 
         if(result.Succeeded){
-            await _userManager.AddToRoleAsync(user, "User");
+            await _userManager.AddToRoleAsync(user, role);
         }
 
         return result.Errors;
@@ -74,6 +74,7 @@ public class AuthService : IAuthService
             issuer: _configuration["JwtSettings:Issuer"],
             audience: _configuration["JwtSettings:Audience"],
             claims: claims,
+            signingCredentials: credentials,
             expires: DateTime.Now.AddMinutes(Convert.ToInt32(_configuration["JwtSettings:DurationInMinutes"]))
         );
 
