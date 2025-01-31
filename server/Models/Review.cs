@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using RateMyCollegeClub.Data;
 
 namespace RateMyCollegeClub.Models;
 
@@ -13,9 +14,10 @@ public class Review {
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [ForeignKey(nameof(ClubId))]
     public int ClubId { get; set; }
-    // [ForeignKey(nameof(UserId))]
-    // public string UserId { get; set; } = string.Empty;
-    public Club Club {get; set;}
-    // public virtual User User {get; set;}
+    public Club Club { get; set; }
+
+    [ForeignKey(nameof(UserId))]
+    public string UserId { get; set; } = string.Empty;
+    public virtual User User {get; set;}
 
 }

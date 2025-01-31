@@ -64,10 +64,10 @@ public class AuthService : IAuthService
 
         var claims = new List<Claim> 
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim("uid", user.Email)
+            new Claim("uid", user.Id)
         }.Union(userClaims).Union(roleClaims);
 
         var token = new JwtSecurityToken(

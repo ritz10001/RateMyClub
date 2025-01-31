@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Data;
@@ -49,6 +50,7 @@ public class CategoriesController : ControllerBase
 
     // POST: api/categories
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<CreateCategoryDTO>> CreateCategory(CreateCategoryDTO createCategoryDTO)
     {
         var category = _mapper.Map<Category>(createCategoryDTO);
@@ -60,6 +62,7 @@ public class CategoriesController : ControllerBase
 
     // PUT: api/categories/{id}
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDTO updateCategoryDTO)
     {
         var category = await _categoriesRepository.GetAsync(id);
@@ -88,6 +91,7 @@ public class CategoriesController : ControllerBase
 
     // DELETE: api/categories/{id}
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrator")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var category = await _categoriesRepository.GetAsync(id);
