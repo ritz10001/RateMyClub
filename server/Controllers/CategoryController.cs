@@ -50,7 +50,7 @@ public class CategoriesController : ControllerBase
 
     // POST: api/categories
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public async Task<ActionResult<CreateCategoryDTO>> CreateCategory(CreateCategoryDTO createCategoryDTO)
     {
         var category = _mapper.Map<Category>(createCategoryDTO);
@@ -62,7 +62,7 @@ public class CategoriesController : ControllerBase
 
     // PUT: api/categories/{id}
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDTO updateCategoryDTO)
     {
         var category = await _categoriesRepository.GetAsync(id);

@@ -40,9 +40,7 @@ public class ReviewController : ControllerBase {
     [Authorize]
     public async Task<ActionResult<CreateReviewDTO>> CreateReview(CreateReviewDTO createReviewDTO) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        Console.WriteLine("-----------------------------------------------------");
-        Console.WriteLine("HERE IS THE USER ID");
-        Console.WriteLine(userId);
+        
         if (userId == null) {
             return Unauthorized();
         }

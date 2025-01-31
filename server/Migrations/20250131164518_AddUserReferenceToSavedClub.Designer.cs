@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RateMyCollegeClub.Data;
 
@@ -11,9 +12,11 @@ using RateMyCollegeClub.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(CollegeClubsDbContext))]
-    partial class CollegeClubsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250131164518_AddUserReferenceToSavedClub")]
+    partial class AddUserReferenceToSavedClub
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,13 +54,13 @@ namespace server.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "80e6cda8-1aae-47d8-9e22-5c98cc5b70d1",
+                            Id = "a5c91169-1c04-4a38-8489-5fe1181191d7",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "c7be8fea-343b-438c-b2fa-25d6e5bd32e8",
+                            Id = "7872ef13-a5f8-4a3c-8122-1c1bdfade86e",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -332,7 +335,7 @@ namespace server.Migrations
                             Id = 1,
                             CategoryId = 1,
                             ClubLocation = "Engineering Center Basement, Room 100",
-                            CreatedAt = new DateTime(2025, 1, 31, 16, 55, 59, 591, DateTimeKind.Utc).AddTicks(253),
+                            CreatedAt = new DateTime(2025, 1, 31, 16, 45, 17, 624, DateTimeKind.Utc).AddTicks(2811),
                             Description = "Robotics Club",
                             IsActive = true,
                             Name = "Tech Robotics Association",
@@ -343,7 +346,7 @@ namespace server.Migrations
                             Id = 2,
                             CategoryId = 1,
                             ClubLocation = "Livermore Center, Room 101",
-                            CreatedAt = new DateTime(2025, 1, 31, 16, 55, 59, 591, DateTimeKind.Utc).AddTicks(1287),
+                            CreatedAt = new DateTime(2025, 1, 31, 16, 45, 17, 624, DateTimeKind.Utc).AddTicks(3827),
                             Description = "Software Engineering Club",
                             IsActive = true,
                             Name = "Google Development Student Club",
@@ -354,7 +357,7 @@ namespace server.Migrations
                             Id = 3,
                             CategoryId = 2,
                             ClubLocation = "The SUB, Second floor, Room 237.",
-                            CreatedAt = new DateTime(2025, 1, 31, 16, 55, 59, 591, DateTimeKind.Utc).AddTicks(1290),
+                            CreatedAt = new DateTime(2025, 1, 31, 16, 45, 17, 624, DateTimeKind.Utc).AddTicks(3830),
                             Description = "A club for playing chess",
                             IsActive = true,
                             Name = "Chess Club",
@@ -413,7 +416,7 @@ namespace server.Migrations
                             Id = 1,
                             ClubId = 1,
                             Comment = "It's a good club overall. Friendly people in general.",
-                            CreatedAt = new DateTime(2025, 1, 31, 16, 55, 59, 590, DateTimeKind.Utc).AddTicks(6517),
+                            CreatedAt = new DateTime(2025, 1, 31, 16, 45, 17, 623, DateTimeKind.Utc).AddTicks(9185),
                             InclusivityRating = 4,
                             LeadershipRating = 2,
                             NetworkingRating = 3,
@@ -426,7 +429,7 @@ namespace server.Migrations
                             Id = 2,
                             ClubId = 1,
                             Comment = "Plenty of volunteering opportunities. One of the highlights about the club is the annual VEX U competitions.",
-                            CreatedAt = new DateTime(2025, 1, 31, 16, 55, 59, 590, DateTimeKind.Utc).AddTicks(7494),
+                            CreatedAt = new DateTime(2025, 1, 31, 16, 45, 17, 624, DateTimeKind.Utc).AddTicks(214),
                             InclusivityRating = 5,
                             LeadershipRating = 4,
                             NetworkingRating = 2,
@@ -439,7 +442,7 @@ namespace server.Migrations
                             Id = 3,
                             ClubId = 2,
                             Comment = "The GDSC club has its ups and downs. Networking is one of its prime benefits.",
-                            CreatedAt = new DateTime(2025, 1, 31, 16, 55, 59, 590, DateTimeKind.Utc).AddTicks(7497),
+                            CreatedAt = new DateTime(2025, 1, 31, 16, 45, 17, 624, DateTimeKind.Utc).AddTicks(216),
                             InclusivityRating = 2,
                             LeadershipRating = 4,
                             NetworkingRating = 5,
