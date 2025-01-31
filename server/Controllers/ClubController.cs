@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Validations;
@@ -42,6 +43,7 @@ public class ClubController : ControllerBase {
     }
 
     [HttpPost]
+    [Authorize(Roles = "Administrator")]
     public async Task<ActionResult<CreateClubDTO>> CreateClub(CreateClubDTO createClubDTO){
 
         var club = _mapper.Map<Club>(createClubDTO);
@@ -52,6 +54,7 @@ public class ClubController : ControllerBase {
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrator")]
     public async Task<IActionResult> DeleteClub(int id){
         var club = _clubsRepository.GetAsync(id);
 
@@ -65,10 +68,8 @@ public class ClubController : ControllerBase {
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Administrator")]
     public async Task<IActionResult> UpdateClub(int id, UpdateClubDTO updateClubDTO){
-        // if(id != updateClubDTO.Id){
-        //     return BadRequest("Id's don't match!");
-        // }
         
         var club = await _clubsRepository.GetAsync(id);
         

@@ -20,8 +20,8 @@ public class AccountController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> Register([FromBody] UserDTO userDTO) {
-        var errors = await _authService.Register(userDTO);
+    public async Task<ActionResult> Register([FromBody] UserDTO userDTO, [FromQuery] string role = "User") {
+        var errors = await _authService.Register(userDTO, role);
 
         if(errors.Any()){
             foreach(var error in errors){
