@@ -1,14 +1,14 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using RateMyCollegeClub.Data;
 
 namespace RateMyCollegeClub.Models;
 
 public class SavedClub {
     public int Id { get; set;}
-    // public string UserId {get; set;}
-    [ForeignKey(nameof(ClubId))]
     public int ClubId { get; set;}
-    public DateTime SavedAt { get; set; }
-    // public User User {get; set;}
     public Club Club { get; set;}
-
+    public DateTime SavedAt { get; set; }
+    public string UserId {get; set;}
+    public User User {get; set;}
+    
 }
