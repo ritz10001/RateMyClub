@@ -13,17 +13,12 @@ public class CollegeClubsDbContext : IdentityDbContext<User> {
         
     }
     public DbSet<Club> Clubs { get; set; }
-    public DbSet<Category> Category { get; set; }
+    public DbSet<Category> Categories { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<SavedClub> SavedClubs { get; set; }
-    public DbSet<University> University { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.ConfigureWarnings(warnings => {
-            warnings.Ignore(RelationalEventId.PendingModelChangesWarning);
-        });
-    }
+    public DbSet<University> Universities { get; set; }
+    public DbSet<UniversityRequest> UniversityRequests { get; set; }
+    public DbSet<ClubRequest> ClubRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
