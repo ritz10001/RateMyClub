@@ -46,7 +46,7 @@ public class ReviewController : ControllerBase {
         }
 
         var review = _mapper.Map<Review>(createReviewDTO);
-        review.UserId = userId;
+        // review.UserId = userId;
 
         await _reviewsRepository.AddAsync(review);
         return CreatedAtAction("GetReview", new {id = review.Id}, review);
@@ -64,9 +64,9 @@ public class ReviewController : ControllerBase {
         if(review is null){
             return NotFound();
         }
-        if(review.UserId != userId){
-            return Forbid();
-        }
+        // if(review.UserId != userId){
+        //     return Forbid();
+        // }
 
         await _reviewsRepository.DeleteAsync(id);
 
@@ -85,9 +85,9 @@ public class ReviewController : ControllerBase {
         if(review is null){
             return NotFound();
         }
-        if(review.UserId != userId){
-            return Forbid();
-        }
+        // if(review.UserId != userId){
+        //     return Forbid();
+        // }
 
         _mapper.Map(updateReviewDTO, review);
         

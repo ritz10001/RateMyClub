@@ -21,7 +21,7 @@ public class Review {
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int ClubId { get; set; }
     public Club Club { get; set; }
-    public string UserId { get; set; } = string.Empty;
-    public virtual User User {get; set;}
+    // public string UserId { get; set; }
+    // public virtual User User {get; set;}
 
 }
