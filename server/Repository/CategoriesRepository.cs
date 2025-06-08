@@ -12,9 +12,14 @@ public class CategoriesRepository : GenericRepository<Category>, ICategoriesRepo
         _context = context;
     }
 
-    public async Task<Category> GetIndividualCategoryDetails(int id){
-        return await _context.Category
-        .Include(q => q.Clubs)
-        .FirstOrDefaultAsync(q => q.Id == id);
+    public Task<Category> GetIndividualCategoryDetails(int id)
+    {
+        throw new NotImplementedException();
     }
+
+    // public async Task<Category> GetIndividualCategoryDetails(int id){
+    //     return await _context.Category
+    //     .Include(q => q.Clubs)
+    //     .FirstOrDefaultAsync(q => q.Id == id);
+    // }
 }
