@@ -25,21 +25,35 @@ public class ClubController : ControllerBase {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GetClubsDTO>>> GetAllClubs(){
         var clubs = await _clubsRepository.GetClubDetails();
-        var countriesDTO = _mapper.Map<List<GetClubsDTO>>(clubs);
-        return Ok(countriesDTO);
+        var clubsDTO = _mapper.Map<List<GetClubsDTO>>(clubs);
+        foreach (var clubDTO in clubsDTO)
+        {
+            var club = clubs.FirstOrDefault(c => c.Id == clubDTO.Id);
+            if (club != null && club.Reviews != null && club.Reviews.Any())
+            {
+                clubDTO.AverageRating = Math.Round(club.Reviews.Average(r => r.OverallRating), 1);
+            }
+            else
+            {
+                clubDTO.AverageRating = 0;
+            }
+        }
+        return Ok(clubsDTO);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GetClubDTO>> GetClub(int id){
         var club = await _clubsRepository.GetIndividualClubDetails(id);
-
+        
         if(club is null){
             return NotFound();
         }
 
-        var countryDTO = _mapper.Map<GetClubDTO>(club);
+        var clubDTO = _mapper.Map<GetClubDTO>(club);
+        clubDTO.RatingDistribution = RatingDistributionService.Calculate(club.Reviews);
+        clubDTO.AverageRating = club.Reviews.Count != 0 ? Math.Round(club.Reviews.Average(r => r.OverallRating), 1) : 0;
 
-        return Ok(countryDTO);
+        return Ok(clubDTO);
     }
 
     [HttpPost]

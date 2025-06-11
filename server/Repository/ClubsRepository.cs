@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
+using RateMyCollegeClub.Models.Clubs;
 
 namespace RateMyCollegeClub.Repository;
 
@@ -17,6 +18,7 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository {
         return await _context.Clubs
         .Include(q => q.Category)
         .Include(q => q.University)
+        .Include(q => q.Reviews)
         .ToListAsync();
     }
 
@@ -25,7 +27,7 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository {
         return await _context.Clubs
         .Include(q => q.Category)
         .Include(q => q.University)
-        .Include(q => q.Reviews)
+        .Include(q => q.Reviews).ThenInclude(r => r.User)
         .FirstOrDefaultAsync(q => q.Id == id);
     }
 }

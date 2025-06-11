@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,8 @@ namespace RateMyCollegeClub.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 
-public class ReviewController : ControllerBase {
+public class ReviewController : ControllerBase
+{
     private readonly IMapper _mapper;
     private readonly IReviewsRepository _reviewsRepository;
 
@@ -27,46 +29,57 @@ public class ReviewController : ControllerBase {
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Review>> GetReview(int id) {
+    public async Task<ActionResult<Review>> GetReview(int id)
+    {
         var review = await _reviewsRepository.GetAsync(id);
-        
-        if(review is null){
+
+        if (review is null)
+        {
             return NotFound();
         }
         return Ok(review);
     }
 
     [HttpPost]
-    [Authorize]
-    public async Task<ActionResult<CreateReviewDTO>> CreateReview(CreateReviewDTO createReviewDTO) {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
-        if (userId == null) {
+    [Authorize(Roles = "User, Administrator")]
+    public async Task<ActionResult<CreateReviewDTO>> CreateReview(CreateReviewDTO createReviewDTO)
+    {
+        var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
             return Unauthorized();
         }
 
         var review = _mapper.Map<Review>(createReviewDTO);
-        // review.UserId = userId;
+        review.UserId = userId;
 
         await _reviewsRepository.AddAsync(review);
-        return CreatedAtAction("GetReview", new {id = review.Id}, review);
+        return CreatedAtAction("GetReview", new { id = review.Id }, review);
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
-    public async Task<IActionResult> DeleteReview(int id){
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if(userId == null){
-            return Unauthorized();
-        }
+    [Authorize(Roles = "User, Administrator")]
+    public async Task<IActionResult> DeleteReview(int id)
+    {
         var review = await _reviewsRepository.GetAsync(id);
 
-        if(review is null){
+        if (review is null)
+        {
             return NotFound();
         }
-        // if(review.UserId != userId){
-        //     return Forbid();
-        // }
+
+        var userId = GetUserId();
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        var isAdmin = GetUserRoles().Contains("Administrator");
+
+        if (review.UserId != userId && !isAdmin)
+        {
+            return Forbid();
+        }
 
         await _reviewsRepository.DeleteAsync(id);
 
@@ -74,31 +87,44 @@ public class ReviewController : ControllerBase {
     }
 
     [HttpPut("{id}")]
-    [Authorize]
-    public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO updateReviewDTO){
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if(userId == null){
-            return Unauthorized();
-        }
+    [Authorize(Roles = "User, Administrator")]
+    public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO updateReviewDTO)
+    {
         var review = await _reviewsRepository.GetAsync(id);
 
-        if(review is null){
+        if (review is null)
+        {
             return NotFound();
         }
-        // if(review.UserId != userId){
-        //     return Forbid();
-        // }
+
+        var userId = GetUserId();
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var isAdmin = GetUserRoles().Contains("Administrator");
+
+        if (review.UserId != userId && !isAdmin)
+        {
+            return Forbid();
+        }
 
         _mapper.Map(updateReviewDTO, review);
-        
-        try{
+
+        try
+        {
             await _reviewsRepository.UpdateAsync(review);
         }
-        catch(DbUpdateConcurrencyException){
-            if(!await ReviewExists(id)){
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await ReviewExists(id))
+            {
                 return NotFound();
             }
-            else{
+            else
+            {
                 throw;
             }
         }
@@ -106,8 +132,18 @@ public class ReviewController : ControllerBase {
         return NoContent();
     }
 
-    private async Task<bool> ReviewExists(int id){
+    private async Task<bool> ReviewExists(int id)
+    {
         return await _reviewsRepository.Exists(id);
+    }
+
+    private string? GetUserId()
+    {
+        return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value;
+    }
+    private List<string> GetUserRoles() {
+        var roles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+        return roles;
     }
 
 }
