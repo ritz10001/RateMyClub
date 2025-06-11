@@ -9,5 +9,6 @@ public class GetClubsDTO
     public string CategoryName { get; set; } = string.Empty;
     public decimal AverageRating { get; set; }
     public int ReviewCount { get; set; }
+    public string UniversityName { get; set; } = string.Empty;
     public string LogoUrl { get; set; } = string.Empty;
 }
