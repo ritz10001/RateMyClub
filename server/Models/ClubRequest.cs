@@ -13,8 +13,8 @@ public class ClubRequest
     public University University { get; set; }
     public int CategoryId { get; set; }
     public Category Category { get; set; }
-    // public string UserId { get; set; }
-    // public User User { get; set; } // Assuming User is a class representing the user making the request
+    public string? UserId { get; set; }
+    public User? User { get; set; } // Assuming User is a class representing the user making the request
     public RequestStatus RequestStatus { get; set; } // 0: Pending, 1: Approved, 2: Rejected
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
 
