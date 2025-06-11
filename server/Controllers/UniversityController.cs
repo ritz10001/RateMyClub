@@ -46,4 +46,57 @@ public class UniversityController : ControllerBase
 
         return Ok(universityDTO);
     }
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> DeleteUniversity(int id)
+    {
+        var university = await _universityRepository.GetAsync(id);
+        if (university == null)
+        {
+            return NotFound();
+        }
+
+        await _universityRepository.DeleteAsync(id);
+        return NoContent();
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> UpdateUniversity(int id, UpdateUniversityDTO updateUniversityDTO)
+    {
+        if (id != updateUniversityDTO.Id)
+        {
+            return BadRequest("University ID mismatch.");
+        }
+
+        var university = await _universityRepository.GetAsync(id);
+        if (university == null)
+        {
+            return NotFound();
+        }
+
+        _mapper.Map(updateUniversityDTO, university);
+
+        try
+        {
+            await _universityRepository.UpdateAsync(university);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await UniversityExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+        return NoContent();
+    }
+    
+    private async Task<bool> UniversityExists(int id)
+    {
+        return await _universityRepository.Exists(id);
+    }
 }
