@@ -21,7 +21,10 @@ builder.Services.AddDbContext<CollegeClubsDbContext>(options => {
 
 builder.Services.AddIdentityCore<User>()
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<CollegeClubsDbContext>();
+                .AddTokenProvider<DataProtectorTokenProvider<User>>("RateMyCollegeClub")
+                .AddEntityFrameworkStores<CollegeClubsDbContext>()
+                .AddDefaultTokenProviders();
+                
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

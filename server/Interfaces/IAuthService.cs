@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Models.Users;
 
 namespace RateMyCollegeClub.Interfaces;
