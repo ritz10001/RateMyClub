@@ -4,9 +4,19 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { useState } from "react"
+import { useAuth } from "../context/AuthContext"
+import { useRouter } from 'next/navigation'
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, setUser } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("token");
+    router.push("/");
+  }
 
   return (
     <header className="border-b border-blue-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
@@ -34,6 +44,14 @@ export default function Header() {
           </nav>
 
           {/* Desktop Auth Buttons */}
+          {user ? (
+           <div className="hidden md:flex items-center space-x-3">
+              <span>HELLO, TESTUSER</span>
+            <Button onClick={handleLogout} className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
+              <Link href="/">Log Out</Link>
+            </Button>
+          </div>
+          ): (
           <div className="hidden md:flex items-center space-x-3">
             <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
               <Link href="/login">Log In</Link>
@@ -42,6 +60,8 @@ export default function Header() {
               <Link href="/signup">Sign Up</Link>
             </Button>
           </div>
+        )}
+          
 
           {/* Mobile Menu Button */}
           <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
