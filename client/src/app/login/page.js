@@ -5,12 +5,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useState } from "react"
+import { useRouter } from 'next/navigation'
+import { AuthProvider, useAuth } from "../context/AuthContext"
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { setUser } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
+  const [error, setError] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -19,11 +24,43 @@ export default function LoginPage() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement login logic
-    console.log("Login data:", formData)
-  }
+    try{
+      const response = await fetch("http://localhost:5095/api/Account/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+      if(response.ok){
+        const authResponse = await response.json();
+        setUser({
+          UserId: authResponse.UserId,     // PascalCase to match C#
+          Token: authResponse.Token,       // PascalCase
+          RefreshToken: authResponse.RefreshToken // PascalCase
+        });
+        console.log('Login successful:', authResponse)
+        localStorage.setItem("token", authResponse.token);
+        router.push("/");
+      }
+      else if(response.status === 401){
+        setError(true);
+        console.error('Login failed: Invalid credentials');
+      }
+      else{
+        alert("Login Failed. Please try again.");
+      }
+    }
+    catch(error){
+      console.error('Login error:', error);
+      alert('Network error. Please try again.');
+    }
+  } 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center py-12 px-4">
@@ -36,6 +73,11 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
+          {error && (
+            <div className="mb-4 text-red-600 text-sm">
+              Invalid email or password. Please try again.
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
