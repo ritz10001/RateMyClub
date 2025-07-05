@@ -203,8 +203,10 @@ export default function SchoolPage({ params }) {
           <h2 className="text-2xl font-bold mb-2">Can't find your club?</h2>
           <p className="text-blue-100 mb-4">Add yours today and help other students discover your community!</p>
           <Button className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-xl font-semibold">
+            <Link href="/request/club" className="flex items-center justify-center">
             <Plus className="w-4 h-4 mr-2" />
             Add Your Club
+            </Link>   
           </Button>
         </div>
 
@@ -291,7 +293,7 @@ export default function SchoolPage({ params }) {
                           console.log(`Bookmarked ${club.name}`)
                         }}
                       >
-                        <Heart className="w-5 h-5 text-red-500 border border-red-500 rounded-full p-0.5 hover:fill-current transition-all group-hover/heart:scale-110" />
+                        <Heart className="w-5 h-5 text-red-500 p-0.5 hover:fill-current transition-all group-hover/heart:scale-110" />
                       </button>
                     </div>
                   </div>
