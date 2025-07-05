@@ -132,8 +132,10 @@ export default function DirectoryPage() {
 
             {/* Add School Button */}
             <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold whitespace-nowrap w-full lg:w-auto">
+              <Link href="/request/school" className="flex items-center justify-center">
               <Plus className="w-4 h-4 mr-2" />
               Add School
+              </Link>
             </Button>
           </div>
         </div>
