@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using RateMyCollegeClub.Interfaces;
@@ -23,9 +24,9 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> Register([FromBody] UserDTO userDTO, [FromQuery] string role = "User")
     {
-        var errors = await _authService.Register(userDTO, role);
+        var (authResponse, errors) = await _authService.Register(userDTO, role);
 
-        if (errors.Any())
+        if (errors != null && errors.Any())
         {
             foreach (var error in errors)
             {
@@ -34,7 +35,7 @@ public class AccountController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        return Ok();
+        return Ok(authResponse);
     }
     [HttpPost]
     [Route("login")]
