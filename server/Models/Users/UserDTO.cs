@@ -8,5 +8,6 @@ public class UserDTO : LoginDTO
     public string FirstName { get; set; }
     [Required]
     public string LastName { get; set; }
+    public string? SchoolName { get; set; }
 
 }

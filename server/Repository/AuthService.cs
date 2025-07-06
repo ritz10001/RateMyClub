@@ -47,12 +47,13 @@ public class AuthService : IAuthService
         {
             Token = token,
             UserId = _user.Id,
-            RefreshToken = await CreateRefreshToken()
-
+            RefreshToken = await CreateRefreshToken(),
+            FirstName = _user.FirstName,
+            LastName = _user.LastName,
         };
     }
 
-    public async Task<IEnumerable<IdentityError>> Register(UserDTO userDTO, string role = "User")
+    public async Task<(AuthResponseDTO, IEnumerable<IdentityError>)> Register(UserDTO userDTO, string role = "User")
     {
         _user = _mapper.Map<User>(userDTO);
         
@@ -60,11 +61,25 @@ public class AuthService : IAuthService
 
         var result = await _userManager.CreateAsync(_user, userDTO.Password);
 
-        if(result.Succeeded){
+        if (result.Succeeded)
+        {
             await _userManager.AddToRoleAsync(_user, role);
+            var token = await GenerateToken();
+            var refreshToken = await CreateRefreshToken();
+
+            var authResponse = new AuthResponseDTO
+            {
+                Token = token,
+                UserId = _user.Id,
+                RefreshToken = refreshToken,
+                FirstName = _user.FirstName,
+                LastName = _user.LastName,
+            };
+            return (authResponse, null);
         }
 
-        return result.Errors;
+
+        return (null, result.Errors);
     }
 
     public async Task<AuthResponseDTO> VerifyRefreshToken(AuthResponseDTO request)
@@ -122,4 +137,6 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
 
     }
+
+    
 }
