@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from 'next/navigation'
 import { AuthProvider, useAuth } from "../context/AuthContext"
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -23,6 +23,7 @@ export default function LoginPage() {
       [field]: value,
     }))
   }
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -39,14 +40,19 @@ export default function LoginPage() {
       })
       if(response.ok){
         const authResponse = await response.json();
-        setUser({
-          UserId: authResponse.UserId,     // PascalCase to match C#
-          Token: authResponse.Token,       // PascalCase
-          RefreshToken: authResponse.RefreshToken // PascalCase
-        });
-        console.log('Login successful:', authResponse)
+        const userData = {
+          firstName: authResponse.firstName,
+          lastName: authResponse.lastName,
+          userId: authResponse.userId,
+          token: authResponse.token,
+          refreshToken: authResponse.refreshToken
+        };
+        setUser(userData);
         localStorage.setItem("token", authResponse.token);
-        router.push("/");
+        setTimeout(() => {
+          console.log("handleSubmit: Navigating to /");
+          router.push("/");
+        }, 100);
       }
       else if(response.status === 401){
         setError(true);

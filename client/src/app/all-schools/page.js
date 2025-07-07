@@ -5,7 +5,10 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Plus, Users, Building } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
+
+  
 
 // Mock data for schools
 const mockSchools = [
@@ -62,35 +65,77 @@ const mockSchools = [
 export default function DirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("name")
-  const [filteredSchools, setFilteredSchools] = useState(mockSchools)
+  const [filteredSchools, setFilteredSchools] = useState([])
+  const [schools, setSchools] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const handleSearch = (query) => {
-    setSearchQuery(query)
-    const filtered = mockSchools.filter(
-      (school) =>
-        school.name.toLowerCase().includes(query.toLowerCase()) ||
-        school.location.toLowerCase().includes(query.toLowerCase()),
-    )
-    setFilteredSchools(filtered)
+  useEffect(() => {
+  const fetchSchools = async () => {
+    try{
+      const response = await fetch("http://localhost:5095/api/University/all-colleges", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      if(response.ok){
+        const data = await response.json();
+        console.log("Fetched schools:", data);
+        setSchools(data);
+        setFilteredSchools(data);
+      }
+      else{
+        console.log("Failed to fetch schools");
+
+      }
+    }
+    catch (error) {
+      console.error("Error fetching schools:", error);
+    }
+    finally {
+      setIsLoading(false);
+    }
   }
+  fetchSchools();
+}, [])
 
-  const handleSort = (value) => {
-    setSortBy(value)
-    const sorted = [...filteredSchools].sort((a, b) => {
-      switch (value) {
-        case "name":
-          return a.name.localeCompare(b.name)
-        case "reviews":
-          return b.reviewCount - a.reviewCount
-        case "clubs":
-          return b.clubCount - a.clubCount
-        default:
-          return 0
+  const updateDisplayedSchools = () => {
+    let results = [...schools]
+    
+    // Filter
+    if (searchQuery) {
+      results = results.filter(school =>
+        school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        school.location.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    }
+    
+    // Sort
+    results.sort((a, b) => {
+      switch (sortBy) {
+        case "name": return a.name.localeCompare(b.name)
+        case "reviews": return b.reviewCount - a.reviewCount
+        case "clubs": return b.clubsCount - a.clubsCount
+        default: return 0
       }
     })
-    setFilteredSchools(sorted)
+    
+    setFilteredSchools(results)
   }
 
+  useEffect(() => {
+    updateDisplayedSchools()
+  }, [searchQuery, sortBy, schools])
+
+  // Handler for search input
+  const handleSearch = (query) => {
+    setSearchQuery(query)
+  }
+
+  // Handler for sort select
+  const handleSort = (value) => {
+    setSortBy(value)
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -176,7 +221,7 @@ export default function DirectoryPage() {
                     </div>
                     <div className="flex items-center gap-1 text-gray-600">
                       <Building className="w-4 h-4" />
-                      <span>{school.clubCount} clubs</span>
+                      <span>{school.clubsCount} clubs</span>
                     </div>
                   </div>
                 </div>
@@ -184,7 +229,7 @@ export default function DirectoryPage() {
                 {/* Club Count Badge */}
                 <div className="mt-4 text-center">
                   <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    {school.clubCount} Active Clubs
+                    {school.clubsCount} Active Clubs
                   </span>
                 </div>
               </div>

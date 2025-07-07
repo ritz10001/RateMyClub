@@ -43,6 +43,7 @@ public class MapperConfig : Profile {
         .ReverseMap();
         CreateMap<University, GetUniversitiesDTO>()
         .ForMember(dest => dest.ClubsCount, opt => opt.MapFrom(src => src.Clubs.Count))
+        .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Clubs.Sum(c => c.Reviews.Count)))
         .ReverseMap();
     }
 }

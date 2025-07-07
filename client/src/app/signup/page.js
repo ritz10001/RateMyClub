@@ -6,8 +6,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { useState } from "react"
+import { useAuth } from "../context/AuthContext"
+import { useRouter } from "next/navigation"
 
 export default function SignUpPage() {
+  const router = useRouter();
+  const { user, setUser } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -16,7 +20,8 @@ export default function SignUpPage() {
     confirmPassword: "",
     school: "",
   })
-
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -24,10 +29,63 @@ export default function SignUpPage() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement sign up logic
-    console.log("Sign up data:", formData)
+    if (formData.password !== formData.confirmPassword) {
+      setError(true);
+      setErrorMessage(""); // Clear any previous specific message
+      return;
+    }
+    try{
+      const response = await fetch("http://localhost:5095/api/Account/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          schoolName: formData.school || null,
+        })
+      })
+      if(response.ok){
+        const authResponse = await response.json();
+        console.log('Sign up successful:', authResponse);
+        const userData = {
+          firstName: authResponse.firstName,
+          lastName: authResponse.lastName,
+          userId: authResponse.userId,
+          token: authResponse.token,
+          refreshToken: authResponse.refreshToken
+        };
+        setUser(userData);
+        localStorage.setItem("token", authResponse.token);
+        setTimeout(() => {
+          console.log("handleSubmit: Navigating to /");
+          router.push("/");
+        }, 100);
+      }
+      else if(response.status === 400){
+        const errorData = await response.json();
+        
+        console.log('Sign up failed: Invalid data');
+        if("type" in errorData){
+          setErrorMessage(errorData.errors["Password"][0])
+        }
+        else{
+          setErrorMessage(Object.values(errorData).map(arr => arr[0]).join('\n'));
+        }
+        setError(true);
+      }
+    }
+    catch(error){
+      setError(true);
+      console.error('Sign up error:', error);
+      setErrorMessage("Network error. Please try again.");
+    }
   }
 
   return (
@@ -40,12 +98,18 @@ export default function SignUpPage() {
             <p className="text-gray-600">Create your account to get started</p>
           </div>
 
+          {error && (
+            <div className="mb-4 text-red-600 text-sm  whitespace-pre-line">
+              {errorMessage || "Passwords do not match or data is invalid. Please check your inputs."}
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* First Name */}
             <div>
               <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 mb-2 block">
-                First Name
+                First Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="firstName"
@@ -60,7 +124,7 @@ export default function SignUpPage() {
             {/* Last Name */}
             <div>
               <Label htmlFor="lastName" className="text-sm font-medium text-gray-700 mb-2 block">
-                Last Name
+                Last Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="lastName"
@@ -75,7 +139,7 @@ export default function SignUpPage() {
             {/* Email */}
             <div>
               <Label htmlFor="email" className="text-sm font-medium text-gray-700 mb-2 block">
-                Email
+                Email <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="email"
@@ -90,18 +154,18 @@ export default function SignUpPage() {
             {/* School Selection */}
             <div>
               <Label htmlFor="school" className="text-sm font-medium text-gray-700 mb-2 block">
-                Select your school <span className="text-gray-400">(Optional)</span>
+                Select your school <span className="text-gray-400"></span>
               </Label>
               <Select onValueChange={(value) => handleInputChange("school", value)}>
                 <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
                   <SelectValue placeholder="Choose your school..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="texas-tech">Texas Tech University</SelectItem>
-                  <SelectItem value="mit">Massachusetts Institute of Technology</SelectItem>
-                  <SelectItem value="stanford">Stanford University</SelectItem>
-                  <SelectItem value="berkeley">UC Berkeley</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="Texas Tech University">Texas Tech University</SelectItem>
+                  <SelectItem value="Massachusetts Institute of Technology">Massachusetts Institute of Technology</SelectItem>
+                  <SelectItem value="Stanford University">Stanford University</SelectItem>
+                  <SelectItem value="UC Berkeley">UC Berkeley</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -109,7 +173,7 @@ export default function SignUpPage() {
             {/* Password */}
             <div>
               <Label htmlFor="password" className="text-sm font-medium text-gray-700 mb-2 block">
-                Password
+                Password <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="password"
@@ -124,7 +188,7 @@ export default function SignUpPage() {
             {/* Confirm Password */}
             <div>
               <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 mb-2 block">
-                Re-type Password <span className="text-gray-400">(Optional)</span>
+                Re-type Password <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="confirmPassword"
@@ -132,6 +196,7 @@ export default function SignUpPage() {
                 value={formData.confirmPassword}
                 onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                required
               />
             </div>
 

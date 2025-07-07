@@ -25,6 +25,7 @@ public class UniversityController : ControllerBase
     }
 
     [HttpGet]
+    [Route("all-colleges")]
     public async Task<ActionResult<IEnumerable<GetUniversitiesDTO>>> GetUniversities()
     {
         var universities = await _universityRepository.GetUniversityDetails();
