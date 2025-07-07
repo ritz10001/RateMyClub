@@ -21,7 +21,7 @@ public class MapperConfig : Profile {
         .ReverseMap();
         CreateMap<Club, GetClubsDTO>()
         .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Reviews.Count))
-        .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
+        // .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
         .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
         .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Reviews.Count != 0 
             ? Math.Round(src.Reviews.Average(r => r.OverallRating), 1) 

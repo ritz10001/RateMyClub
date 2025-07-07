@@ -107,7 +107,15 @@ public class ClubController : ControllerBase {
         return NoContent();
 
     }
-    private async Task<bool> ClubExists(int id){
+    
+    [HttpGet("clubs/filter-multiple")]
+    public async Task<IActionResult> GetClubsByTags([FromQuery] List<string> tags)
+    {
+        var clubs = await _clubsRepository.GetClubsByFilters(tags);
+        return Ok(clubs);
+    }
+    private async Task<bool> ClubExists(int id)
+    {
 
         return await _clubsRepository.Exists(id);
     }

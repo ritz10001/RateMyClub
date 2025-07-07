@@ -6,7 +6,8 @@ using RateMyCollegeClub.Models.Clubs;
 
 namespace RateMyCollegeClub.Repository;
 
-public class ClubsRepository : GenericRepository<Club>, IClubsRepository {
+public class ClubsRepository : GenericRepository<Club>, IClubsRepository
+{
     private readonly CollegeClubsDbContext _context;
     public ClubsRepository(CollegeClubsDbContext context) : base(context)
     {
@@ -29,5 +30,12 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository {
         .Include(q => q.University)
         .Include(q => q.Reviews).ThenInclude(r => r.User)
         .FirstOrDefaultAsync(q => q.Id == id);
+    }
+
+    public async Task<List<Club>> GetClubsByFilters(List<string> tags)
+    {
+        return await _context.Clubs
+            .Where(c => tags.All(t => c.Tags.Contains(t))) // All tags must match
+            .ToListAsync();
     }
 }

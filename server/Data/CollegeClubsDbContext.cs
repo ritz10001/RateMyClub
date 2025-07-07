@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using RateMyCollegeClub.Data.Configurations;
+using System.Text.Json;
 
 namespace RateMyCollegeClub.Data;
 
@@ -22,12 +23,20 @@ public class CollegeClubsDbContext : IdentityDbContext<User> {
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Club>(entity =>
+        {
+            entity.Property(e => e.Tags).HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null)
+            );
+        });
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewConfiguration());
         modelBuilder.ApplyConfiguration(new ClubConfiguration());
         modelBuilder.ApplyConfiguration(new UniversityConfiguration());
+
     } 
 
 }
