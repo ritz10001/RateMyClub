@@ -18,7 +18,7 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
     public async Task<List<University>> GetUniversityDetails()
     {
         return await _context.Universities
-            .Include(u => u.Clubs)
+            .Include(u => u.Clubs).ThenInclude(c => c.Reviews)
             .ToListAsync();
     }
     public async Task<University> GetIndividualUniversityDetails(int id)
