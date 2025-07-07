@@ -6,9 +6,11 @@ import { Search } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { Users, Star, TrendingUp } from "lucide-react"
+import { useAuth } from "./context/AuthContext"
 
 export default function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("")
+  const { user } = useAuth();
   const features = [
     {
       icon: Users,
@@ -102,20 +104,22 @@ export default function HeroSection() {
         </div>
       </div>
     </section>
-    <section className="container mx-auto px-4 mb-16">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
-          <p className="text-xl mb-6 text-blue-100">Join thousands of students sharing their club experiences.</p>
-          <Button
-            className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold rounded-xl"
-            asChild
-          >
-            <Link href="/signup">Sign Up Now</Link>
-          </Button>
+    {!user && (
+      <section className="container mx-auto px-4 mb-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white text-center">
+            <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
+            <p className="text-xl mb-6 text-blue-100">Join thousands of students sharing their club experiences.</p>
+            <Button
+              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold rounded-xl"
+              asChild
+            >
+              <Link href="/signup">Sign Up Now</Link>
+            </Button>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    )}
     </>
   )
 }

@@ -6,6 +6,8 @@ import { Menu, X } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
 import { useRouter } from 'next/navigation'
+import { useEffect } from "react"
+// import { useAuth } from "../context/AuthContext"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,7 +48,7 @@ export default function Header() {
           {/* Desktop Auth Buttons */}
           {user ? (
            <div className="hidden md:flex items-center space-x-3">
-              <span>HELLO, TESTUSER</span>
+              <span>Hello, {user.firstName}</span>
             <Button onClick={handleLogout} className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
               <Link href="/">Log Out</Link>
             </Button>
@@ -73,6 +75,7 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-blue-100">
             <nav className="flex flex-col space-y-4 mt-4">
+              {user ? <span className="text-gray-800 text-center">Hello, {user.firstName}</span> : null}
               <Link
                 href="/directory"
                 className="text-gray-600 hover:text-blue-600 transition-colors"
@@ -95,16 +98,37 @@ export default function Header() {
                 Help
               </Link>
               <div className="flex flex-col space-y-2 pt-4 border-t border-blue-100">
-                <Button
-                  variant="ghost"
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 justify-start"
-                  asChild
-                >
-                  <Link href="/login">Log In</Link>
-                </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white justify-start" asChild>
-                  <Link href="/signup">Sign Up</Link>
-                </Button>
+                {user ? (
+                  <>
+                    <Button 
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white justify-start"
+                    >
+                      Log Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 justify-start"
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link href="/login">Log In</Link>
+                    </Button>
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700 text-white justify-start"
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link href="/signup">Sign Up</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
