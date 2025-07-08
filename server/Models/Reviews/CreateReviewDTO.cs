@@ -14,6 +14,8 @@ public class CreateReviewDTO  {
     
     [Required, Range(1, 5)]
     public int SkillsDevelopmentRating { get; set; }
+    [Required]
+    public string Recommendation { get; set; } = string.Empty;
 
     [MaxLength(1000)]
     public string Comment { get; set; } = string.Empty;
