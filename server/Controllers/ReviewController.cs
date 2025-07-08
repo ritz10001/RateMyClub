@@ -41,14 +41,14 @@ public class ReviewController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "User, Administrator")]
+    // [Authorize(Roles = "User, Administrator")]
     public async Task<ActionResult<CreateReviewDTO>> CreateReview(CreateReviewDTO createReviewDTO)
     {
         var userId = GetUserId();
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized();
-        }
+        // if (string.IsNullOrEmpty(userId))
+        // {
+        //     return Unauthorized();
+        // }
 
         var review = _mapper.Map<Review>(createReviewDTO);
         review.UserId = userId;
