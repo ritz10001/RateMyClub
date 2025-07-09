@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Search, Plus, Users, Star, MapPin, Calendar, Heart } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
 
 // Mock data for school details
 const mockSchool = {
@@ -79,64 +80,116 @@ const mockClubs = [
 ]
 
 export default function SchoolPage({ params }) {
+  const { schoolId } = useParams();
+  const [school, setSchool] = useState(null)
+  const [clubs, setClubs] = useState([])
+  const [filteredClubs, setFilteredClubs] = useState([])
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("name")
   const [filterBy, setFilterBy] = useState("all")
-  const [filteredClubs, setFilteredClubs] = useState(mockClubs)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const handleSearch = (query) => {
-    setSearchQuery(query)
-    filterClubs(query, filterBy, sortBy)
-  }
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try{
+          const response = await fetch(`http://localhost:5095/api/University/${schoolId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
+        if(response.ok){
+          const data = await response.json();
+          console.log("Fetched clubs:", data);
+          setSchool(data);
+          setClubs(data.clubs || []);
+          setFilteredClubs(data.clubs || []);
+          // setFilteredClubs(data);
+        }
+        else{
+          console.log("Failed to fetch clubs");
+        }
+      }
 
-  const handleFilter = (category) => {
-    setFilterBy(category)
-    filterClubs(searchQuery, category, sortBy)
-  }
+      catch (error) {
+        console.error("Error fetching clubs:", error);
+      }
+      finally {
+        setIsLoading(false);
+      }
+    }
+    fetchClubs();
+  }, []);
 
-  const handleSort = (value) => {
-    setSortBy(value)
-    filterClubs(searchQuery, filterBy, value)
-  }
+  useEffect(() => {
+    updateDisplayedClubs();
+  }, [searchQuery, sortBy, clubs, filterBy]);
 
-  const filterClubs = (search, category, sort) => {
-    let filtered = mockClubs
+  const updateDisplayedClubs = () => {
+    let results = [...clubs];
 
-    // Filter by search
-    if (search) {
-      filtered = filtered.filter(
+    // Filter by search query
+    if (searchQuery) {
+      results = results.filter(
         (club) =>
-          club.name.toLowerCase().includes(search.toLowerCase()) ||
-          club.description.toLowerCase().includes(search.toLowerCase()) ||
-          club.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase())),
-      )
+          club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          club.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          club.tags?.some((tag) =>
+            tag.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+      );
     }
 
     // Filter by category
-    if (category !== "all") {
-      filtered = filtered.filter((club) => club.category.toLowerCase() === category.toLowerCase())
-    }
-
-    // Sort
-    filtered = [...filtered].sort((a, b) => {
-      switch (sort) {
-        case "name":
-          return a.name.localeCompare(b.name)
-        case "rating":
-          return b.rating - a.rating
-        case "members":
-          return b.memberCount - a.memberCount
-        case "reviews":
-          return b.reviewCount - a.reviewCount
-        default:
-          return 0
-      }
+    results = results.filter((club) => {
+      if (filterBy === "all") return true;
+      return club.categoryName.toLowerCase() === filterBy.toLowerCase();
     })
 
-    setFilteredClubs(filtered)
+    // Sort clubs
+    results.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "rating":
+          return b.averageRating - a.averageRating;
+        case "reviews":
+          return b.reviewCount - a.reviewCount;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredClubs(results);
+  };
+
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  const handleSort = (value) => {
+    setSortBy(value);
+  };
+
+  const handleFilter = (category) => {
+    setFilterBy(category);
   }
 
-  const categories = ["all", "engineering", "leadership", "arts", "professional", "service", "cultural"]
+  if (isLoading) {
+    return <>
+      <div className="col-span-full flex justify-center py-12 space-x-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="font-bold text-xl">Now Loading..</p>
+      </div>
+    </>;
+  }
+
+  if (!school) {
+    return <div className="text-center py-8">School not found</div>;
+  }
+
+  const categories = ["all", ...new Set(clubs.map(club => club.categoryName.toLowerCase()))];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
@@ -153,27 +206,27 @@ export default function SchoolPage({ params }) {
 
             {/* School Info */}
             <div className="flex-1 text-center lg:text-left">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{mockSchool.name}</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">{school.name}</h1>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-gray-600 mb-4">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  <span>{mockSchool.location}</span>
+                  <span>{school.location}</span>
                 </div>
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
                   <span>Est. {mockSchool.established}</span>
-                </div>
+                </div> */}
               </div>
-              <p className="text-gray-700 mb-6 max-w-2xl">{mockSchool.description}</p>
+              <p className="text-gray-700 mb-6 max-w-2xl">{school.description}</p>
 
               {/* Stats */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{mockSchool.totalClubs}</div>
+                  <div className="text-2xl font-bold text-blue-600">{school.clubsCount}</div>
                   <div className="text-sm text-gray-600">Active Clubs</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{mockSchool.totalReviews}</div>
+                  <div className="text-2xl font-bold text-blue-600">{clubs.reduce((s, e) => s + e.reviewCount, 0)}</div>
                   <div className="text-sm text-gray-600">Total Reviews</div>
                 </div>
               </div>
@@ -228,7 +281,7 @@ export default function SchoolPage({ params }) {
                 <SelectContent>
                   <SelectItem value="name">Club Name</SelectItem>
                   <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="members">Most Members</SelectItem>
+                  {/* <SelectItem value="members">Most Members</SelectItem> */}
                   <SelectItem value="reviews">Most Reviews</SelectItem>
                 </SelectContent>
               </Select>
@@ -257,11 +310,12 @@ export default function SchoolPage({ params }) {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-600">
-            Showing {filteredClubs.length} of {mockClubs.length} clubs
+            Showing {filteredClubs.length} of {clubs.length} clubs
           </p>
         </div>
 
         {/* Clubs Grid */}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredClubs.map((club) => (
             <Link key={club.id} href={`/school/1/club/${club.id}`} className="group">
@@ -270,12 +324,12 @@ export default function SchoolPage({ params }) {
                 <div className="mb-4">
                   <div className="flex justify-between items-start mb-2">
                     <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-                      {club.category}
+                      {club.categoryName}
                     </Badge>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1 text-yellow-500">
                         <Star className="w-4 h-4 fill-current" />
-                        <span className="text-sm font-medium text-gray-700">{club.rating}</span>
+                        <span className="text-sm font-medium text-gray-700">{club.averageRating}</span>
                       </div>
                       <button
                         className="p-1 rounded-full hover:bg-red-50 transition-colors group/heart"
@@ -298,10 +352,10 @@ export default function SchoolPage({ params }) {
 
                 {/* Club Stats */}
                 <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
+                  {/* <div className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
                     <span>{club.memberCount} members</span>
-                  </div>
+                  </div> */}
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4" />
                     <span>{club.reviewCount} reviews</span>

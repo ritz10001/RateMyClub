@@ -3,7 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
 import Header from "./components/header";
 import Footer from "./components/footer";
-
+import LoginModal from "./components/login-modal";
+import { ClubProvider } from "./context/ClubContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,9 +25,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
-          <Header />
+          <ClubProvider>
+            <Header />
+            <LoginModal />
             {children}
-          <Footer />
+            <Footer />
+          </ClubProvider>
         </AuthProvider>
       </body>
     </html>

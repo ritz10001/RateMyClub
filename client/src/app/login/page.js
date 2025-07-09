@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "../context/AuthContext"
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { user, setUser } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -48,6 +49,8 @@ export default function LoginPage() {
           refreshToken: authResponse.refreshToken
         };
         setUser(userData);
+        console.log(authResponse);
+        setIsLoggedIn(true);
         localStorage.setItem("token", authResponse.token);
         setTimeout(() => {
           console.log("handleSubmit: Navigating to /");
@@ -56,7 +59,6 @@ export default function LoginPage() {
       }
       else if(response.status === 401){
         setError(true);
-        console.error('Login failed: Invalid credentials');
       }
       else{
         alert("Login Failed. Please try again.");
