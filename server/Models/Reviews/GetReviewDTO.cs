@@ -14,4 +14,5 @@ public class GetReviewDTO
     public string Comment { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public string UserDisplayName { get; set; } = string.Empty;
+    public string UserId { get; set; }
 }

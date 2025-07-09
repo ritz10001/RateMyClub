@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RateMyCollegeClub.Models.Reviews;
 
-public abstract class BaseReviewDTO {
+public abstract class BaseReviewDTO
+{
     [Required]
     [Range(1, 5)]
     public int LeadershipRating { get; set; }
@@ -17,5 +18,6 @@ public abstract class BaseReviewDTO {
     public int SkillsDevelopmentRating { get; set; }
     [MaxLength(1000)]
     public string Comment { get; set; } = string.Empty;
+    public string Recommendation { get; set; } = string.Empty;
 }
 
