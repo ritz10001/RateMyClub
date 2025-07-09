@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Plus, Users, Building } from "lucide-react"
 import Link from "next/link"
+import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
 
@@ -193,49 +194,57 @@ export default function DirectoryPage() {
         </div>
 
         {/* School Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {filteredSchools.map((school) => (
-            <Link key={school.id} href={`/school/${school.id}`} className="group">
-              <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                {/* School Logo */}
-                <div className="flex justify-center mb-4">
-                  <img
-                    src={school.logo || "/placeholder.svg"}
-                    alt={`${school.name} logo`}
-                    className="h-auto w-20"
-                  />
-                </div>
+        {isLoading ? (
+          <div className="col-span-full flex justify-center py-12 space-x-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="font-bold text-xl">Now Loading..</p>
+          </div>
+          ) : 
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {filteredSchools.map((school) => (
+              <Link key={school.id} href={`/school/${school.id}`} className="group">
+                <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  {/* School Logo */}
+                  <div className="flex justify-center mb-4">
+                    <img
+                      src={school.logo || "/placeholder.svg"}
+                      alt={`${school.name} logo`}
+                      className="h-auto w-20"
+                    />
+                  </div>
 
-                {/* School Info */}
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                    {school.name}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{school.location}</p>
+                  {/* School Info */}
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      {school.name}
+                    </h3>
+                    <p className="text-gray-600 mb-4">{school.location}</p>
 
-                  {/* Stats */}
-                  <div className="flex justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Users className="w-4 h-4" />
-                      <span>{school.reviewCount} reviews</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Building className="w-4 h-4" />
-                      <span>{school.clubsCount} clubs</span>
+                    {/* Stats */}
+                    <div className="flex justify-center gap-6 text-sm">
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <Users className="w-4 h-4" />
+                        <span>{school.reviewCount} reviews</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <Building className="w-4 h-4" />
+                        <span>{school.clubsCount} clubs</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Club Count Badge */}
-                <div className="mt-4 text-center">
-                  <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    {school.clubsCount} Active Clubs
-                  </span>
+                  {/* Club Count Badge */}
+                  <div className="mt-4 text-center">
+                    <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                      {school.clubsCount} Active Clubs
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+          }
+        
 
         {/* Load More Button */}
         <div className="text-center">

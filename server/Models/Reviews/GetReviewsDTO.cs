@@ -10,6 +10,6 @@ public class GetReviewsDTO
     public decimal OverallRating { get; set; }
     public string Recommend { get; set; }
     public string Comment { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string UserDisplayName { get; set; } = string.Empty;
 }
