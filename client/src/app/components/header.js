@@ -11,13 +11,23 @@ import { useEffect } from "react"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, setUser } = useAuth();
+  const { user, setUser, isInitialized } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("token");
     router.push("/");
+  }
+
+  if (!isInitialized) {
+    return (
+      <header className="border-b border-blue-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="px-4 py-4">
+          {/* Empty header while loading */}
+        </div>
+      </header>
+    );
   }
 
   return (

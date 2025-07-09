@@ -4,11 +4,31 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Star, Heart, Users, Calendar, MapPin, Plus } from "lucide-react"
+import { Star, Heart, Users, Calendar, MapPin, Plus, Pencil, Trash2 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { use } from "react"; 
+import LoginModal from "@/app/components/login-modal"
+import { useAuth } from "@/app/context/AuthContext"
+import { useRouter } from "next/navigation"
+import { useClub } from "@/app/context/ClubContext"
 
 // Mock data for club details
+
+const monthNumbers = {
+  1: "January",
+  2: "February",
+  3: "March",
+  4: "April",
+  5: "May",
+  6: "June",
+  7: "July",
+  8: "August",
+  9: "September",
+  10: "October",
+  11: "November",
+  12: "December",
+}
 
 const mockClub = {
   id: 1,
@@ -84,13 +104,53 @@ const mockReviews = [
 ]
 
 export default function ClubPage({ params }) {
+  const { user } = useAuth();
+  const { setClubData } = useClub();
+  const router = useRouter();
+  const [isUserReview, setIsUserReview] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [club, setClub] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [advice, setAdvice] = useState("");
   const [newReview, setNewReview] = useState({
     rating: 5,
     reviewText: "",
   })
   const [userVote, setUserVote] = useState(null);
+  
+  const { schoolId, clubId } = use(params);
+
+  useEffect(() => {
+    const fetchClubDetails = async () => {
+      try{
+        const response = await fetch(`http://localhost:5095/api/club/${clubId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
+        if(response.ok){
+          const data = await response.json();
+          console.log("Club details fetched successfully:", data);
+          setClub(data);
+          setReviews(data.reviews || []);
+        }
+        else{
+          console.error("Failed to fetch club details:");
+        }
+      }
+      catch(error) {
+        console.error("Error fetching club information:", error);
+      }
+      finally {
+        setIsLoading(false);
+      }
+    }
+    fetchClubDetails();
+  }, [clubId])
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked)
     // TODO: Implement bookmark functionality
@@ -139,6 +199,15 @@ export default function ClubPage({ params }) {
     )
   }
 
+  if (isLoading) {
+    return <>
+      <div className="col-span-full flex justify-center py-12 space-x-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="font-bold text-xl">Now Loading..</p>
+      </div>
+    </>;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -148,12 +217,12 @@ export default function ClubPage({ params }) {
             <div className="flex-1">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h1 className="text-4xl font-bold text-gray-900 mb-2">{mockClub.name}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2 md:text-4xl">{club.name}</h1>
                   <Link
-                    href={`/school/1`}
+                    href={`/school/${schoolId}`}
                     className="text-blue-600 hover:text-blue-700 font-medium text-lg underline underline-offset-4"
                   >
-                    {mockClub.school}
+                    {club.universityName}
                   </Link>
                 </div>
                 <button onClick={handleBookmark} className="p-2 rounded-full hover:bg-red-50 transition-colors group">
@@ -166,8 +235,8 @@ export default function ClubPage({ params }) {
               </div>
 
               <div className="flex flex-wrap gap-2 mb-4">
-                <Badge className="bg-blue-100 text-blue-800">{mockClub.category}</Badge>
-                {mockClub.tags.map((tag, index) => (
+                <Badge className="bg-blue-100 text-blue-800">{club.categoryName}</Badge>
+                {club.tags.map((tag, index) => (
                   <Badge key={index} variant="outline" className="border-blue-200 text-blue-600">
                     {tag}
                   </Badge>
@@ -176,20 +245,10 @@ export default function ClubPage({ params }) {
 
               <p className="text-gray-700 mb-6 text-lg leading-relaxed">{mockClub.description}</p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  <span>{mockClub.memberCount} members</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{mockClub.meetingTime}</span>
-                </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  <span>{mockClub.location}</span>
+                  <span>{club.clubLocation}</span>
                 </div>
-              </div>
             </div>
           </div>
         </div>
@@ -202,120 +261,103 @@ export default function ClubPage({ params }) {
 
             {/* Overall Rating Display */}
             <div className="text-center mb-6">
-              <div className="text-5xl font-bold text-gray-900 mb-2">{mockClub.overallRating}</div>
+              <div className="text-5xl font-bold text-gray-900 mb-2">{club.averageRating}</div>
               <div className="flex justify-center gap-1 mb-2">
-                {renderStars(Math.round(mockClub.overallRating), "w-6 h-6")}
+                {renderStars(Math.round(club.averageRating), "w-6 h-6")}
               </div>
-              <p className="text-gray-600">Based on {mockClub.totalReviews} reviews</p>
+              <p className="text-gray-600">Based on {reviews.length} reviews</p>
             </div>
 
             {/* Rating Distribution */}
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-4">Rating Breakdown</h3>
               {[5, 4, 3, 2, 1].map((star) =>
-                renderRatingBar(star, mockClub.ratingDistribution[star], mockClub.totalReviews),
+                renderRatingBar(star, club.ratingDistribution[star], reviews.length),
               )}
             </div>
 
             {/* Add Review Button */}
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold">
-              <Link href={`/school/1/club/1/add-review`} className="flex items-center">
-                <Plus className="w-4 h-4 mr-2" />
+            <Link href={`/school/${schoolId}/club/${clubId}/add-review`} className="w-full">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center">
+                <Plus className="w-4 h-4" />
                 Add A Review
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
 
           {/* Category Breakdown */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Rating Breakdown</h2>
             <div className="space-y-1">
-              {renderCategoryRating("leadership", mockClub.categoryRatings.leadership)}
-              {renderCategoryRating("inclusivity", mockClub.categoryRatings.inclusivity)}
-              {renderCategoryRating("networking", mockClub.categoryRatings.networking)}
-              {renderCategoryRating("skillsDevelopment", mockClub.categoryRatings.skillsDevelopment)}
+              {renderCategoryRating("leadership", (reviews.reduce((acc, review) => acc + review.leadershipRating, 0) / reviews.length).toFixed(1))}
+              {renderCategoryRating("inclusivity", (reviews.reduce((acc, review) => acc + review.inclusivityRating, 0) / reviews.length).toFixed(1))}
+              {renderCategoryRating("networking", (reviews.reduce((acc, review) => acc + review.networkingRating, 0) / reviews.length).toFixed(1))}
+              {renderCategoryRating("skillsDevelopment", (reviews.reduce((acc, review) => acc + review.skillsDevelopmentRating, 0) / reviews.length).toFixed(1))}
             </div>
           </div>
         </div>
 
         {/* Reviews Section */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({mockClub.totalReviews})</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({reviews.length})</h2>
 
-          {/* Add Review Form */}
-          {showReviewForm && (
-            <div className="bg-blue-50 rounded-xl p-6 mb-6 border border-blue-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Write a Review</h3>
-              <form onSubmit={handleSubmitReview} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
-                  <Select
-                    value={newReview.rating.toString()}
-                    onValueChange={(value) => setNewReview({ ...newReview, rating: Number.parseInt(value) })}
-                  >
-                    <SelectTrigger className="w-full border-2 border-blue-200 rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[5, 4, 3, 2, 1].map((rating) => (
-                        <SelectItem key={rating} value={rating.toString()}>
-                          <div className="flex items-center gap-2">
-                            <span>{rating}</span>
-                            <div className="flex">{renderStars(rating)}</div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
-                  <Textarea
-                    value={newReview.reviewText}
-                    onChange={(e) => setNewReview({ ...newReview, reviewText: e.target.value })}
-                    placeholder="Share your experience with this club..."
-                    className="min-h-32 border-2 border-blue-200 rounded-xl focus:border-blue-500"
-                    required
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
-                    Submit Review
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowReviewForm(false)}
-                    className="border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </div>
-          )}
 
           {/* Reviews List */}
           <div className="space-y-6">
-            {mockReviews.map((review) => (
+            {reviews.map((review) => (
               <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                <div className="flex justify-between items-start mb-3">
+                {review.userId === user.userId && <p className="font-bold">(MY REVIEW)</p>}
+                <div className="flex justify-between mb-3">
                   <div>
-                    <h4 className="font-semibold text-gray-900">{review.reviewerName}</h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex">{renderStars(review.rating)}</div>
-                      <span className="text-sm text-gray-500">{review.date}</span>
+                    <div className="flex items-center justify-center gap-2 mt-1 w-full">
+                      <div className="flex items-center gap-2">
+                        <div className="flex">{renderStars(((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1))}</div>
+                        <div className="flex font-bold">{((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1)}</div>
+                      </div>
+                      {review.userId === user.userId && <div className="flex items-center gap-2">
+                        <button 
+                          className="p-2 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
+                          title="Edit Review"
+                          onClick = {() => {
+                            setClubData(review);
+                            router.push(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
+                          }}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button 
+                          className="p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
+                          title="Delete Review"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>           
+                      </div>}
                     </div>
+                    <div className="text-sm mt-1 text-gray-500">{monthNumbers[parseInt(review.createdAt.slice(5,7))] + " " + parseInt(review.createdAt.slice(8,10)) + ", " + review.createdAt.slice(0,4)}</div>
                   </div>
                 </div>
-                <p className="text-gray-700 leading-relaxed mb-3">{review.reviewText}</p>
+                <p className="text-gray-700 leading-relaxed mb-3">{review.comment}</p>
                 <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <button className="hover:text-green-500 transition-colors">
+                  <button className="hover:text-green-500 transition-colors" onClick={() => {
+                      if(!user){
+                        setIsModalOpen(true);
+                        return;
+                      }
+                    }}>
                     👍{review.thumbsup}
                   </button>
-                  <button className="hover:text-red-500 transition-colors">
+                  <button className="hover:text-red-500 transition-colors" onClick={() => {
+                      if(!user){
+                        setIsModalOpen(true)
+                        return;
+                      }
+                    }}>
                     👎{review.thumbsdown}
                   </button>
+                  <LoginModal 
+                    isOpen={isModalOpen} 
+                    onClose={() => setIsModalOpen(false)} 
+                  />
                 </div>
               </div>
             ))}

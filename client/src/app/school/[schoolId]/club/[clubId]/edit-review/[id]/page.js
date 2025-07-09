@@ -7,12 +7,16 @@ import { Label } from "@/components/ui/label"
 import { Star, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import toast, { Toaster } from 'react-hot-toast';
 import { use } from "react"; 
 import { useRouter } from 'next/navigation'
-<Toaster position="top-center" />
+import { useAuth } from "@/app/context/AuthContext"
+import { useClub } from "@/app/context/ClubContext"
+import { useParams } from "next/navigation"
 
 export default function WriteReviewPage({ params }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const { clubData } = useClub();
   const router = useRouter();
   const [reviewData, setReviewData] = useState({
     leadership: 0,
@@ -23,27 +27,43 @@ export default function WriteReviewPage({ params }) {
     recommendation: "",
   })
   const [error, setError] = useState(false);
-  const { schoolId, clubId } = use(params);
-  console.log("THIS IS CLUB ID", clubId);
+  const { schoolId, clubId, id } = useParams();
+  console.log("THIS IS REVIEW ID", id);
+  // console.log("THIS IS THE REVIEW ID", reviewId);
   useEffect(() => {
-    console.log("HERE IS LATEST REVIEW DATA", reviewData)
-  }, [reviewData]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error('Please make sure to fill all the required details!');
+    const fetchReviewData = async () => {
+      console.log("ENTERING");
+      try {
+        console.log("tried");
+        const response = await fetch(`http://localhost:5095/api/Review/${id}`);
+        const data = await response.json();
+        console.log("fetching complete");
+        console.log(data);
+        setReviewData(data);
+      } 
+      catch (error) {
+        console.error('Error fetching review:', error);
+      } 
+      finally {
+        setIsLoading(false);
+      }
     }
-  }, [error]);
+
+    fetchReviewData();
+  }, []);
 
   const isFormValid = () => {
-    const { comment, leadership, inclusivity, networking, skillsDevelopment, recommendation } = reviewData;
+    const { comment, leadershipRating, inclusivityRating, networkingRating, skillsDevelopmentRating, recommendation } = reviewData;
+    console.log("VALIDATION");
+    console.log(comment);
+    console.log(recommendation);
 
     return comment.trim().length > 20 && 
-            recommendation !== "" &&
-            leadership > 0 && 
-            inclusivity > 0 && 
-            networking > 0 && 
-            skillsDevelopment > 0;
+            recommendation &&
+            leadershipRating > 0 && 
+            inclusivityRating > 0 && 
+            networkingRating > 0 && 
+            skillsDevelopmentRating > 0;
     };
 
   const handleRatingChange = (category, rating) => {
@@ -65,10 +85,11 @@ export default function WriteReviewPage({ params }) {
     try{
       console.log("TRYING NOW");
       console.log(reviewData);
-      const response = await fetch("http://localhost:5095/api/Review", {
-        method: "POST",
+      const response = await fetch(`http://localhost:5095/api/Review/${id}`, {
+        method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.token}`
         },
         body: JSON.stringify({
           leadershipRating: reviewData.leadership,
@@ -77,7 +98,6 @@ export default function WriteReviewPage({ params }) {
           skillsDevelopmentRating: reviewData.skillsDevelopment,
           comment: reviewData.comment,
           recommendation: reviewData.recommendation,
-          clubId: clubId
         })
       })
       if(response.ok){
@@ -94,7 +114,7 @@ export default function WriteReviewPage({ params }) {
         setReviewData(userData);
         setTimeout(() => {
           console.log("handleSubmit: Navigating to /");
-          router.push(`../${clubId}`);
+          router.push(`http://localhost:3000/school/${schoolId}/club/${clubId}`);
         }, 100);
       }
       else{
@@ -131,12 +151,21 @@ export default function WriteReviewPage({ params }) {
     )
   }
 
+  if (isLoading) {
+    return <>
+      <div className="col-span-full flex justify-center py-12 space-x-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="font-bold text-xl">Now Loading..</p>
+      </div>
+    </>;
+  }
+
   const ratingCategories = [
-    { key: "leadership", label: "Leadership", description: "How well does the club develop leadership skills?" },
-    { key: "inclusivity", label: "Inclusivity", description: "How welcoming and inclusive is the club environment?" },
-    { key: "networking", label: "Networking", description: "How good are the networking opportunities?" },
+    { key: "leadershipRating", label: "Leadership", description: "How well does the club develop leadership skills?" },
+    { key: "inclusivityRating", label: "Inclusivity", description: "How welcoming and inclusive is the club environment?" },
+    { key: "networkingRating", label: "Networking", description: "How good are the networking opportunities?" },
     {
-      key: "skillsDevelopment",
+      key: "skillsDevelopmentRating",
       label: "Skills Development",
       description: "How much did you learn and develop new skills?",
     },
@@ -154,7 +183,7 @@ export default function WriteReviewPage({ params }) {
             <ArrowLeft className="w-4 h-4" />
             Back to Club
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900">Write a Review</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Edit Review</h1>
           <p className="text-gray-600 mt-2">Share your experience with Tech Robotics Association</p>
         </div>
 
