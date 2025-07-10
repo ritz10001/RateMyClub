@@ -116,6 +116,11 @@ public class AuthService : IAuthService
 
         var roles = await _userManager.GetRolesAsync(_user);
         var roleClaims = roles.Select(x => new Claim(ClaimTypes.Role, x)).ToList();
+        Console.WriteLine("ROLES FOR USER");
+        foreach (var r in roleClaims)
+        {
+            Console.WriteLine(r);
+        }
         var userClaims = await _userManager.GetClaimsAsync(_user);
 
         var claims = new List<Claim> 

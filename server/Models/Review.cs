@@ -18,7 +18,7 @@ public class Review {
     public decimal OverallRating => 
         (LeadershipRating + InclusivityRating + NetworkingRating + SkillsDevelopmentRating) / 4.0m;
     public string Comment { get; set; } = string.Empty;
-    public string Recommend { get; set; } = string.Empty;
+    public string Recommendation { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int ClubId { get; set; }
     public Club Club { get; set; }
