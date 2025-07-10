@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Data;
@@ -21,6 +22,8 @@ public class ReviewController : ControllerBase
 {
     private readonly IMapper _mapper;
     private readonly IReviewsRepository _reviewsRepository;
+    private readonly UserManager<User> _userManager;
+
 
     public ReviewController(IMapper mapper, IReviewsRepository reviewsRepository)
     {
@@ -31,6 +34,7 @@ public class ReviewController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Review>> GetReview(int id)
     {
+        Console.WriteLine("ENTERED GET ENDPOINT");
         var review = await _reviewsRepository.GetAsync(id);
 
         if (review is null)
@@ -90,6 +94,9 @@ public class ReviewController : ControllerBase
     [Authorize(Roles = "User, Administrator")]
     public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO updateReviewDTO)
     {
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("ENTERED THIS METHOD");
+        Console.WriteLine("--------------------------------------");
         var review = await _reviewsRepository.GetAsync(id);
 
         if (review is null)
@@ -99,10 +106,22 @@ public class ReviewController : ControllerBase
 
         var userId = GetUserId();
 
-        if (string.IsNullOrEmpty(userId))
+        foreach (var claim in User.Claims)
         {
-            return Unauthorized();
+            Console.WriteLine($"Claim type: {claim.Type}, value: {claim.Value}");
         }
+
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value);
+        Console.WriteLine("Roles found:");
+        foreach (var r in roles)
+        {
+            Console.WriteLine(r);
+        }
+
+        if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
 
         var isAdmin = GetUserRoles().Contains("Administrator");
 
