@@ -4,6 +4,7 @@ using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Categories;
 using RateMyCollegeClub.Models.Clubs;
 using RateMyCollegeClub.Models.Reviews;
+using RateMyCollegeClub.Models.SavedClubs;
 using RateMyCollegeClub.Models.Universities;
 using RateMyCollegeClub.Models.Users;
 
@@ -23,8 +24,8 @@ public class MapperConfig : Profile {
         .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Reviews.Count))
         // .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
         .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-        .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Reviews.Count != 0 
-            ? Math.Round(src.Reviews.Average(r => r.OverallRating), 1) 
+        .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Reviews.Count != 0
+            ? Math.Round(src.Reviews.Average(r => r.OverallRating), 1)
             : 0))
         .ReverseMap();
         CreateMap<Club, UpdateClubDTO>().ReverseMap();
@@ -45,5 +46,23 @@ public class MapperConfig : Profile {
         .ForMember(dest => dest.ClubsCount, opt => opt.MapFrom(src => src.Clubs.Count))
         .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Clubs.Sum(c => c.Reviews.Count)))
         .ReverseMap();
+        CreateMap<SavedClub, SavedClubsDTO>()
+        .ForMember(dest => dest.ClubName, opt => opt.MapFrom(src => src.Club.Name))
+        .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Club.Category.Name))
+        .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Club.Description))
+        .ForMember(dest => dest.UniversityId, opt => opt.MapFrom(src => src.Club.UniversityId))
+        .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.Club.University.Name))
+        .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Club.Tags.ToList()))
+        .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src =>
+        src.Club.Reviews.Any()
+            ? (double)src.Club.Reviews
+                .Average(r => (r.LeadershipRating +
+                             r.InclusivityRating +
+                             r.NetworkingRating +
+                             r.SkillsDevelopmentRating) / 4.0m)
+            : 0))
+        .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Club.Reviews.Count))
+        .ReverseMap();
+
     }
 }
