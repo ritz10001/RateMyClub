@@ -8,86 +8,24 @@ import { Search, Plus, Users, Star, MapPin, Calendar, Heart } from "lucide-react
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-
+import { use } from "react"
+import LoginModal from "@/app/components/login-modal"
+import { useAuth } from "@/app/context/AuthContext"
+import { useRouter } from "next/navigation"
 // Mock data for school details
-const mockSchool = {
-  id: 1,
-  name: "Texas Tech University",
-  logo: "/placeholder.svg?height=120&width=120",
-  location: "Lubbock, TX",
-  totalReviews: 245,
-  totalClubs: 89,
-  description:
-    "A major public research university in Texas with a vibrant campus life and diverse student organizations.",
-}
-
-// Mock data for clubs
-const mockClubs = [
-  {
-    id: 1,
-    name: "Tech Robotics Association",
-    category: "Engineering",
-    rating: 4.8,
-    reviewCount: 24,
-    description: "Building the future through innovative robotics projects and competitions.",
-    tags: ["STEM", "Competition", "Innovation"],
-  },
-  {
-    id: 2,
-    name: "Student Government Association",
-    category: "Leadership",
-    rating: 4.2,
-    reviewCount: 18,
-    description: "Representing student interests and organizing campus-wide events.",
-    tags: ["Leadership", "Politics", "Service"],
-  },
-  {
-    id: 3,
-    name: "Photography Club",
-    category: "Arts",
-    rating: 4.6,
-    reviewCount: 31,
-    description: "Capturing moments and developing photography skills through workshops and photo walks.",
-    tags: ["Creative", "Visual Arts", "Community"],
-  },
-  {
-    id: 4,
-    name: "Business Society",
-    category: "Professional",
-    rating: 4.4,
-    reviewCount: 27,
-    description: "Networking and professional development for future business leaders.",
-    tags: ["Networking", "Career", "Business"],
-  },
-  {
-    id: 5,
-    name: "Environmental Action Group",
-    category: "Service",
-    rating: 4.7,
-    reviewCount: 19,
-    description: "Promoting sustainability and environmental awareness on campus.",
-    tags: ["Environment", "Sustainability", "Activism"],
-  },
-  {
-    id: 6,
-    name: "International Students Association",
-    category: "Cultural",
-    rating: 4.5,
-    reviewCount: 33,
-    description: "Supporting international students and celebrating cultural diversity.",
-    tags: ["Cultural", "International", "Support"],
-  },
-]
 
 export default function SchoolPage({ params }) {
-  const { schoolId } = useParams();
+  const { schoolId } = use(params);
   const [school, setSchool] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [clubs, setClubs] = useState([])
   const [filteredClubs, setFilteredClubs] = useState([])
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("name")
   const [filterBy, setFilterBy] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
+  const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -199,8 +137,8 @@ export default function SchoolPage({ params }) {
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
             {/* School Logo */}
             <img
-              src={mockSchool.logo || "/placeholder.svg"}
-              alt={`${mockSchool.name} logo`}
+              src={"/placeholder.svg"}
+              alt={`${school.name} logo`}
               className="w-32 h-32 rounded-full border-4 border-blue-100"
             />
 
@@ -248,12 +186,23 @@ export default function SchoolPage({ params }) {
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 mb-8 text-white text-center">
           <h2 className="text-2xl font-bold mb-2">Can't find your club?</h2>
           <p className="text-blue-100 mb-4">Add yours today and help other students discover your community!</p>
-          <Button className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-xl font-semibold">
-            <Link href="/request/club" className="flex items-center justify-center">
+          <Button className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-xl font-semibold"
+          onClick={(e) => {
+              e.preventDefault();
+              if (user) {
+                router.push(`/school/${schoolId}/club/request/club-request`);
+              } else {
+                setIsModalOpen(true);
+              }
+            }}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Your Club
-            </Link>   
           </Button>
+          <LoginModal 
+            isOpen={isModalOpen} 
+            onClose={() => setIsModalOpen(false)} 
+          />
         </div>
 
         {/* Search and Filters */}

@@ -5,6 +5,7 @@ import Header from "./components/header";
 import Footer from "./components/footer";
 import LoginModal from "./components/login-modal";
 import { ClubProvider } from "./context/ClubContext";
+import { Toaster } from 'sonner';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
             <LoginModal />
             {children}
             <Footer />
+            <Toaster position="top-center" richColors />
           </ClubProvider>
         </AuthProvider>
       </body>

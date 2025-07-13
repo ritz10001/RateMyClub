@@ -44,6 +44,7 @@ export default function LoginPage() {
         const userData = {
           firstName: authResponse.firstName,
           lastName: authResponse.lastName,
+          email: authResponse.email,
           userId: authResponse.userId,
           token: authResponse.token,
           refreshToken: authResponse.refreshToken
