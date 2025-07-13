@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label"
 import { Star, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { use } from "react"; 
 import { useRouter } from 'next/navigation'
-<Toaster position="top-center" />
+import { useAuth } from "@/app/context/AuthContext"
 
 export default function WriteReviewPage({ params }) {
   const router = useRouter();
+  const { user } = useAuth();
   const [reviewData, setReviewData] = useState({
     leadership: 0,
     inclusivity: 0,
@@ -65,10 +66,17 @@ export default function WriteReviewPage({ params }) {
     try{
       console.log("TRYING NOW");
       console.log(reviewData);
+      // const headers = {
+      //   "Content-Type": "application/json"
+      // };
+      // if(user?.token){
+      //   headers["Authorization"] = `Bearer ${user.token}`
+      // }
       const response = await fetch("http://localhost:5095/api/Review", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user?.token}`
         },
         body: JSON.stringify({
           leadershipRating: reviewData.leadership,
@@ -92,19 +100,21 @@ export default function WriteReviewPage({ params }) {
         };
         // console.log("Review details fetched successfully:", data);
         setReviewData(userData);
-        setTimeout(() => {
-          console.log("handleSubmit: Navigating to /");
-          router.push(`../${clubId}`);
-        }, 100);
+        toast.success("Review submitted successfully!", {
+            duration: 5000, // 5 seconds
+        });
+        router.push(`/school/${schoolId}/club/${clubId}`);
+        
       }
       else{
         console.log("failed");
         setError(true);
+        toast.error(errorData.message || "Submission failed. Please try again.");
       }
     }
     catch(error){
       console.error('Login error:', error);
-      alert('Network error. Please try again.');
+      toast.error(errorData.message || "Submission failed. Please try again.");
     }
     
     // console.log("Review submitted:", reviewData)
