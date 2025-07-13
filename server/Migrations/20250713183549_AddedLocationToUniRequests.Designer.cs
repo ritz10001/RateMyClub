@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RateMyCollegeClub.Data;
 
@@ -11,9 +12,11 @@ using RateMyCollegeClub.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(CollegeClubsDbContext))]
-    partial class CollegeClubsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250713183549_AddedLocationToUniRequests")]
+    partial class AddedLocationToUniRequests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,13 +69,13 @@ namespace server.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "ec35172c-48a6-453d-bfa8-3b48597a9476",
+                            Id = "f148d12e-62b3-4cc1-8c7a-a44310e1f2a0",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "6f02a92d-38ae-4495-ba54-2bdf7a5efd33",
+                            Id = "af75d9d4-5772-45b5-8e99-177e27d0a50d",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -372,7 +375,7 @@ namespace server.Migrations
                             Id = 1,
                             CategoryId = 1,
                             ClubLocation = "Engineering Center Basement, Room 100",
-                            CreatedAt = new DateTime(2025, 7, 13, 19, 21, 52, 289, DateTimeKind.Utc).AddTicks(4707),
+                            CreatedAt = new DateTime(2025, 7, 13, 18, 35, 48, 647, DateTimeKind.Utc).AddTicks(4538),
                             Description = "Robotics Club",
                             IsActive = true,
                             LogoUrl = "",
@@ -384,7 +387,7 @@ namespace server.Migrations
                             Id = 2,
                             CategoryId = 1,
                             ClubLocation = "Livermore Center, Room 101",
-                            CreatedAt = new DateTime(2025, 7, 13, 19, 21, 52, 289, DateTimeKind.Utc).AddTicks(4717),
+                            CreatedAt = new DateTime(2025, 7, 13, 18, 35, 48, 647, DateTimeKind.Utc).AddTicks(4548),
                             Description = "Software Engineering Club",
                             IsActive = true,
                             LogoUrl = "",
@@ -396,7 +399,7 @@ namespace server.Migrations
                             Id = 3,
                             CategoryId = 2,
                             ClubLocation = "The SUB, Second floor, Room 237.",
-                            CreatedAt = new DateTime(2025, 7, 13, 19, 21, 52, 289, DateTimeKind.Utc).AddTicks(4719),
+                            CreatedAt = new DateTime(2025, 7, 13, 18, 35, 48, 647, DateTimeKind.Utc).AddTicks(4551),
                             Description = "A club for playing chess",
                             IsActive = true,
                             LogoUrl = "",
@@ -514,7 +517,7 @@ namespace server.Migrations
                             Id = 1,
                             ClubId = 1,
                             Comment = "It's a good club overall. Friendly people in general.",
-                            CreatedAt = new DateTime(2025, 7, 13, 19, 21, 52, 289, DateTimeKind.Utc).AddTicks(4599),
+                            CreatedAt = new DateTime(2025, 7, 13, 18, 35, 48, 647, DateTimeKind.Utc).AddTicks(4417),
                             InclusivityRating = 4,
                             LeadershipRating = 2,
                             NetworkingRating = 3,
@@ -526,7 +529,7 @@ namespace server.Migrations
                             Id = 2,
                             ClubId = 1,
                             Comment = "Plenty of volunteering opportunities. One of the highlights about the club is the annual VEX U competitions.",
-                            CreatedAt = new DateTime(2025, 7, 13, 19, 21, 52, 289, DateTimeKind.Utc).AddTicks(4603),
+                            CreatedAt = new DateTime(2025, 7, 13, 18, 35, 48, 647, DateTimeKind.Utc).AddTicks(4421),
                             InclusivityRating = 5,
                             LeadershipRating = 4,
                             NetworkingRating = 2,
@@ -538,7 +541,7 @@ namespace server.Migrations
                             Id = 3,
                             ClubId = 2,
                             Comment = "The GDSC club has its ups and downs. Networking is one of its prime benefits.",
-                            CreatedAt = new DateTime(2025, 7, 13, 19, 21, 52, 289, DateTimeKind.Utc).AddTicks(4604),
+                            CreatedAt = new DateTime(2025, 7, 13, 18, 35, 48, 647, DateTimeKind.Utc).AddTicks(4423),
                             InclusivityRating = 2,
                             LeadershipRating = 4,
                             NetworkingRating = 5,
@@ -627,7 +630,7 @@ namespace server.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 7, 13, 19, 21, 52, 289, DateTimeKind.Utc).AddTicks(4934),
+                            CreatedAt = new DateTime(2025, 7, 13, 18, 35, 48, 647, DateTimeKind.Utc).AddTicks(4933),
                             Description = "",
                             Location = "Lubbock, TX",
                             LogoUrl = "",
@@ -636,7 +639,7 @@ namespace server.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 7, 13, 19, 21, 52, 289, DateTimeKind.Utc).AddTicks(4940),
+                            CreatedAt = new DateTime(2025, 7, 13, 18, 35, 48, 647, DateTimeKind.Utc).AddTicks(4940),
                             Description = "",
                             Location = "Dallas, TX",
                             LogoUrl = "",
@@ -675,9 +678,6 @@ namespace server.Migrations
                     b.Property<string>("UniversityName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UniversityType")
-                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");

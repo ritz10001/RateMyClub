@@ -59,6 +59,7 @@ public class AuthService : IAuthService
         _user = _mapper.Map<User>(userDTO);
         
         _user.UserName = userDTO.Email;
+        _user.Email = userDTO.Email;
 
         var result = await _userManager.CreateAsync(_user, userDTO.Password);
 
@@ -75,6 +76,7 @@ public class AuthService : IAuthService
                 RefreshToken = refreshToken,
                 FirstName = _user.FirstName,
                 LastName = _user.LastName,
+                Email = _user.Email
             };
             return (authResponse, null);
         }
