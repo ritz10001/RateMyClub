@@ -20,6 +20,7 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         .Include(q => q.Category)
         .Include(q => q.University)
         .Include(q => q.Reviews)
+        .Include(q => q.Tags)
         .ToListAsync();
     }
 
@@ -29,13 +30,14 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         .Include(q => q.Category)
         .Include(q => q.University)
         .Include(q => q.Reviews).ThenInclude(r => r.User)
+        .Include(q => q.Tags)
         .FirstOrDefaultAsync(q => q.Id == id);
     }
 
-    public async Task<List<Club>> GetClubsByFilters(List<string> tags)
-    {
-        return await _context.Clubs
-            .Where(c => tags.All(t => c.Tags.Contains(t))) // All tags must match
-            .ToListAsync();
-    }
+    // public async Task<List<Club>> GetClubsByFilters(List<string> tags)
+    // {
+    //     return await _context.Clubs
+    //         .Where(c => tags.All(t => c.Tags.Contains(t))) // All tags must match
+    //         .ToListAsync();
+    // }
 }

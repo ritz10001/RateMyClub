@@ -50,6 +50,7 @@ public class AuthService : IAuthService
             RefreshToken = await CreateRefreshToken(),
             FirstName = _user.FirstName,
             LastName = _user.LastName,
+            Email = _user.Email
         };
     }
 

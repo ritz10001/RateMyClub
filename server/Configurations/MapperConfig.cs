@@ -3,6 +3,7 @@ using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Categories;
 using RateMyCollegeClub.Models.Clubs;
+using RateMyCollegeClub.Models.Requests;
 using RateMyCollegeClub.Models.Reviews;
 using RateMyCollegeClub.Models.SavedClubs;
 using RateMyCollegeClub.Models.Universities;
@@ -22,6 +23,7 @@ public class MapperConfig : Profile {
         .ReverseMap();
         CreateMap<Club, GetClubsDTO>()
         .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Reviews.Count))
+        .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.Name).ToList()))
         // .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
         .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
         .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Reviews.Count != 0
@@ -63,6 +65,14 @@ public class MapperConfig : Profile {
             : 0))
         .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Club.Reviews.Count))
         .ReverseMap();
+        CreateMap<Tag, GetTagDTO>().ReverseMap();
+        CreateMap<ClubRequest, GetClubRequestsDTO>()
+        .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
+        .ForMember(dest => dest.RequestedBy, opt => opt.MapFrom(src => src.User!.UserName)) // or .Email, depends on your User class
+        .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
+        .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.Name))
+        .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.RequestStatus.ToString()));
+        CreateMap<ClubRequest, ClubRequestDTO>().ReverseMap();
 
     }
 }

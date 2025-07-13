@@ -24,5 +24,7 @@ public class ClubRequest
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ProcessedAt { get; set; }
     public string? RejectionReason { get; set; } 
+    public string? TagIdsJson { get; set; }
+    
 
 }

@@ -12,4 +12,12 @@ public class ClubRequestsRepository : GenericRepository<ClubRequest>, IClubReque
     {
         _context = context;
     }
+    public async Task<List<ClubRequest>> GetClubRequestsInformation()
+    {
+        return await _context.ClubRequests
+        .Include(r => r.User)
+        .Include(r => r.University)
+        .Include(r => r.Category)
+        .ToListAsync();
+    }
 }
