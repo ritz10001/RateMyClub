@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace server.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class FreshNewCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -40,6 +40,19 @@ namespace server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -240,13 +253,17 @@ namespace server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    MeetingLocation = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     UniversityId = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     RequestStatus = table.Column<int>(type: "int", nullable: false),
                     RequestedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    ProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RejectionReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TagIdsJson = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -278,9 +295,9 @@ namespace server.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AdditionalInfo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     RequestStatus = table.Column<int>(type: "int", nullable: false),
-                    RequestedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    RequestedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -290,6 +307,30 @@ namespace server.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ClubTag",
+                columns: table => new
+                {
+                    ClubsId = table.Column<int>(type: "int", nullable: false),
+                    TagsId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClubTag", x => new { x.ClubsId, x.TagsId });
+                    table.ForeignKey(
+                        name: "FK_ClubTag_Clubs_ClubsId",
+                        column: x => x.ClubsId,
+                        principalTable: "Clubs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ClubTag_Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -303,6 +344,7 @@ namespace server.Migrations
                     NetworkingRating = table.Column<int>(type: "int", nullable: false),
                     SkillsDevelopmentRating = table.Column<int>(type: "int", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Recommendation = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ClubId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
@@ -350,15 +392,6 @@ namespace server.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[,]
-                {
-                    { "8b28321d-7c00-400e-9a9a-28286f9847d7", null, "User", "USER" },
-                    { "d8f5113d-ffa7-4cc7-ade8-e59f91fd97cd", null, "Administrator", "ADMINISTRATOR" }
-                });
-
-            migrationBuilder.InsertData(
                 table: "Categories",
                 columns: new[] { "Id", "Description", "Name", "isActive" },
                 values: new object[,]
@@ -372,8 +405,8 @@ namespace server.Migrations
                 columns: new[] { "Id", "CreatedAt", "Description", "Location", "LogoUrl", "Name" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 6, 8, 1, 11, 25, 291, DateTimeKind.Utc).AddTicks(6196), "", "Lubbock, TX", "", "Texas Tech University" },
-                    { 2, new DateTime(2025, 6, 8, 1, 11, 25, 291, DateTimeKind.Utc).AddTicks(6200), "", "Dallas, TX", "", "University of Texas at Dallas" }
+                    { 1, new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4305), "", "Lubbock, TX", "", "Texas Tech University" },
+                    { 2, new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4310), "", "Dallas, TX", "", "University of Texas at Dallas" }
                 });
 
             migrationBuilder.InsertData(
@@ -381,19 +414,19 @@ namespace server.Migrations
                 columns: new[] { "Id", "CategoryId", "ClubLocation", "CreatedAt", "Description", "IsActive", "LogoUrl", "Name", "UniversityId" },
                 values: new object[,]
                 {
-                    { 1, 1, "Engineering Center Basement, Room 100", new DateTime(2025, 6, 8, 1, 11, 25, 291, DateTimeKind.Utc).AddTicks(6074), "Robotics Club", true, "", "Tech Robotics Association", 1 },
-                    { 2, 1, "Livermore Center, Room 101", new DateTime(2025, 6, 8, 1, 11, 25, 291, DateTimeKind.Utc).AddTicks(6080), "Software Engineering Club", true, "", "Google Development Student Club", 1 },
-                    { 3, 2, "The SUB, Second floor, Room 237.", new DateTime(2025, 6, 8, 1, 11, 25, 291, DateTimeKind.Utc).AddTicks(6081), "A club for playing chess", true, "", "Chess Club", 1 }
+                    { 1, 1, "Engineering Center Basement, Room 100", new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4199), "Robotics Club", true, "", "Tech Robotics Association", 1 },
+                    { 2, 1, "Livermore Center, Room 101", new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4206), "Software Engineering Club", true, "", "Google Development Student Club", 1 },
+                    { 3, 2, "The SUB, Second floor, Room 237.", new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4208), "A club for playing chess", true, "", "Chess Club", 1 }
                 });
 
             migrationBuilder.InsertData(
                 table: "Reviews",
-                columns: new[] { "Id", "ClubId", "Comment", "CreatedAt", "InclusivityRating", "LeadershipRating", "NetworkingRating", "SkillsDevelopmentRating", "UserId" },
+                columns: new[] { "Id", "ClubId", "Comment", "CreatedAt", "InclusivityRating", "LeadershipRating", "NetworkingRating", "Recommendation", "SkillsDevelopmentRating", "UserId" },
                 values: new object[,]
                 {
-                    { 1, 1, "It's a good club overall. Friendly people in general.", new DateTime(2025, 6, 8, 1, 11, 25, 291, DateTimeKind.Utc).AddTicks(5944), 4, 2, 3, 5, null },
-                    { 2, 1, "Plenty of volunteering opportunities. One of the highlights about the club is the annual VEX U competitions.", new DateTime(2025, 6, 8, 1, 11, 25, 291, DateTimeKind.Utc).AddTicks(5948), 5, 4, 2, 4, null },
-                    { 3, 2, "The GDSC club has its ups and downs. Networking is one of its prime benefits.", new DateTime(2025, 6, 8, 1, 11, 25, 291, DateTimeKind.Utc).AddTicks(5950), 2, 4, 5, 3, null }
+                    { 1, 1, "It's a good club overall. Friendly people in general.", new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4095), 4, 2, 3, "", 5, null },
+                    { 2, 1, "Plenty of volunteering opportunities. One of the highlights about the club is the annual VEX U competitions.", new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4100), 5, 4, 2, "", 4, null },
+                    { 3, 2, "The GDSC club has its ups and downs. Networking is one of its prime benefits.", new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4102), 2, 4, 5, "", 3, null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -466,6 +499,11 @@ namespace server.Migrations
                 column: "UniversityId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ClubTag_TagsId",
+                table: "ClubTag",
+                column: "TagsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reviews_ClubId",
                 table: "Reviews",
                 column: "ClubId");
@@ -513,6 +551,9 @@ namespace server.Migrations
                 name: "ClubRequests");
 
             migrationBuilder.DropTable(
+                name: "ClubTag");
+
+            migrationBuilder.DropTable(
                 name: "Reviews");
 
             migrationBuilder.DropTable(
@@ -523,6 +564,9 @@ namespace server.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Clubs");

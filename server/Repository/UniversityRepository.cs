@@ -26,6 +26,7 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
         return await _context.Universities
             .Include(u => u.Clubs).ThenInclude(c => c.Category)
             .Include(u => u.Clubs).ThenInclude(c => c.Reviews)
+            .Include(u => u.Clubs).ThenInclude(c => c.Tags)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 }
