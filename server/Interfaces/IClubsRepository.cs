@@ -6,5 +6,5 @@ public interface IClubsRepository : IGenericRepository<Club>
 {
     Task<List<Club>> GetClubDetails();
     Task<Club> GetIndividualClubDetails(int id);
-    Task<List<Club>> GetClubsByFilters(List<string> tags);
+    // Task<List<Club>> GetClubsByFilters(List<string> tags);
 }

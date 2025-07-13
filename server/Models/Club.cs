@@ -18,7 +18,7 @@ public class Club {
     public Category Category { get; set; }
     public int UniversityId { get; set; }
     public University University { get; set; }
-    public virtual ICollection<string> Tags { get; set; } = [];
+    public virtual ICollection<Tag> Tags { get; set; } = [];
     public virtual ICollection<Review> Reviews { get; set; } = [];
     public virtual ICollection<SavedClub>? SavedByUsers { get; set; } = [];
 

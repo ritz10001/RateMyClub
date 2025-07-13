@@ -12,7 +12,7 @@ public class SavedClubsDTO
     public int UniversityId { get; set; }
     public string UniversityName { get; set; } = string.Empty;
     public DateTime SavedAt { get; set; } = DateTime.UtcNow;
-    public double AverageRating { get; set; } // From Club.Reviews
+    public double AverageRating { get; set; } 
     public int ReviewCount { get; set; }  
     public List<string> Tags { get; set; } = [];
 }

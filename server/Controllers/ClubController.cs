@@ -16,30 +16,46 @@ public class ClubController : ControllerBase {
     
     private readonly IMapper _mapper;
     private readonly IClubsRepository _clubsRepository;
-    public ClubController(IMapper mapper, IClubsRepository clubsRepository)
-    { 
+    private readonly ITagsRepository  _tagsRepository;
+    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository)
+    {
         _mapper = mapper;
-        _clubsRepository = clubsRepository;  
+        _clubsRepository = clubsRepository;
+        _tagsRepository = tagsRepository;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetClubsDTO>>> GetAllClubs(){
+    public async Task<ActionResult<IEnumerable<GetClubsDTO>>> GetAllClubs()
+    {
         var clubs = await _clubsRepository.GetClubDetails();
         var clubsDTO = _mapper.Map<List<GetClubsDTO>>(clubs);
         foreach (var clubDTO in clubsDTO)
         {
             var club = clubs.FirstOrDefault(c => c.Id == clubDTO.Id);
-            if (club != null && club.Reviews != null && club.Reviews.Any())
+            if (club != null)
             {
-                clubDTO.AverageRating = Math.Round(club.Reviews.Average(r => r.OverallRating), 1);
+                if (club.Reviews != null && club.Reviews.Any())
+                {
+                    clubDTO.AverageRating = Math.Round(club.Reviews.Average(r => r.OverallRating), 1);
+                }
+                else
+                {
+                    clubDTO.AverageRating = 0;
+                }
+                if (club.Tags != null && club.Tags.Any())
+                {
+                    clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
+                }
+                else
+                {
+                    clubDTO.Tags = new List<string>();
+                }
             }
-            else
-            {
-                clubDTO.AverageRating = 0;
-            }
+
         }
         return Ok(clubsDTO);
     }
+    
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GetClubDTO>> GetClub(int id){
@@ -50,6 +66,10 @@ public class ClubController : ControllerBase {
         }
 
         var clubDTO = _mapper.Map<GetClubDTO>(club);
+        if (club.Tags != null && club.Tags.Any())
+        {
+            clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
+        }
         clubDTO.RatingDistribution = RatingDistributionService.Calculate(club.Reviews);
         clubDTO.AverageRating = club.Reviews.Count != 0 ? Math.Round(club.Reviews.Average(r => r.OverallRating), 1) : 0;
 
@@ -58,13 +78,19 @@ public class ClubController : ControllerBase {
 
     [HttpPost]
     [Authorize(Roles = "Administrator")]
-    public async Task<ActionResult<CreateClubDTO>> CreateClub(CreateClubDTO createClubDTO){
+    public async Task<ActionResult<CreateClubDTO>> CreateClub(CreateClubDTO createClubDTO)
+    {
 
         var club = _mapper.Map<Club>(createClubDTO);
-
+        if (createClubDTO.TagIds != null && createClubDTO.TagIds.Any())
+        {
+            var tags = await _tagsRepository.GetTagsByIdsAsync(createClubDTO.TagIds);
+            club.Tags = tags;
+        }
         await _clubsRepository.AddAsync(club);
 
-        return CreatedAtAction("GetClub", new {id = club.Id}, club);
+        // return CreatedAtAction("GetClub", new {id = club.Id}, club);
+        return Ok();
     }
 
     [HttpDelete("{id}")]
@@ -108,12 +134,12 @@ public class ClubController : ControllerBase {
 
     }
     
-    [HttpGet("clubs/filter-multiple")]
-    public async Task<IActionResult> GetClubsByTags([FromQuery] List<string> tags)
-    {
-        var clubs = await _clubsRepository.GetClubsByFilters(tags);
-        return Ok(clubs);
-    }
+    // [HttpGet("clubs/filter-multiple")]
+    // public async Task<IActionResult> GetClubsByTags([FromQuery] List<string> tags)
+    // {
+    //     var clubs = await _clubsRepository.GetClubsByFilters(tags);
+    //     return Ok(clubs);
+    // }
     private async Task<bool> ClubExists(int id)
     {
 
