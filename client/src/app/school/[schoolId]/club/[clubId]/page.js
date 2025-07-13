@@ -6,14 +6,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, Heart, Users, Calendar, MapPin, Plus, Pencil, Trash2 } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { use } from "react"; 
 import LoginModal from "@/app/components/login-modal"
 import { useAuth } from "@/app/context/AuthContext"
 import { useRouter } from "next/navigation"
 import { useClub } from "@/app/context/ClubContext"
-
-// Mock data for club details
+import DeleteReviewModal from "@/app/components/delete-review-modal"
+import { toast } from 'sonner';
 
 const monthNumbers = {
   1: "January",
@@ -30,83 +30,12 @@ const monthNumbers = {
   12: "December",
 }
 
-const mockClub = {
-  id: 1,
-  name: "Tech Robotics Association",
-  school: "Texas Tech University",
-  category: "Engineering",
-  description:
-    "Building the future through innovative robotics projects and competitions. Join us for weekly meetings, workshops, and exciting competitions!",
-  memberCount: 156,
-  establishedYear: 2015,
-  meetingTime: "Wednesdays 7:00 PM",
-  location: "Engineering Building Room 201",
-  overallRating: 4.2,
-  totalReviews: 47,
-  tags: ["STEM", "Competition", "Innovation", "Hands-on"],
-  ratingDistribution: {
-    5: 18,
-    4: 15,
-    3: 8,
-    2: 4,
-    1: 2,
-  },
-  categoryRatings: {
-    leadership: 4.1,
-    inclusivity: 4.3,
-    networking: 3.9,
-    skillsDevelopment: 4.5,
-  },
-}
-
-// Mock reviews data
-const mockReviews = [
-  {
-    id: 1,
-    reviewerName: "Sarah M.",
-    rating: 5,
-    date: "2 weeks ago",
-    reviewText:
-      "Amazing club! The projects are challenging and the community is very supportive. I've learned so much about robotics and programming. Highly recommend for anyone interested in STEM!",
-    thumbsup: 12,
-    thumbsdown: 1,
-  },
-  {
-    id: 2,
-    reviewerName: "Mike R.",
-    rating: 4,
-    date: "1 month ago",
-    reviewText:
-      "Great club with lots of hands-on experience. The weekly meetings are well-organized and the competitions are exciting. Only downside is that it can get quite busy during competition season.",
-    thumbsup: 8,
-    thumbsdown: 1,
-  },
-  {
-    id: 3,
-    reviewerName: "Jessica L.",
-    rating: 5,
-    date: "1 month ago",
-    reviewText:
-      "Best decision I made in college! The mentorship from senior members is incredible and the projects we work on are cutting-edge. Perfect for building your resume and networking.",
-    thumbsup: 15,
-    thumbsdown: 1,
-  },
-  {
-    id: 4,
-    reviewerName: "David K.",
-    rating: 3,
-    date: "2 months ago",
-    reviewText:
-      "Decent club but requires a lot of time commitment. The projects are interesting but can be overwhelming for beginners. Would recommend having some programming background first.",
-    thumbsup: 5,
-    thumbsdown: 1,
-  },
-]
-
 export default function ClubPage({ params }) {
   const { user } = useAuth();
   const { setClubData } = useClub();
   const router = useRouter();
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState(null);
   const [isUserReview, setIsUserReview] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [club, setClub] = useState(null);
@@ -115,6 +44,8 @@ export default function ClubPage({ params }) {
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [advice, setAdvice] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const toastId = useRef(null);
   const [newReview, setNewReview] = useState({
     rating: 5,
     reviewText: "",
@@ -122,6 +53,8 @@ export default function ClubPage({ params }) {
   const [userVote, setUserVote] = useState(null);
   
   const { schoolId, clubId } = use(params);
+
+  useEffect(() => {}, [reviewToDelete])
 
   useEffect(() => {
     const fetchClubDetails = async () => {
@@ -151,10 +84,42 @@ export default function ClubPage({ params }) {
     }
     fetchClubDetails();
   }, [clubId])
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked)
-    // TODO: Implement bookmark functionality
-  }
+  const handleBookmark = async () => {
+    if (isProcessing) return;
+
+    const newBookmarkState = !isBookmarked;
+    setIsBookmarked(newBookmarkState);
+  // Dismiss any existing toast
+    try {
+      setIsProcessing(true);
+
+      // 3. Manage toast
+      if (toastId.current) toast.dismiss(toastId.current);
+      const message = newBookmarkState ? "Club Bookmarked!" : "Bookmark Removed";
+      toastId.current = toast.success(message, { duration: 1000 });
+    // 4. Debounced API call
+      const response = await fetch(`http://localhost:5095/api/bookmarks`, {
+        method: newBookmarkState ? "POST" : "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({ clubId })
+      });
+
+      if (!response.ok) {
+        // 5. Revert on failure
+        setIsBookmarked(!newBookmarkState);
+        throw new Error("Bookmark update failed");
+      }
+    } 
+    catch (error) {
+      toast.error(error.message);
+    } 
+    finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleSubmitReview = (e) => {
     e.preventDefault()
@@ -243,7 +208,7 @@ export default function ClubPage({ params }) {
                 ))}
               </div>
 
-              <p className="text-gray-700 mb-6 text-lg leading-relaxed">{mockClub.description}</p>
+              <p className="text-gray-700 mb-6 text-lg leading-relaxed">Just a description</p>
 
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
@@ -306,7 +271,8 @@ export default function ClubPage({ params }) {
           <div className="space-y-6">
             {reviews.map((review) => (
               <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                {review.userId === user.userId && <p className="font-bold">(MY REVIEW)</p>}
+                <p>{console.log("REVIEW USER ID", review.userId)}</p>
+                {user && review.userId === user.userId && <p className="font-bold">(MY REVIEW)</p>}
                 <div className="flex justify-between mb-3">
                   <div>
                     <div className="flex items-center justify-center gap-2 mt-1 w-full">
@@ -314,7 +280,7 @@ export default function ClubPage({ params }) {
                         <div className="flex">{renderStars(((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1))}</div>
                         <div className="flex font-bold">{((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1)}</div>
                       </div>
-                      {review.userId === user.userId && <div className="flex items-center gap-2">
+                      {user && review.userId === user.userId && <div className="flex items-center gap-2">
                         <button 
                           className="p-2 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
                           title="Edit Review"
@@ -328,6 +294,10 @@ export default function ClubPage({ params }) {
                         <button 
                           className="p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
                           title="Delete Review"
+                          onClick={() => {
+                              setReviewToDelete(review.id)
+                              setIsDeleteOpen(true);
+                          }}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>           
@@ -358,10 +328,44 @@ export default function ClubPage({ params }) {
                     isOpen={isModalOpen} 
                     onClose={() => setIsModalOpen(false)} 
                   />
+                  
                 </div>
               </div>
             ))}
           </div>
+          <DeleteReviewModal 
+            isOpen={isDeleteOpen}
+            onClose={() => setIsDeleteOpen(false)}
+            onDelete={async () => {
+              if(!reviewToDelete){
+                return;
+              }
+              try{
+                console.log("THIS REVIEW TO DELETE", reviewToDelete);
+                const response = await fetch(`http://localhost:5095/api/Review/${reviewToDelete}`, {
+                  method: "DELETE",
+                  headers: {
+                    "Authorization": `Bearer ${user.token}`
+                  }
+                });
+                if (!response.ok) throw new Error("Delete failed");
+                setReviews((prevReviews) =>
+                  prevReviews.filter((r) => r.id !== reviewToDelete)
+                );
+                toast.success("Review deleted successfully!", {
+                  duration: 5000, // 5 seconds
+                });
+              }
+              catch(error){
+                console.error(error);
+                toast.error(errorData.message || "Deletion failed. Please try again.");
+              }
+              finally {
+                setIsDeleteOpen(false);
+                setReviewToDelete(null);
+              }
+            }}
+          />
 
           {/* Load More Reviews */}
           <div className="text-center mt-8">

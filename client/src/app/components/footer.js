@@ -2,7 +2,7 @@ import Link from "next/link"
 
 const footerLinks = {
   quickLinks: [
-    { href: "/directory", label: "School Directory" },
+    { href: "/all-schools", label: "School Directory" },
     { href: "/about", label: "About Us" },
     { href: "/help", label: "Help Center" },
     { href: "/contact", label: "Contact" },
