@@ -12,17 +12,18 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from "@/app/context/AuthContext"
 import { useClub } from "@/app/context/ClubContext"
 import { useParams } from "next/navigation"
+import { toast } from 'sonner';
 
-export default function WriteReviewPage({ params }) {
+export default function EditReviewPage({ params }) {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { clubData } = useClub();
   const router = useRouter();
   const [reviewData, setReviewData] = useState({
-    leadership: 0,
-    inclusivity: 0,
-    networking: 0,
-    skillsDevelopment: 0,
+    leadershipRating: 0,
+    inclusivityRating: 0,
+    networkingRating: 0,
+    skillsDevelopmentRating: 0,
     comment: "",
     recommendation: "",
   })
@@ -57,6 +58,8 @@ export default function WriteReviewPage({ params }) {
     console.log("VALIDATION");
     console.log(comment);
     console.log(recommendation);
+    console.log(leadershipRating);
+    console.log(inclusivityRating);
 
     return comment.trim().length > 20 && 
             recommendation &&
@@ -82,6 +85,10 @@ export default function WriteReviewPage({ params }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isFormValid()) {
+      alert("Form is invalid. Please complete all required fields.");
+      return; // stop submission!
+    }
     try{
       console.log("TRYING NOW");
       console.log(reviewData);
@@ -89,45 +96,41 @@ export default function WriteReviewPage({ params }) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.token}`
+          "Authorization": `Bearer ${user?.token}`
         },
         body: JSON.stringify({
-          leadershipRating: reviewData.leadership,
-          inclusivityRating: reviewData.inclusivity,
-          networkingRating: reviewData.networking,
-          skillsDevelopmentRating: reviewData.skillsDevelopment,
+          leadershipRating: reviewData.leadershipRating,
+          inclusivityRating: reviewData.inclusivityRating,
+          networkingRating: reviewData.networkingRating,
+          skillsDevelopmentRating: reviewData.skillsDevelopmentRating,
           comment: reviewData.comment,
           recommendation: reviewData.recommendation,
         })
       })
       if(response.ok){
-        const authResponse = await response.json();
-        const userData = {
-          leadershipRating: authResponse.leadership,
-          inclusivityRating: authResponse.inclusivity,
-          networkingRating: authResponse.networking,
-          skillsDevelopmentRating: authResponse.skillsDevelopment,
-          comment: authResponse.comment,
-          recommendation: authResponse.recommendation
-        };
-        // console.log("Review details fetched successfully:", data);
-        setReviewData(userData);
-        setTimeout(() => {
-          console.log("handleSubmit: Navigating to /");
-          router.push(`http://localhost:3000/school/${schoolId}/club/${clubId}`);
-        }, 100);
+        if (response.status !== 204) {
+          const authResponse = await response.json();
+          setReviewData(authResponse);
+        }
+        toast.success("Review edited successfully!", {
+          duration: 5000, // 5 seconds
+        });
+        router.push(`/school/${schoolId}/club/${clubId}`);
       }
       else{
+        const errorData = await response.json(); // Get error details
+        console.error('Backend error:', errorData);
         console.log("failed");
         setError(true);
+        toast.error(errorData.message || "Submission failed. Please try again.");
+        throw new Error(errorData.message || 'Update failed');
       }
     }
     catch(error){
       console.error('Login error:', error);
+      toast.error(errorData.message || "Submission failed. Please try again.");
       alert('Network error. Please try again.');
     }
-    
-    // console.log("Review submitted:", reviewData)
   }
 
   const renderStarRating = (category, currentRating) => {

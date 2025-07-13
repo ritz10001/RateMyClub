@@ -8,17 +8,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Plus, Info, University } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { use } from "react";
+import { useAuth } from "@/app/context/AuthContext"
+import { toast } from 'sonner';
+import { useRouter } from "next/navigation"
 
 export default function RequestClubPage({ params }) {
+  const { schoolId } = use(params);
+  const router = useRouter();
+  const { user } = useAuth();  
+  console.log("USER INFO");
+  console.log(user);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingTag, setIsLoadingTag] = useState(true);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [tags, setTags] = useState(null);
   const [clubData, setClubData] = useState({
-    clubName: "",
+    fullName: user?.firstName ? `${user.firstName} ${user.lastName}` : "",
+    requestedBy: user?.email || "",
+    name: "",
     description: "",
-    categoryId: 0,
-    additionalInfo: "",
+    categoryId: null,
     meetingLocation: "",
-    universityId: 0
+    universityId: schoolId,
+    tagIds: []
   })
 
   const handleInputChange = (field, value) => {
@@ -28,12 +42,9 @@ export default function RequestClubPage({ params }) {
     }))
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // TODO: Implement club request submission
-    console.log("Club request submitted:", clubData)
-  }
-
+  useEffect(() => {
+    console.log(clubData)
+  }, [clubData]);
   useEffect(() => {
   fetch('http://localhost:5095/api/Categories')
     .then(res => res.json())
@@ -43,6 +54,98 @@ export default function RequestClubPage({ params }) {
       setIsLoading(false);
     });
 }, []);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch("http://localhost:5095/api/Tag", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+        if(response.ok){
+          const data = await response.json();
+          console.log(data);
+          setTags(data);
+          setIsLoadingTag(false);
+        }
+        else{
+          console.log("failed to fetch clubs");
+        }
+      }
+      catch(error){
+        console.error("fetching tags failed");
+      }
+    }
+    fetchTags();
+  }, [])
+
+  const handleTagClick = (tagId) => {
+    console.log("SELECTED TAG", tagId);
+    console.log(selectedTags);
+    if(selectedTags.includes(tagId)){
+      setSelectedTags(selectedTags.filter((id) => id !== tagId));
+    }
+    else{
+      if (selectedTags.length < 3) {
+        setSelectedTags([...selectedTags, tagId]);
+      } 
+      else {
+        toast.error("You can select up to 3 tags only.");
+      }
+    }
+  }
+
+  const isFormValid = () => {
+    const { name, description, categoryId } = clubData;
+
+    return name.trim().length > 3 && 
+            description.trim().length > 20 &&
+            categoryId;
+    };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      console.log("TRYING NOW");
+      console.log(clubData);
+      const response = await fetch("http://localhost:5095/api/ClubRequest", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({
+          fullName: clubData.fullName,
+          name: clubData.name,
+          description: clubData.description,
+          categoryId: clubData.categoryId,
+          meetingLocation: clubData.meetingLocation,
+          universityId: schoolId,
+          tagIds: selectedTags
+        })
+      })
+      if(response.ok){
+        const requestResponse = await response.json();
+        console.log("successful");
+        console.log(requestResponse);
+        toast.success("Club request submitted! We'll review it shortly.", {
+          duration: 5000, // 5 seconds
+        });
+        router.push(`/school/${schoolId}`);
+      }
+      else{
+        const errorData = await response.json();
+        toast.error(errorData.message || "Submission failed. Please try again.");
+      }
+    }
+    catch(error){
+      toast.error("Network error. Please check your connection.");
+      console.error("Club request submission failed");
+    }
+    // console.log("Club request submitted:", clubData)
+  }
 
   if (isLoading) {
     return <>
@@ -60,7 +163,7 @@ export default function RequestClubPage({ params }) {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/school/1`}
+            href={`/school/${schoolId}`}
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -96,17 +199,17 @@ export default function RequestClubPage({ params }) {
             <div className="space-y-6">
               {/* Club Name */}
               <div>
-                <Label htmlFor="clubName" className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label htmlFor="name" className="text-sm font-medium text-gray-700 mb-2 block">
                   Club Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="clubName"
+                  id="name"
                   type="text"
                   placeholder="Enter the full name of your club..."
-                  value={clubData.clubName}
-                  onChange={(e) => handleInputChange("clubName", e.target.value)}
+                  value={clubData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                  required
+                  // required
                 />
               </div>
 
@@ -115,13 +218,13 @@ export default function RequestClubPage({ params }) {
                 <Label htmlFor="category" className="text-sm font-medium text-gray-700 mb-2 block">
                   Category <span className="text-red-500">*</span>
                 </Label>
-                <Select value={clubData.category} onValueChange={(value) => handleInputChange("category", value)}>
+                <Select onValueChange={(value) => handleInputChange("categoryId", value)}>
                   <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
                     <SelectValue placeholder="Select a category for your club..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category, idx) => (
-                      <SelectItem key={idx} value={category.id}>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
                         {category.name}
                       </SelectItem>
                     ))}
@@ -137,11 +240,34 @@ export default function RequestClubPage({ params }) {
                 <Textarea
                   id="shortDescription"
                   placeholder="Provide a brief description of what your club does..."
-                  value={clubData.shortDescription}
-                  onChange={(e) => handleInputChange("shortDescription", e.target.value)}
+                  value={clubData.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
                   className="min-h-24 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
+              {!isLoadingTag && <div className="flex flex-wrap gap-2">
+                <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 mb-2 block">
+                  Select upto 3 tags <span className="text-red-400">*</span>
+                </Label>
+                <div className="space-y-2 space-x-2">
+                  {tags.map((tag) => (
+                  <Button
+                    key={tag.id}
+                    type="button"
+                    variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                    onClick={() => handleTagClick(tag.id)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      selectedTags.includes(tag.id)
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "border-blue-200 text-blue-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                  </Button>
+                ))}
+                </div>
+              </div>
+              }
             </div>
           </div>
 
@@ -149,21 +275,7 @@ export default function RequestClubPage({ params }) {
           <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Additional Details</h2>
             <div className="space-y-6">
-              {/* Contact Email */}
-              {/* <div>
-                <Label htmlFor="contactEmail" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Contact Email <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="contactEmail"
-                  type="email"
-                  placeholder="Club officer or contact person's email..."
-                  value={clubData.contactEmail}
-                  onChange={(e) => handleInputChange("contactEmail", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                  required
-                />
-              </div> */}
+              
 
               {/* Meeting Location */}
               <div>
@@ -179,35 +291,6 @@ export default function RequestClubPage({ params }) {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
-
-              {/* Meeting Time */}
-              {/* <div>
-                <Label htmlFor="meetingTime" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Meeting Time <span className="text-gray-400">(Optional)</span>
-                </Label>
-                <Input
-                  id="meetingTime"
-                  type="text"
-                  placeholder="When does your club meet? (e.g., Wednesdays 7:00 PM)"
-                  value={clubData.meetingTime}
-                  onChange={(e) => handleInputChange("meetingTime", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                />
-              </div> */}
-
-              {/* Additional Information */}
-              {/* <div>
-                <Label htmlFor="additionalInfo" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Additional Information <span className="text-gray-400">(Optional)</span>
-                </Label>
-                <Textarea
-                  id="additionalInfo"
-                  placeholder="Any additional information that would help us understand your club better..."
-                  value={clubData.additionalInfo}
-                  onChange={(e) => handleInputChange("additionalInfo", e.target.value)}
-                  className="min-h-32 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                />
-              </div> */}
             </div>
           </div>
 
@@ -240,7 +323,7 @@ export default function RequestClubPage({ params }) {
                 <Button
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold"
-                  disabled={!clubData.clubName || !clubData.category || !clubData.contactEmail}
+                  disabled={!isFormValid()}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Submit Request
