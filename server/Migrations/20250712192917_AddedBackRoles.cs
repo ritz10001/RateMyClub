@@ -8,33 +8,18 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace server.Migrations
 {
     /// <inheritdoc />
-    public partial class MapRecommendation : Migration
+    public partial class AddedBackRoles : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DeleteData(
-                table: "AspNetRoles",
-                keyColumn: "Id",
-                keyValue: "98208871-4892-47f4-9241-7f344937cced");
-
-            migrationBuilder.DeleteData(
-                table: "AspNetRoles",
-                keyColumn: "Id",
-                keyValue: "b1344a1d-75bb-4329-8d44-b553aaca4f3a");
-
-            migrationBuilder.RenameColumn(
-                name: "Recommend",
-                table: "Reviews",
-                newName: "Recommendation");
-
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "992157c0-4f85-4c51-8535-3dcd06323962", null, "Administrator", "ADMINISTRATOR" },
-                    { "ba0ffb2f-d85c-4b19-ae49-b9ae62223016", null, "User", "USER" }
+                    { "14b285d7-1713-44fc-a0f9-063fb1b9175d", null, "User", "USER" },
+                    { "1c1f9579-4891-46a4-b93c-9ce9fe1fdeb7", null, "Administrator", "ADMINISTRATOR" }
                 });
 
             migrationBuilder.UpdateData(
@@ -42,56 +27,56 @@ namespace server.Migrations
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 9, 20, 59, 52, 766, DateTimeKind.Utc).AddTicks(5565));
+                value: new DateTime(2025, 7, 12, 19, 29, 16, 731, DateTimeKind.Utc).AddTicks(8501));
 
             migrationBuilder.UpdateData(
                 table: "Clubs",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 9, 20, 59, 52, 766, DateTimeKind.Utc).AddTicks(5574));
+                value: new DateTime(2025, 7, 12, 19, 29, 16, 731, DateTimeKind.Utc).AddTicks(8509));
 
             migrationBuilder.UpdateData(
                 table: "Clubs",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 9, 20, 59, 52, 766, DateTimeKind.Utc).AddTicks(5576));
+                value: new DateTime(2025, 7, 12, 19, 29, 16, 731, DateTimeKind.Utc).AddTicks(8511));
 
             migrationBuilder.UpdateData(
                 table: "Reviews",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 9, 20, 59, 52, 766, DateTimeKind.Utc).AddTicks(5445));
+                value: new DateTime(2025, 7, 12, 19, 29, 16, 731, DateTimeKind.Utc).AddTicks(8392));
 
             migrationBuilder.UpdateData(
                 table: "Reviews",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 9, 20, 59, 52, 766, DateTimeKind.Utc).AddTicks(5451));
+                value: new DateTime(2025, 7, 12, 19, 29, 16, 731, DateTimeKind.Utc).AddTicks(8397));
 
             migrationBuilder.UpdateData(
                 table: "Reviews",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 9, 20, 59, 52, 766, DateTimeKind.Utc).AddTicks(5452));
+                value: new DateTime(2025, 7, 12, 19, 29, 16, 731, DateTimeKind.Utc).AddTicks(8398));
 
             migrationBuilder.UpdateData(
                 table: "Universities",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 9, 20, 59, 52, 766, DateTimeKind.Utc).AddTicks(5760));
+                value: new DateTime(2025, 7, 12, 19, 29, 16, 731, DateTimeKind.Utc).AddTicks(8608));
 
             migrationBuilder.UpdateData(
                 table: "Universities",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 9, 20, 59, 52, 766, DateTimeKind.Utc).AddTicks(5764));
+                value: new DateTime(2025, 7, 12, 19, 29, 16, 731, DateTimeKind.Utc).AddTicks(8612));
         }
 
         /// <inheritdoc />
@@ -100,82 +85,68 @@ namespace server.Migrations
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "992157c0-4f85-4c51-8535-3dcd06323962");
+                keyValue: "14b285d7-1713-44fc-a0f9-063fb1b9175d");
 
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "ba0ffb2f-d85c-4b19-ae49-b9ae62223016");
-
-            migrationBuilder.RenameColumn(
-                name: "Recommendation",
-                table: "Reviews",
-                newName: "Recommend");
-
-            migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[,]
-                {
-                    { "98208871-4892-47f4-9241-7f344937cced", null, "Administrator", "ADMINISTRATOR" },
-                    { "b1344a1d-75bb-4329-8d44-b553aaca4f3a", null, "User", "USER" }
-                });
+                keyValue: "1c1f9579-4891-46a4-b93c-9ce9fe1fdeb7");
 
             migrationBuilder.UpdateData(
                 table: "Clubs",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 7, 22, 59, 4, 444, DateTimeKind.Utc).AddTicks(4330));
+                value: new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4199));
 
             migrationBuilder.UpdateData(
                 table: "Clubs",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 7, 22, 59, 4, 444, DateTimeKind.Utc).AddTicks(4344));
+                value: new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4206));
 
             migrationBuilder.UpdateData(
                 table: "Clubs",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 7, 22, 59, 4, 444, DateTimeKind.Utc).AddTicks(4347));
+                value: new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4208));
 
             migrationBuilder.UpdateData(
                 table: "Reviews",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 7, 22, 59, 4, 444, DateTimeKind.Utc).AddTicks(4216));
+                value: new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4095));
 
             migrationBuilder.UpdateData(
                 table: "Reviews",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 7, 22, 59, 4, 444, DateTimeKind.Utc).AddTicks(4222));
+                value: new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4100));
 
             migrationBuilder.UpdateData(
                 table: "Reviews",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 7, 22, 59, 4, 444, DateTimeKind.Utc).AddTicks(4224));
+                value: new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4102));
 
             migrationBuilder.UpdateData(
                 table: "Universities",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 7, 22, 59, 4, 444, DateTimeKind.Utc).AddTicks(4624));
+                value: new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4305));
 
             migrationBuilder.UpdateData(
                 table: "Universities",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 7, 22, 59, 4, 444, DateTimeKind.Utc).AddTicks(4629));
+                value: new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4310));
         }
     }
 }

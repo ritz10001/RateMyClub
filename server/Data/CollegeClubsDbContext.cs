@@ -20,17 +20,15 @@ public class CollegeClubsDbContext : IdentityDbContext<User> {
     public DbSet<University> Universities { get; set; }
     public DbSet<UniversityRequest> UniversityRequests { get; set; }
     public DbSet<ClubRequest> ClubRequests { get; set; }
+    public DbSet<Tag> Tags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Club>(entity =>
-        {
-            entity.Property(e => e.Tags).HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null)
-            );
-        });
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<Club>()
+        .HasMany(cr => cr.Tags)
+        .WithMany(t => t.Clubs)
+        .UsingEntity(j => j.ToTable("ClubTag"));
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewConfiguration());

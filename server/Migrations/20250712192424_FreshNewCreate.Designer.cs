@@ -12,8 +12,8 @@ using RateMyCollegeClub.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(CollegeClubsDbContext))]
-    [Migration("20250707032302_AddTagsToClub")]
-    partial class AddTagsToClub
+    [Migration("20250712192424_FreshNewCreate")]
+    partial class FreshNewCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace server.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ClubTag", b =>
+                {
+                    b.Property<int>("ClubsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClubsId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("ClubTag", (string)null);
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -50,20 +65,6 @@ namespace server.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "2f81923c-f26f-4f3b-b53d-14b7766e8436",
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
-                        },
-                        new
-                        {
-                            Id = "7d519765-0fc3-426d-8b48-24a454558ea1",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -343,10 +344,6 @@ namespace server.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Tags")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("UniversityId")
                         .HasColumnType("int");
 
@@ -364,12 +361,11 @@ namespace server.Migrations
                             Id = 1,
                             CategoryId = 1,
                             ClubLocation = "Engineering Center Basement, Room 100",
-                            CreatedAt = new DateTime(2025, 7, 7, 3, 23, 2, 310, DateTimeKind.Utc).AddTicks(2060),
+                            CreatedAt = new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4199),
                             Description = "Robotics Club",
                             IsActive = true,
                             LogoUrl = "",
                             Name = "Tech Robotics Association",
-                            Tags = "[]",
                             UniversityId = 1
                         },
                         new
@@ -377,12 +373,11 @@ namespace server.Migrations
                             Id = 2,
                             CategoryId = 1,
                             ClubLocation = "Livermore Center, Room 101",
-                            CreatedAt = new DateTime(2025, 7, 7, 3, 23, 2, 310, DateTimeKind.Utc).AddTicks(2071),
+                            CreatedAt = new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4206),
                             Description = "Software Engineering Club",
                             IsActive = true,
                             LogoUrl = "",
                             Name = "Google Development Student Club",
-                            Tags = "[]",
                             UniversityId = 1
                         },
                         new
@@ -390,12 +385,11 @@ namespace server.Migrations
                             Id = 3,
                             CategoryId = 2,
                             ClubLocation = "The SUB, Second floor, Room 237.",
-                            CreatedAt = new DateTime(2025, 7, 7, 3, 23, 2, 310, DateTimeKind.Utc).AddTicks(2074),
+                            CreatedAt = new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4208),
                             Description = "A club for playing chess",
                             IsActive = true,
                             LogoUrl = "",
                             Name = "Chess Club",
-                            Tags = "[]",
                             UniversityId = 1
                         });
                 });
@@ -413,10 +407,23 @@ namespace server.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("MeetingLocation")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectionReason")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RequestStatus")
@@ -424,6 +431,9 @@ namespace server.Migrations
 
                     b.Property<DateTime>("RequestedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("TagIdsJson")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UniversityId")
                         .HasColumnType("int");
@@ -469,6 +479,10 @@ namespace server.Migrations
                     b.Property<int>("NetworkingRating")
                         .HasColumnType("int");
 
+                    b.Property<string>("Recommendation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("SkillsDevelopmentRating")
                         .HasColumnType("int");
 
@@ -489,10 +503,11 @@ namespace server.Migrations
                             Id = 1,
                             ClubId = 1,
                             Comment = "It's a good club overall. Friendly people in general.",
-                            CreatedAt = new DateTime(2025, 7, 7, 3, 23, 2, 310, DateTimeKind.Utc).AddTicks(1874),
+                            CreatedAt = new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4095),
                             InclusivityRating = 4,
                             LeadershipRating = 2,
                             NetworkingRating = 3,
+                            Recommendation = "",
                             SkillsDevelopmentRating = 5
                         },
                         new
@@ -500,10 +515,11 @@ namespace server.Migrations
                             Id = 2,
                             ClubId = 1,
                             Comment = "Plenty of volunteering opportunities. One of the highlights about the club is the annual VEX U competitions.",
-                            CreatedAt = new DateTime(2025, 7, 7, 3, 23, 2, 310, DateTimeKind.Utc).AddTicks(1882),
+                            CreatedAt = new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4100),
                             InclusivityRating = 5,
                             LeadershipRating = 4,
                             NetworkingRating = 2,
+                            Recommendation = "",
                             SkillsDevelopmentRating = 4
                         },
                         new
@@ -511,10 +527,11 @@ namespace server.Migrations
                             Id = 3,
                             ClubId = 2,
                             Comment = "The GDSC club has its ups and downs. Networking is one of its prime benefits.",
-                            CreatedAt = new DateTime(2025, 7, 7, 3, 23, 2, 310, DateTimeKind.Utc).AddTicks(1883),
+                            CreatedAt = new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4102),
                             InclusivityRating = 2,
                             LeadershipRating = 4,
                             NetworkingRating = 5,
+                            Recommendation = "",
                             SkillsDevelopmentRating = 3
                         });
                 });
@@ -543,6 +560,24 @@ namespace server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("SavedClubs");
+                });
+
+            modelBuilder.Entity("RateMyCollegeClub.Models.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("RateMyCollegeClub.Models.University", b =>
@@ -581,7 +616,7 @@ namespace server.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 7, 7, 3, 23, 2, 310, DateTimeKind.Utc).AddTicks(2286),
+                            CreatedAt = new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4305),
                             Description = "",
                             Location = "Lubbock, TX",
                             LogoUrl = "",
@@ -590,7 +625,7 @@ namespace server.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 7, 7, 3, 23, 2, 310, DateTimeKind.Utc).AddTicks(2291),
+                            CreatedAt = new DateTime(2025, 7, 12, 19, 24, 24, 5, DateTimeKind.Utc).AddTicks(4310),
                             Description = "",
                             Location = "Dallas, TX",
                             LogoUrl = "",
@@ -628,6 +663,21 @@ namespace server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UniversityRequests");
+                });
+
+            modelBuilder.Entity("ClubTag", b =>
+                {
+                    b.HasOne("RateMyCollegeClub.Models.Club", null)
+                        .WithMany()
+                        .HasForeignKey("ClubsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RateMyCollegeClub.Models.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
