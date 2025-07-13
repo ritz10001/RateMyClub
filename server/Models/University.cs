@@ -10,6 +10,7 @@ public class University
     public string Description { get; set; } = string.Empty;
     [MaxLength(100)]
     public string Location { get; set; } = string.Empty;
+    public UniversityType UniversityType = UniversityType.Public;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string LogoUrl { get; set; } = string.Empty;
     public virtual ICollection<Club> Clubs { get; set; } = [];

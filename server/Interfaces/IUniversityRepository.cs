@@ -1,11 +1,11 @@
+using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Models;
-using System.Threading.Tasks;
+using RateMyCollegeClub.Models.Requests;
 
-namespace RateMyCollegeClub.Interfaces
+namespace RateMyCollegeClub.Interfaces;
+
+public interface IUniversityRepository : IGenericRepository<University>
 {
-    public interface IUniversityRepository : IGenericRepository<University>
-    {
-        Task<List<University>> GetUniversityDetails();
-        Task<University> GetIndividualUniversityDetails(int id);
-    }
+    Task<List<University>> GetUniversityDetails();
+    Task<University> GetIndividualUniversityDetails(int id);
 }
