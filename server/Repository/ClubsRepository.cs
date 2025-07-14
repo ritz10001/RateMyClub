@@ -14,6 +14,11 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         _context = context;
     }
 
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<List<Club>> GetClubDetails()
     {
         return await _context.Clubs

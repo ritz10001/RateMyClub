@@ -117,6 +117,12 @@ public class ClubController : ControllerBase {
             return NotFound();
         }
 
+        if (updateClubDTO.TagIds != null && updateClubDTO.TagIds.Any())
+        {
+            var tags = await _tagsRepository.GetTagsByIdsAsync(updateClubDTO.TagIds);
+            club.Tags = tags;
+        }
+
         _mapper.Map(updateClubDTO, club);
 
         try{
@@ -132,6 +138,36 @@ public class ClubController : ControllerBase {
         }
         return NoContent();
 
+    }
+
+    [HttpPatch("{id}")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> PatchClub(int id, [FromBody] PatchClubDTO patchClubDTO)
+    {
+        var club = await _clubsRepository.GetAsync(id);
+        if (club is null) return NotFound();
+        if (patchClubDTO.Name != null) club.Name = patchClubDTO.Name;
+        if (patchClubDTO.Description != null) club.Description = patchClubDTO.Description;
+        if (patchClubDTO.ClubLocation != null) club.ClubLocation = patchClubDTO.ClubLocation;
+        if (patchClubDTO.IsActive.HasValue) club.IsActive = patchClubDTO.IsActive.Value;
+        if (patchClubDTO.CategoryId.HasValue) club.CategoryId = patchClubDTO.CategoryId.Value;
+        if (patchClubDTO.LogoUrl != null) club.LogoUrl = patchClubDTO.LogoUrl;
+        if (patchClubDTO.TagIds != null)
+        {
+            // Clear old tags and add new ones, or whatever your tag logic is
+            club.Tags.Clear();
+            foreach (var tagId in patchClubDTO.TagIds)
+            {
+                var tag = await _tagsRepository.GetAsync(tagId);
+                if (tag == null)
+                {
+                    return BadRequest($"Tag with ID {tagId} not found.");
+                }
+                club.Tags.Add(tag);
+            }
+        }
+        await _clubsRepository.SaveChangesAsync();
+        return NoContent();
     }
     
     // [HttpGet("clubs/filter-multiple")]

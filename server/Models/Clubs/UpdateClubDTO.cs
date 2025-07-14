@@ -8,4 +8,5 @@ public class UpdateClubDTO : BaseClubDTO
     public bool? IsActive { get; set; }
     public int? CategoryId { get; set; }
     public string? LogoUrl { get; set; }
+    public List<int> TagIds { get; set; } = [];
 }

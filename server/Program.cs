@@ -65,8 +65,9 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
-builder.Services.AddSwaggerGen(options => {
-    options.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme,
     securityScheme: new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -88,9 +89,44 @@ builder.Services.AddSwaggerGen(options => {
             }, new string[] { }
         }
     });
-});  
+});
+
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
+
+    string[] roles = { "Administrator", "User" };
+    foreach (var role in roles)
+    {
+        var roleExists = await roleManager.RoleExistsAsync(role);
+        if (!roleExists)
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+    var allUsers = userManager.Users.ToList();
+    foreach (var user in allUsers)
+    {
+        if (!await userManager.IsInRoleAsync(user, "User"))
+        {
+            await userManager.AddToRoleAsync(user, "User");
+        }
+    }
+    var adminEmail = "admin@gmail.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser != null)
+    {
+        if (!await userManager.IsInRoleAsync(adminUser, "Administrator"))
+        {
+            await userManager.AddToRoleAsync(adminUser, "Administrator");
+        }
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

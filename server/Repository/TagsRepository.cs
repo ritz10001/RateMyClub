@@ -12,6 +12,11 @@ public class TagsRepository : GenericRepository<Tag>, ITagsRepository
     {
         _context = context;
     }
+
+    public async Task<Tag?> GetAsync(int id)
+    {
+        return await _context.Tags.FindAsync(id);
+    }
     public async Task<List<Tag>> GetTagsByIdsAsync(List<int>? ids)
     {
         var res = await _context.Tags
