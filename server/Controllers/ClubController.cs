@@ -7,6 +7,7 @@ using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Clubs;
+using RateMyCollegeClub.Repository;
 
 namespace RateMyCollegeClub.Controllers;
 
@@ -17,11 +18,13 @@ public class ClubController : ControllerBase {
     private readonly IMapper _mapper;
     private readonly IClubsRepository _clubsRepository;
     private readonly ITagsRepository  _tagsRepository;
-    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository)
+    private readonly IReviewVoteRepository _reviewVoteRepository;
+    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository)
     {
         _mapper = mapper;
         _clubsRepository = clubsRepository;
         _tagsRepository = tagsRepository;
+        _reviewVoteRepository = reviewVoteRepository;
     }
 
     [HttpGet]
@@ -72,6 +75,22 @@ public class ClubController : ControllerBase {
         }
         clubDTO.RatingDistribution = RatingDistributionService.Calculate(club.Reviews);
         clubDTO.AverageRating = club.Reviews.Count != 0 ? Math.Round(club.Reviews.Average(r => r.OverallRating), 1) : 0;
+
+        var userId = GetUserId();
+
+        if (!string.IsNullOrEmpty(userId) && club.Reviews.Any())
+        {
+            var reviewIds = club.Reviews.Select(r => r.Id).ToList();
+            
+            var userVotes = await _reviewVoteRepository.GetVotesByUserForReviewsAsync(userId, reviewIds);
+
+            // Attach vote to each review DTO
+            foreach (var review in clubDTO.Reviews)
+            {
+                var vote = userVotes.FirstOrDefault(v => v.ReviewId == review.Id);
+                review.CurrentUserVote = vote?.Value ?? 0; // or null if you prefer
+            }
+        }
 
         return Ok(clubDTO);
     }
@@ -169,13 +188,18 @@ public class ClubController : ControllerBase {
         await _clubsRepository.SaveChangesAsync();
         return NoContent();
     }
-    
+
     // [HttpGet("clubs/filter-multiple")]
     // public async Task<IActionResult> GetClubsByTags([FromQuery] List<string> tags)
     // {
     //     var clubs = await _clubsRepository.GetClubsByFilters(tags);
     //     return Ok(clubs);
     // }
+
+    private string GetUserId()
+    {
+        return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value ?? string.Empty;
+    }
     private async Task<bool> ClubExists(int id)
     {
 
