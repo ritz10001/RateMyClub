@@ -15,4 +15,5 @@ public class GetReviewDTO
     public DateTime CreatedAt { get; set; }
     public string UserDisplayName { get; set; } = string.Empty;
     public string UserId { get; set; }
+    public int NetScore { get; set; }
 }
