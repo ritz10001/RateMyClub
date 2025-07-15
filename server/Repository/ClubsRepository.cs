@@ -35,6 +35,7 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         .Include(q => q.Category)
         .Include(q => q.University)
         .Include(q => q.Reviews).ThenInclude(r => r.User)
+        .Include(q => q.Reviews).ThenInclude(r => r.Votes)
         .Include(q => q.Tags)
         .FirstOrDefaultAsync(q => q.Id == id);
     }

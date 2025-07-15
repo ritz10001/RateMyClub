@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using RateMyCollegeClub.Data.Configurations;
 using System.Text.Json;
+using server.Models;
 
 namespace RateMyCollegeClub.Data;
 
@@ -21,6 +22,7 @@ public class CollegeClubsDbContext : IdentityDbContext<User> {
     public DbSet<UniversityRequest> UniversityRequests { get; set; }
     public DbSet<ClubRequest> ClubRequests { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<ReviewVote> ReviewVotes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
