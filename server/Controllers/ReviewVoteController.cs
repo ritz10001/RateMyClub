@@ -21,6 +21,8 @@ public class ReviewVoteController : ControllerBase
     {
         _reviewVoteRepository = reviewVoteRepository;
     }
+    [HttpPost]
+    [Authorize(Roles = "User, Administrator")]
     public async Task<IActionResult> Vote([FromBody] ReviewVoteDTO reviewVoteDTO)
     {
         var userId = GetUserId();
@@ -34,7 +36,7 @@ public class ReviewVoteController : ControllerBase
                 UserId = userId,
                 Value = reviewVoteDTO.Value
             };
-            await _reviewVoteRepository.DeleteAsync(vote.Id);
+            await _reviewVoteRepository.AddAsync(vote);
         }
         else
         {
@@ -46,8 +48,10 @@ public class ReviewVoteController : ControllerBase
             else
             {
                 existingVote.Value = reviewVoteDTO.Value;
+                await _reviewVoteRepository.UpdateAsync(existingVote);
             }
         }
+        
         return Ok();
     }
     

@@ -16,4 +16,5 @@ public class GetReviewDTO
     public string UserDisplayName { get; set; } = string.Empty;
     public string UserId { get; set; }
     public int NetScore { get; set; }
+    public int? CurrentUserVote { get; set; } //-1, 0, or 1
 }
