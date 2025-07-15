@@ -8,6 +8,7 @@ using RateMyCollegeClub.Models.Reviews;
 using RateMyCollegeClub.Models.SavedClubs;
 using RateMyCollegeClub.Models.Universities;
 using RateMyCollegeClub.Models.Users;
+using server.Models;
 
 namespace RateMyCollegeClub.Configurations;
 
@@ -35,6 +36,7 @@ public class MapperConfig : Profile {
         CreateMap<Review, CreateReviewDTO>().ReverseMap();
         CreateMap<Review, GetReviewDTO>()
         .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.FirstName} {src.User.LastName}" : "Unknown User"))
+        .ForMember(dest => dest.NetScore, opt => opt.MapFrom(src => src.Votes.Sum(v => v.Value)))
         .ReverseMap();
         CreateMap<Review, UpdateReviewDTO>().ReverseMap();
         CreateMap<Category, CreateCategoryDTO>().ReverseMap();
@@ -78,6 +80,5 @@ public class MapperConfig : Profile {
         .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
         .ForMember(dest => dest.RequestedBy, opt => opt.MapFrom(src => src.User!.UserName)) //
         .ReverseMap();
-
     }
 }
