@@ -31,6 +31,10 @@ public class CollegeClubsDbContext : IdentityDbContext<User> {
         .HasMany(cr => cr.Tags)
         .WithMany(t => t.Clubs)
         .UsingEntity(j => j.ToTable("ClubTag"));
+        modelBuilder.Entity<SavedClub>()
+        .HasOne(sc => sc.Club)
+        .WithMany()
+        .HasForeignKey(sc => sc.ClubId);
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewConfiguration());

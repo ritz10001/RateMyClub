@@ -15,6 +15,17 @@ public class SavedClubsRepository : GenericRepository<SavedClub>, ISavedClubsRep
         _context = context;
     }
 
+    public async Task<bool> IsBookmarked(int clubId, string userId)
+    {
+        return await _context.SavedClubs
+        .AnyAsync(q => q.ClubId == clubId && q.UserId == userId);
+    }
+
+    public async Task<SavedClub?> GetSavedClubById(int clubId, string userId)
+    {
+        return await _context.SavedClubs
+        .FirstOrDefaultAsync(q => q.ClubId == clubId && q.UserId == userId);
+    }
     public async Task<List<SavedClub>> GetSavedClubDetails(string userId)
     {
         // Console.WriteLine()
