@@ -36,14 +36,30 @@ public class SavedClubController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SaveClub(SavedClubsDTO savedClubsDTO)
+    public async Task<IActionResult> SaveClub(SaveClubRequest saveClubRequest)
     {
         var userId = GetUserId();
-        var savedClub = _mapper.Map<SavedClub>(savedClubsDTO);
-        savedClub.UserId = userId;
-        Console.WriteLine(savedClub);
+        var savedClub = new SavedClub
+        {
+            ClubId = saveClubRequest.ClubId,
+            UserId = userId,
+            SavedAt = DateTime.UtcNow
+        };
+
         await _savedClubsRepository.AddAsync(savedClub);
         return Ok();
+    }
+    [HttpDelete]
+    public async Task<IActionResult> DeleteSavedClubByClubId([FromBody] SaveClubRequest saveClubRequest)
+    {
+        var userId = GetUserId();
+        var savedClub = await _savedClubsRepository.GetSavedClubById(saveClubRequest.ClubId, userId);
+        if (savedClub == null)
+        {
+            return NotFound();
+        }
+        await _savedClubsRepository.DeleteAsync(savedClub.Id);
+        return NoContent();
     }
     private string? GetUserId()
     {
