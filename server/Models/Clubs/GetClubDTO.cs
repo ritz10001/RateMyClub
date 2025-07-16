@@ -16,4 +16,5 @@ public class GetClubDTO : BaseClubDTO
     public List<GetReviewDTO> Reviews { get; set; } = [];
     public List<string> Tags { get; set; } = [];
     public string ClubLocation { get; set; } = string.Empty;
+    public bool IsBookmarked { get; set; }
 }

@@ -19,12 +19,14 @@ public class ClubController : ControllerBase {
     private readonly IClubsRepository _clubsRepository;
     private readonly ITagsRepository  _tagsRepository;
     private readonly IReviewVoteRepository _reviewVoteRepository;
-    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository)
+    private readonly ISavedClubsRepository _savedClubsRepository;
+    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository, ISavedClubsRepository savedClubsRepository)
     {
         _mapper = mapper;
         _clubsRepository = clubsRepository;
         _tagsRepository = tagsRepository;
         _reviewVoteRepository = reviewVoteRepository;
+        _savedClubsRepository = savedClubsRepository;
     }
 
     [HttpGet]
@@ -63,12 +65,14 @@ public class ClubController : ControllerBase {
     [HttpGet("{id}")]
     public async Task<ActionResult<GetClubDTO>> GetClub(int id){
         var club = await _clubsRepository.GetIndividualClubDetails(id);
+        var userId = GetUserId();
         
-        if(club is null){
+        if (club is null) {
             return NotFound();
         }
 
         var clubDTO = _mapper.Map<GetClubDTO>(club);
+        clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(id, userId ?? string.Empty);
         if (club.Tags != null && club.Tags.Any())
         {
             clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
@@ -76,7 +80,6 @@ public class ClubController : ControllerBase {
         clubDTO.RatingDistribution = RatingDistributionService.Calculate(club.Reviews);
         clubDTO.AverageRating = club.Reviews.Count != 0 ? Math.Round(club.Reviews.Average(r => r.OverallRating), 1) : 0;
 
-        var userId = GetUserId();
 
         if (!string.IsNullOrEmpty(userId) && club.Reviews.Any())
         {

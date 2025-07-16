@@ -57,7 +57,7 @@ public class MapperConfig : Profile {
         .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Club.Description))
         .ForMember(dest => dest.UniversityId, opt => opt.MapFrom(src => src.Club.UniversityId))
         .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.Club.University.Name))
-        .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Club.Tags.ToList()))
+        .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Club.Tags.Select(t => t.Name).ToList()))
         .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src =>
         src.Club.Reviews.Any()
             ? (double)src.Club.Reviews
