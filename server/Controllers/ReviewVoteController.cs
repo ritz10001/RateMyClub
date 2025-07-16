@@ -17,44 +17,73 @@ namespace server.Controllers;
 public class ReviewVoteController : ControllerBase
 {
     private readonly IReviewVoteRepository _reviewVoteRepository;
-    public ReviewVoteController(IReviewVoteRepository reviewVoteRepository)
+    private readonly IReviewsRepository _reviewsRepository;
+    public ReviewVoteController(IReviewVoteRepository reviewVoteRepository, IReviewsRepository reviewsRepository)
     {
         _reviewVoteRepository = reviewVoteRepository;
+        _reviewsRepository = reviewsRepository;
     }
+
     [HttpPost]
     [Authorize(Roles = "User, Administrator")]
     public async Task<IActionResult> Vote([FromBody] ReviewVoteDTO reviewVoteDTO)
     {
         var userId = GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
         var existingVote = await _reviewVoteRepository.GetVoteByUserAndReviewAsync(userId, reviewVoteDTO.ReviewId);
+        var review = await _reviewsRepository.GetAsync(reviewVoteDTO.ReviewId);
+        
+        if (review == null)
+        {
+            return NotFound("Review not found");
+        }
+
+        int scoreChange = 0;
+        int newVoteValue = reviewVoteDTO.Value;
 
         if (existingVote == null)
         {
-            var vote = new ReviewVote
+            if (newVoteValue != 0)
             {
-                ReviewId = reviewVoteDTO.ReviewId,
-                UserId = userId,
-                Value = reviewVoteDTO.Value
-            };
-            await _reviewVoteRepository.AddAsync(vote);
+                var vote = new ReviewVote
+                {
+                    ReviewId = reviewVoteDTO.ReviewId,
+                    UserId = userId,
+                    Value = newVoteValue
+                };
+                await _reviewVoteRepository.AddAsync(vote);
+                scoreChange = newVoteValue;
+            }
         }
         else
         {
-            // Update or cancel vote
-            if (reviewVoteDTO.Value == 0)
+            if (newVoteValue == 0)
             {
+                scoreChange = -existingVote.Value;
                 await _reviewVoteRepository.DeleteAsync(existingVote.Id);
             }
-            else
+            else if (existingVote.Value != newVoteValue)
             {
-                existingVote.Value = reviewVoteDTO.Value;
+                scoreChange = newVoteValue - existingVote.Value;
+                existingVote.Value = newVoteValue;
                 await _reviewVoteRepository.UpdateAsync(existingVote);
             }
         }
-        
-        return Ok();
+
+        review.NetScore += scoreChange;
+        await _reviewsRepository.UpdateAsync(review);
+
+        // Return the exact values the frontend expects
+        return Ok(new { 
+            newVoteValue = newVoteValue, // The vote value we stored
+            newNetScore = review.NetScore // The new total score
+        });
     }
-    
+        
     private string? GetUserId()
     {
         return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value;
