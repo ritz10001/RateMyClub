@@ -36,7 +36,7 @@ public class MapperConfig : Profile {
         CreateMap<Review, CreateReviewDTO>().ReverseMap();
         CreateMap<Review, GetReviewDTO>()
         .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.FirstName} {src.User.LastName}" : "Unknown User"))
-        .ForMember(dest => dest.NetScore, opt => opt.MapFrom(src => src.Votes.Sum(v => v.Value)))
+        .ForMember(dest => dest.NetScore, opt => opt.MapFrom(src => src.NetScore))
         .ForMember(dest => dest.CurrentUserVote, opt => opt.Ignore())
         .ReverseMap();
         CreateMap<Review, UpdateReviewDTO>().ReverseMap();

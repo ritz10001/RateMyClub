@@ -47,6 +47,8 @@ builder.Services.AddScoped<ISavedClubsRepository, SavedClubsRepository>();
 builder.Services.AddScoped<ITagsRepository, TagsRepository>();
 builder.Services.AddScoped<IUniversityRequestsRepository, UniversityRequestsRepository>();
 builder.Services.AddScoped<IReviewVoteRepository, ReviewVoteRepository>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CurrentUserVoteResolver>();
 
 builder.Services.AddAuthentication(options => {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
