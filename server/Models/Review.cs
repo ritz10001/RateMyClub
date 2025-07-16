@@ -27,5 +27,6 @@ public class Review
     public string? UserId { get; set; }
     public User? User { get; set; }
     public ICollection<ReviewVote> Votes { get; set; } = new List<ReviewVote>();
+    public int NetScore { get; set; } = 0;
 
 }
