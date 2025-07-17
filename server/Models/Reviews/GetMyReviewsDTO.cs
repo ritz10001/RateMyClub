@@ -9,6 +9,7 @@ public class GetMyReviewsDTO
     public int ClubId { get; set; }
     public string ClubName { get; set; } = string.Empty;
     public string UniversityName { get; set; } = string.Empty;
+    public int UniversityId { get; set; }
     public decimal OverallRating { get; set; }
     public string Comment { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
