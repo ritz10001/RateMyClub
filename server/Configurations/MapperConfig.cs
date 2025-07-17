@@ -39,6 +39,11 @@ public class MapperConfig : Profile {
         .ForMember(dest => dest.NetScore, opt => opt.MapFrom(src => src.NetScore))
         .ForMember(dest => dest.CurrentUserVote, opt => opt.Ignore())
         .ReverseMap();
+        CreateMap<Review, GetReviewsDTO>().ReverseMap();
+        CreateMap<Review, GetMyReviewsDTO>()
+        .ForMember(dest => dest.ClubName, opt => opt.MapFrom(src => src.Club.Name))
+        .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.Club.University.Name))
+        .ReverseMap();
         CreateMap<Review, UpdateReviewDTO>().ReverseMap();
         CreateMap<Category, CreateCategoryDTO>().ReverseMap();
         CreateMap<Category, GetCategoryDTO>().ReverseMap();

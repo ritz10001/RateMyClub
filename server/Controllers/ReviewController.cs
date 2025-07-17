@@ -44,6 +44,15 @@ public class ReviewController : ControllerBase
         return Ok(review);
     }
 
+    [HttpGet("mine")]
+    public async Task<ActionResult<IEnumerable<GetMyReviewsDTO>>> GetMyReviews()
+    {
+        var userId = GetUserId();
+        var reviews = await _reviewsRepository.GetReviewsByUserId(userId);
+        var reviewDTOs = _mapper.Map<List<GetMyReviewsDTO>>(reviews);
+        return Ok(reviewDTOs);
+    }
+
     [HttpPost]
     // [Authorize(Roles = "User, Administrator")]
     public async Task<ActionResult<CreateReviewDTO>> CreateReview(CreateReviewDTO createReviewDTO)

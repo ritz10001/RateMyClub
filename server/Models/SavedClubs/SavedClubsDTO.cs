@@ -5,6 +5,7 @@ namespace RateMyCollegeClub.Models.SavedClubs;
 using System.ComponentModel.DataAnnotations;
 public class SavedClubsDTO
 {
+    public int Id { get; set; }
     public int ClubId { get; set; }
     public string ClubName { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
