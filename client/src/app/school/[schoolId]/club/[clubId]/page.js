@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Star, Heart, Users, Calendar, MapPin, Plus, Pencil, Trash2 } from "lucide-react"
+import { Star, Heart, Users, Calendar, MapPin, Plus, Pencil, Trash2, ArrowBigUp, ArrowBigDown, Flag } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
 import { use } from "react"; 
@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import { useClub } from "@/app/context/ClubContext"
 import DeleteReviewModal from "@/app/components/delete-review-modal"
 import { toast } from 'sonner';
+import { Elsie_Swash_Caps } from "next/font/google"
 
 const monthNumbers = {
   1: "January",
@@ -45,61 +46,92 @@ export default function ClubPage({ params }) {
   const [isLoading, setIsLoading] = useState(true)
   const [advice, setAdvice] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [votesLoading, setVotesLoading] = useState(true);
   const toastId = useRef(null);
   const [newReview, setNewReview] = useState({
     rating: 5,
     reviewText: "",
   })
-  const [userVote, setUserVote] = useState(null);
-  
+  const [userVotes, setUserVotes] = useState({});
+  const [isVoting, setIsVoting] = useState(false);
   const { schoolId, clubId } = use(params);
+  console.log("Club ID:", clubId);
+  console.log("bookmark status", isBookmarked);
 
   useEffect(() => {}, [reviewToDelete])
 
-  useEffect(() => {
-    const fetchClubDetails = async () => {
-      try{
-        const response = await fetch(`http://localhost:5095/api/club/${clubId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          }
-        })
-        if(response.ok){
-          const data = await response.json();
-          console.log("Club details fetched successfully:", data);
-          setClub(data);
-          setReviews(data.reviews || []);
-        }
-        else{
-          console.error("Failed to fetch club details:");
-        }
+  
+  const fetchClubDetails = async () => {
+    try{
+      if (!user && !isLoading) {
+        const initialVotes = {};
+        reviews.forEach(review => {
+          initialVotes[review.id] = 0;
+        });
+        setUserVotes(initialVotes);
+        return;
       }
-      catch(error) {
-        console.error("Error fetching club information:", error);
+      const headers = {
+      "Content-Type": "application/json",
+      ...(user?.token && { Authorization: `Bearer ${user.token}` }) // Add auth header if user exists
+      };
+      const response = await fetch(`http://localhost:5095/api/club/${clubId}`, {
+        method: "GET",
+        headers
+      })
+      if(response.ok){
+        const data = await response.json();
+        console.log("Club details fetched successfully:", data);
+        setClub(data);
+        setReviews(data.reviews || []);
+        setIsBookmarked(data.isBookmarked || false);
+
+        //setup initial votes
+        const initialVotes = {};
+        (data.reviews || []).forEach(review => {
+          initialVotes[review.id] = review.currentUserVote ?? 0
+        });
+        console.log("Initial votes:", initialVotes); 
+        setUserVotes(initialVotes);
       }
-      finally {
-        setIsLoading(false);
+      else{
+        console.error("Failed to fetch club details:");
       }
     }
-    fetchClubDetails();
-  }, [clubId])
-  const handleBookmark = async () => {
-    if (isProcessing) return;
+    catch(error) {
+      console.error("Error fetching club information:", error);
+    }
+    finally {
+      setIsLoading(false);
+    }
+  }
 
-    const newBookmarkState = !isBookmarked;
-    setIsBookmarked(newBookmarkState);
+  useEffect(() => {
+    fetchClubDetails();
+  }, [clubId, user?.token, user?.userId]);
+
+  const handleBookmark = async () => {
+    if(!user){
+      setIsModalOpen(true);
+      return;
+    }
+    // if (isProcessing) return;
+
+    // const newBookmarkState = !isBookmarked;
+    console.log("BOOKMARK STATE", isBookmarked);
+    // setIsBookmarked(newBookmarkState);
   // Dismiss any existing toast
     try {
-      setIsProcessing(true);
+      // setIsProcessing(true);
 
       // 3. Manage toast
       if (toastId.current) toast.dismiss(toastId.current);
-      const message = newBookmarkState ? "Club Bookmarked!" : "Bookmark Removed";
+      console.log("inside bookmark now");
+      const message = isBookmarked ? "Bookmark Removed" : "Club Bookmarked!";
       toastId.current = toast.success(message, { duration: 1000 });
     // 4. Debounced API call
-      const response = await fetch(`http://localhost:5095/api/bookmarks`, {
-        method: newBookmarkState ? "POST" : "DELETE",
+      const response = await fetch(`http://localhost:5095/api/SavedClub`, {
+        method: isBookmarked ? "DELETE" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${user?.token}`
@@ -109,17 +141,88 @@ export default function ClubPage({ params }) {
 
       if (!response.ok) {
         // 5. Revert on failure
-        setIsBookmarked(!newBookmarkState);
+        // setIsBookmarked(!newBookmarkState);
+
         throw new Error("Bookmark update failed");
       }
+      await fetchClubDetails();
     } 
     catch (error) {
       toast.error(error.message);
     } 
-    finally {
-      setIsProcessing(false);
-    }
+    // finally {
+    //   setIsProcessing(false);
+    // }
   };
+
+  const handleVoteClick = async (newValue, reviewId) => {
+    if (!user) {
+      setIsModalOpen(true);
+      return;
+    }
+    console.log("BEFORE ISVOTING");
+    if (isVoting) return;
+    
+    setIsVoting(true);
+    console.log("OUTSIDE TRY BLOCK");
+    try {
+      console.log("INSIDE");
+      // Get current vote state
+      const currentVote = userVotes[reviewId] || 0;
+      let sendValue = newValue;
+
+      // Toggle logic:
+      // If clicking same vote again, cancel it (send 0)
+      // If clicking opposite vote, switch to that vote
+      if (currentVote === newValue) {
+        sendValue = 0;
+      }
+
+    
+      const response = await fetch("http://localhost:5095/api/ReviewVote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          reviewId: reviewId,
+          value: sendValue
+        })
+      });
+
+      if (response.ok) {
+        // Calculate the net score change
+        // const scoreChange = sendValue - currentVote;
+        const result = await response.json();
+        
+        setUserVotes(prev => ({
+          ...prev,
+          [reviewId]: result.newVoteValue
+        }));
+        
+        setReviews(prev => 
+          prev.map(r => 
+            r.id === reviewId 
+              ? { ...r, netScore: result.newNetScore } 
+              : r
+          )
+        );
+      } 
+      else {
+        const error = await response.json();
+        toast.error(error.message || "Vote failed");
+        setUserVotes(prev => ({ ...prev }));
+      }
+    } 
+    catch (error) {
+      console.error("Voting error:", error);
+      toast.error("Failed to submit vote. Please try again.");
+    } 
+    finally {
+      setIsVoting(false);
+    }
+  }
 
   const handleSubmitReview = (e) => {
     e.preventDefault()
@@ -178,7 +281,7 @@ export default function ClubPage({ params }) {
       <div className="max-w-7xl mx-auto px-4">
         {/* Club Header */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             <div className="flex-1">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -242,12 +345,20 @@ export default function ClubPage({ params }) {
             </div>
 
             {/* Add Review Button */}
-            <Link href={`/school/${schoolId}/club/${clubId}/add-review`} className="w-full">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center">
-                <Plus className="w-4 h-4" />
-                Add A Review
-              </Button>
-            </Link>
+            
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center"
+              onClick={() => {
+                if(user) {
+                  router.push(`/school/${schoolId}/club/${clubId}/add-review`);
+                }
+                else{
+                  setIsModalOpen(true);
+                  return;
+                }
+              }}>
+              <Plus className="w-4 h-4" />
+              Add A Review
+            </Button>
           </div>
 
           {/* Category Breakdown */}
@@ -268,7 +379,7 @@ export default function ClubPage({ params }) {
 
 
           {/* Reviews List */}
-          <div className="space-y-6">
+          <div className="space-y-6 border-t border-gray-500 p-4">
             {reviews.map((review) => (
               <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
                 <p>{console.log("REVIEW USER ID", review.userId)}</p>
@@ -307,28 +418,21 @@ export default function ClubPage({ params }) {
                   </div>
                 </div>
                 <p className="text-gray-700 leading-relaxed mb-3">{review.comment}</p>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <button className="hover:text-green-500 transition-colors" onClick={() => {
-                      if(!user){
-                        setIsModalOpen(true);
-                        return;
-                      }
-                    }}>
-                    👍{review.thumbsup}
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div className="flex items-center gap-4">
+                    <button className={`transition-colors ${userVotes[review.id] === 1 ? "text-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
+                    onClick={() => handleVoteClick(1, review.id)} disabled={isVoting}>
+                      <ArrowBigUp className={`hover:text-green-600 transition-colors ${userVotes[review.id] === 1 ? "fill-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
+                    </button>
+                    <p className="font-bold">{review.netScore}</p>
+                    <button className={`transition-colors ${userVotes[review.id] === -1 ? "text-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
+                    onClick={() => handleVoteClick(-1, review.id)} disabled={isVoting}>
+                    <ArrowBigDown className={`hover:text-red-600 transition-colors ${userVotes[review.id] === -1 ? "fill-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
+                    </button>
+                  </div>
+                  <button className="flex items-center gap-2 text-sm hover:text-red-500 font-medium">
+                    <span className="text-black font-bold"></span><Flag className="hover:fill-red-500 transition-colors" />
                   </button>
-                  <button className="hover:text-red-500 transition-colors" onClick={() => {
-                      if(!user){
-                        setIsModalOpen(true)
-                        return;
-                      }
-                    }}>
-                    👎{review.thumbsdown}
-                  </button>
-                  <LoginModal 
-                    isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
-                  />
-                  
                 </div>
               </div>
             ))}
@@ -378,6 +482,10 @@ export default function ClubPage({ params }) {
           </div>
         </div>
       </div>
+      <LoginModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   )
 }

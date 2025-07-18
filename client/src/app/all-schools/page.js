@@ -200,16 +200,16 @@ export default function DirectoryPage() {
             <p className="font-bold text-xl">Now Loading..</p>
           </div>
           ) : 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="rounded-xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {filteredSchools.map((school) => (
               <Link key={school.id} href={`/school/${school.id}`} className="group">
-                <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <div className="bg-white rounded-md shadow-lg border border-blue-100 pb-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
                   {/* School Logo */}
-                  <div className="flex justify-center mb-4">
+                  <div className="flex justify-center mb-4 h-55">
                     <img
-                      src={school.logo || "/placeholder.svg"}
+                      src={school.logoUrl}
                       alt={`${school.name} logo`}
-                      className="h-auto w-20"
+                      className="h-full w-full"
                     />
                   </div>
 

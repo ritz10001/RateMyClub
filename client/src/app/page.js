@@ -7,10 +7,65 @@ import Link from "next/link"
 import { useState } from "react"
 import { Users, Star, TrendingUp } from "lucide-react"
 import { useAuth } from "./context/AuthContext"
+import Image from 'next/image';
 
 export default function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("")
   const { user } = useAuth();
+  const popularSchools = [
+    {
+      school: "Texas Tech Univeristy",
+      url: "https://www.texastech.edu/universities/ttu-campus-2022.jpg",
+      reviews: 10
+    },
+    {
+      school: "University of Texas at Dallas",
+      url: "https://www.utdallas.edu/files/2024/04/campus-mall-drone-shot-spring-2023-f9da6375e486abef.jpg",
+      reviews: 10
+    },
+    {
+      school: "Massachusetts Institute of Technology ",
+      url: "https://www.science.org/do/10.1126/science.aav7395/abs/MIT_16x9_0.jpg",
+      reviews: 10
+    },
+    {
+      school: "Stanford University",
+      url: "https://money-assets.money.com/mcp/2025/243744.jpg",
+      reviews: 10
+    },
+    {
+      school: "University of Southern California - Los Angeles",
+      url: "https://employees.usc.edu/wp-content/uploads/2024/05/USC-EG-GC-Campus-3@2x.jpg",
+      reviews: 10
+    }
+  ];
+  const popularClubs = [
+    {
+      club: "Tech Robotics Association",
+      url: "https://www.texastech.edu/universities/ttu-campus-2022.jpg",
+      reviews: 10
+    },
+    {
+      club: "Tech Robotics Association",
+      url: "https://www.texastech.edu/universities/ttu-campus-2022.jpg",
+      reviews: 10
+    },
+    {
+      club: "Tech Robotics Association",
+      url: "https://www.texastech.edu/universities/ttu-campus-2022.jpg",
+      reviews: 10
+    },
+    {
+      club: "Tech Robotics Association",
+      url: "https://www.texastech.edu/universities/ttu-campus-2022.jpg",
+      reviews: 10
+    },
+    {
+      club: "Tech Robotics Association",
+      url: "https://www.texastech.edu/universities/ttu-campus-2022.jpg",
+      reviews: 10
+    },
+  ];
   const features = [
     {
       icon: Users,
@@ -53,7 +108,7 @@ export default function HeroSection() {
         </p>
 
         {/* Search Section */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-16 border border-blue-100">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Enter your school name to get started</h2>
 
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
@@ -82,6 +137,52 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
+    </section>
+    <section className="container mx-auto px-4 mb-16 md:mb-24">
+      <div className="mx-auto">
+        <div className="mb-20">
+          <p className="text-xl md:text-2xl text-gray-900 mb-6 max-w-2xl">Popular schools</p>
+          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            {popularSchools.map((school, index) => {
+              return(
+                <div key={index} className="bg-white rounded-xl shadow-lg border border-blue-100">
+                  <div className="w-70 h-50 bg-blue-100 flex items-center justify-center mb-4 mx-auto">
+                    <img src={school.url} className="w-full h-full text-blue-600 rounded-lg"/>
+                  </div>
+                  <div className="h-16 flex items-center justify-center mb-2">
+                    <h3 className="text-xl text-center font-semibold text-gray-800 line-clamp-2 leading-tight">
+                      {school.school}
+                    </h3>
+                  </div>
+                  <p className="text-gray-600 text-center mb-2">{school.reviews} Reviews</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        <div>
+          <p className="text-xl md:text-2xl text-gray-900 mb-6 max-w-2xl">Popular Clubs</p>
+          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            {popularClubs.map((club, index) => {
+              return(
+                <div key={index} className="bg-white rounded-xl shadow-lg border border-blue-100">
+                  <div className="w-70 h-50 bg-blue-100 flex items-center justify-center mb-4 mx-auto">
+                    <img src={club.url} className="w-full h-full text-blue-600 rounded-lg"/>
+                  </div>
+                  <div className="h-16 flex items-center justify-center mb-2">
+                    <h3 className="text-xl text-center font-semibold text-gray-800 line-clamp-2 leading-tight">
+                      {club.club}
+                    </h3>
+                  </div>
+                  <p className="text-gray-600 text-center mb-2">{club.reviews} Reviews</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        
+      </div>
+      
     </section>
     <section className="container mx-auto px-4 mb-16">
       <div className="max-w-4xl mx-auto">
