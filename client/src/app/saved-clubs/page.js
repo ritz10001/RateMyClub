@@ -5,72 +5,69 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, ArrowLeft, HeartCrack, Users } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
-
-// Mock data for saved clubs
-const mockSavedClubs = [
-  {
-    id: 1,
-    name: "Tech Robotics Association",
-    school: "Texas Tech University",
-    schoolId: 1,
-    category: "Engineering",
-    rating: 4.8,
-    reviewCount: 24,
-    memberCount: 156,
-    description: "Building the future through innovative robotics projects and competitions.",
-    tags: ["STEM", "Competition", "Innovation"],
-    savedDate: "2024-01-15",
-  },
-  {
-    id: 2,
-    name: "Photography Club",
-    school: "Texas Tech University",
-    schoolId: 1,
-    category: "Arts",
-    rating: 4.6,
-    reviewCount: 31,
-    memberCount: 78,
-    description: "Capturing moments and developing photography skills through workshops and photo walks.",
-    tags: ["Creative", "Visual Arts", "Community"],
-    savedDate: "2024-01-10",
-  },
-  {
-    id: 3,
-    name: "Business Society",
-    school: "Stanford University",
-    schoolId: 3,
-    category: "Professional",
-    rating: 4.4,
-    reviewCount: 27,
-    memberCount: 134,
-    description: "Networking and professional development for future business leaders.",
-    tags: ["Networking", "Career", "Business"],
-    savedDate: "2024-01-08",
-  },
-  {
-    id: 4,
-    name: "Environmental Action Group",
-    school: "MIT",
-    schoolId: 2,
-    category: "Service",
-    rating: 4.7,
-    reviewCount: 19,
-    memberCount: 92,
-    description: "Promoting sustainability and environmental awareness on campus.",
-    tags: ["Environment", "Sustainability", "Activism"],
-    savedDate: "2024-01-05",
-  },
-]
+import { useEffect, useState } from "react"
+import { useAuth } from "../context/AuthContext"
+import { toast } from "sonner"
 
 export default function SavedClubsPage() {
-  const [savedClubs, setSavedClubs] = useState(mockSavedClubs)
-  const [sortBy, setSortBy] = useState("recent")
+  const [savedClubs, setSavedClubs] = useState([]);
+  const [sortBy, setSortBy] = useState("recent");
+  const [isLoading, setIsLoading] = useState(true)
+  const { user } = useAuth();
 
-  const handleRemoveClub = (clubId) => {
-    setSavedClubs((prev) => prev.filter((club) => club.id !== clubId))
-    // TODO: Implement actual removal from saved clubs
-    console.log(`Removed club ${clubId} from saved clubs`)
+  useEffect(() => {
+    const fetchSavedClubs = async () => {
+      try{
+        const response = await fetch("http://localhost:5095/api/SavedClub", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user?.token}`,
+          }
+        })
+        if(response.ok){
+          const data = await response.json();
+          setSavedClubs(data);
+        }
+        else{
+          toast.error("Failed to fetch saved clubs. Please try again later.");
+        }
+      }
+      catch(error){
+        toast.error("An error occurred while fetching saved clubs.");
+      }
+      finally {
+        setIsLoading(false);
+      }
+    }
+    fetchSavedClubs();
+  });
+
+  const handleRemoveClub = async (clubId) => {
+    console.log(`Removing club ${clubId} from saved clubs...`);
+    try{
+      const response = await fetch(`http://localhost:5095/api/SavedClub/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({ clubId })
+      })
+      if(response.ok){
+        setSavedClubs((prev) => prev.filter((club) => club.id !== clubId));
+        toast.success("Club removed from saved clubs successfully.");
+      }
+      else{
+        const errorData = await response.json();
+        toast.error(`Failed to remove club: ${errorData.message || "Unknown error"}`);
+      }
+    }
+    catch(error){
+      toast.error("An error occured while removing the club, please try again later.");
+      return;
+    }
+    // console.log(`Removed club ${clubId} from saved clubs`)
   }
 
   const handleSort = (value) => {
@@ -98,13 +95,22 @@ export default function SavedClubsPage() {
     ))
   }
 
+  if (isLoading) {
+    return <>
+      <div className="col-span-full flex justify-center py-12 space-x-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="font-bold text-xl">Now Loading..</p>
+      </div>
+    </>;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <Link
-            href="/dashboard"
+            href="/"
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -155,35 +161,35 @@ export default function SavedClubsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {savedClubs.map((club) => (
               <div
-                key={club.id}
+                key={club.clubId}
                 className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-all duration-300"
               >
                 {/* Club Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge className="bg-blue-100 text-blue-800 text-xs">{club.category}</Badge>
+                      <Badge className="bg-blue-100 text-blue-800 text-xs">{club.categoryName}</Badge>
                       <div className="flex items-center gap-1 text-yellow-500">
                         <Star className="w-4 h-4 fill-current" />
-                        <span className="text-sm font-medium text-gray-700">{club.rating}</span>
+                        <span className="text-sm font-medium text-gray-700">{club.averageRating}</span>
                       </div>
                     </div>
-                    <Link href={`/club/${club.id}`} className="group">
+                    <Link href={`/school/${club.universityId}/club/${club.clubId}`} className="group">
                       <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
-                        {club.name}
+                        {club.clubName}
                       </h3>
                     </Link>
                     <Link
-                      href={`/school/${club.schoolId}`}
+                      href={`/school/${club.universityId}`}
                       className="text-blue-600 hover:text-blue-700 font-medium text-sm underline underline-offset-4"
                     >
-                      {club.school}
+                      {club.universityName}
                     </Link>
                   </div>
 
                   {/* Remove Button */}
                   <button
-                    onClick={() => handleRemoveClub(club.id)}
+                    onClick={() => handleRemoveClub(club.clubId)}
                     className="p-2 rounded-full hover:bg-red-50 transition-colors group/remove"
                     title="Remove from saved clubs"
                   >
@@ -196,10 +202,10 @@ export default function SavedClubsPage() {
 
                 {/* Club Stats */}
                 <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
+                  {/* <div className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
                     <span>{club.memberCount} members</span>
-                  </div>
+                  </div> */}
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4" />
                     <span>{club.reviewCount} reviews</span>
@@ -218,7 +224,7 @@ export default function SavedClubsPage() {
                 {/* Saved Date */}
                 <div className="text-xs text-gray-500 border-t border-gray-100 pt-3">
                   Saved on{" "}
-                  {new Date(club.savedDate).toLocaleDateString("en-US", {
+                  {new Date(club.savedAt).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
