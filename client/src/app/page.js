@@ -142,7 +142,7 @@ export default function HeroSection() {
       <div className="mx-auto">
         <div className="mb-20">
           <p className="text-xl md:text-2xl text-gray-900 mb-6 max-w-2xl">Popular schools</p>
-          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
             {popularSchools.map((school, index) => {
               return(
                 <div key={index} className="bg-white rounded-xl shadow-lg border border-blue-100">
@@ -162,7 +162,7 @@ export default function HeroSection() {
         </div>
         <div>
           <p className="text-xl md:text-2xl text-gray-900 mb-6 max-w-2xl">Popular Clubs</p>
-          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
             {popularClubs.map((club, index) => {
               return(
                 <div key={index} className="bg-white rounded-xl shadow-lg border border-blue-100">
