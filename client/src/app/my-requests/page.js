@@ -1,0 +1,205 @@
+"use client"
+
+import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Star, ArrowLeft, HeartCrack, Users, NotebookPen, Pencil, Trash2, University, Ban } from "lucide-react"
+import { toast } from "sonner"
+
+const monthNumbers = {
+  1: "January",
+  2: "February",
+  3: "March",
+  4: "April",
+  5: "May",
+  6: "June",
+  7: "July",
+  8: "August",
+  9: "September",
+  10: "October",
+  11: "November",
+  12: "December",
+}
+
+export default function MyRequestsPage(){
+  const [universityRequests, setUniversityRequests] = useState([]);
+  const [clubRequests, setClubRequests] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [filterBy, setFilterBy] = useState("All");
+  const router = useRouter();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchUniversityRequests = async () => {
+    try {
+      console.log("gello");
+      const response = await fetch("http://localhost:5095/api/UniversityRequest/my-requests", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user?.token}`
+        }
+        })
+        if(response.ok){
+          const data = await response.json();
+          console.log(data);
+          setUniversityRequests(data);
+        }
+        else{
+          toast.error("Failed to fetch reviews. Please try again later.")
+        }
+      }
+      catch(error){
+        toast.error("An error occured while trying to fetch reviews.");
+      }
+    }
+    fetchUniversityRequests();
+  }, [user?.token]);
+
+  useEffect(() => {
+    updateDisplayedRequests();
+  }, [universityRequests, filterBy]);
+
+  const updateDisplayedRequests = () => {
+    let results = [...universityRequests];
+    results = results.filter((request) => {
+      if (filterBy === "all") return true;
+      return request.status.toLowerCase() === filterBy.toLowerCase();
+    })
+  }
+
+
+  const handleFilter = (category) => {
+    setFilterBy(category);
+  }
+
+  return(
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">My Requests</h1>
+              <p className="text-gray-600">Your requests</p>
+            </div>  
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter by:</span>
+              <Select value={filterBy} onValueChange={handleFilter}>
+                <SelectTrigger className="w-48 border-2 border-gray-200 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All</SelectItem>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="Approved">Approved</SelectItem>
+                  <SelectItem value="Rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div> 
+        </div>
+        {universityRequests.length === 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-12 border border-blue-100 text-center">
+            <div className="text-gray-400 mb-4">
+              <University className="w-16 h-16 mx-auto" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Universities</h3>
+            <p className="text-gray-600 mb-6">
+              You haven't made any requests yet. Feel free to request addition of your university!
+            </p>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold" asChild>
+              <Link href="/directory">Explore Universities</Link>
+            </Button>
+          </div>
+        )}
+        {universityRequests.length > 0 &&
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 mx-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Requests ({universityRequests.length})</h2>
+            {/* Reviews List */}
+            <div className="space-y-6 border-t border-gray-500 py-4">
+            {universityRequests.map((request) => (
+              <div key={request.id} className="border-b border-gray-500 pb-6 last:border-b-0">
+                <div className="flex justify-between">
+                  <p className="font-bold text-xl md:text-2xl mb-2 text-gray-700">{request.universityName}</p>
+                    <button 
+                    className="flex items-center gap-2 p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
+                    title="Delete Review"
+                    onClick={() => {
+                        setReviewToDelete(review.id)
+                        setIsDeleteOpen(true);
+                    }}>Withdraw Request
+                    <Ban className="w-4 h-4" />
+                    </button>           
+                </div>
+                <p className="text-md mb-2 text-gray-600 font-medium">{request.location}</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-semibold text-gray-700">Status:</span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                    🕒 Pending
+                    </span>
+                </div>
+                <p className="text-sm text-gray-500">{monthNumbers[parseInt(request.requestedAt.slice(5,7))] + " " + parseInt(request.requestedAt.slice(8,10)) + ", " + request.requestedAt.slice(0,4)}</p>
+              </div>
+            ))}
+            </div>
+          {/* <DeleteReviewModal 
+            isOpen={isDeleteOpen}
+            onClose={() => setIsDeleteOpen(false)}
+            onDelete={async () => {
+              if(!reviewToDelete){
+                return;
+              }
+              try{
+                console.log("THIS REVIEW TO DELETE", reviewToDelete);
+                const response = await fetch(`http://localhost:5095/api/Review/${reviewToDelete}`, {
+                  method: "DELETE",
+                  headers: {
+                    "Authorization": `Bearer ${user.token}`
+                  }
+                });
+                if (!response.ok) throw new Error("Delete failed");
+                setReviews((prevReviews) =>
+                  prevReviews.filter((r) => r.id !== reviewToDelete)
+                );
+                toast.success("Review deleted successfully!", {
+                  duration: 5000, // 5 seconds
+                });
+              }
+              catch(error){
+                console.error(error);
+                toast.error(errorData.message || "Deletion failed. Please try again.");
+              }
+              finally {
+                setIsDeleteOpen(false);
+                setReviewToDelete(null);
+              }
+            }}
+          /> */}
+
+          {/* Load More Reviews */}
+          <div className="text-center mt-8">
+            <Button
+              variant="outline"
+              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-xl font-semibold bg-transparent"
+            >
+              Load More Requests
+            </Button>
+          </div>
+        </div>
+      }
+      </div>
+    </div>
+    );
+}

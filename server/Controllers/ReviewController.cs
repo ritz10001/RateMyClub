@@ -24,7 +24,6 @@ public class ReviewController : ControllerBase
     private readonly IReviewsRepository _reviewsRepository;
     private readonly UserManager<User> _userManager;
 
-
     public ReviewController(IMapper mapper, IReviewsRepository reviewsRepository)
     {
         _mapper = mapper;
@@ -58,10 +57,6 @@ public class ReviewController : ControllerBase
     public async Task<ActionResult<CreateReviewDTO>> CreateReview(CreateReviewDTO createReviewDTO)
     {
         var userId = GetUserId();
-        // if (string.IsNullOrEmpty(userId))
-        // {
-        //     return Unauthorized();
-        // }
 
         var review = _mapper.Map<Review>(createReviewDTO);
         review.UserId = userId;
@@ -158,6 +153,26 @@ public class ReviewController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpPost("{id}/flag")]
+    public async Task<IActionResult> FlagReview(int id, FlagReviewDTO flagReviewDTO)
+    {
+        var userId = GetUserId();
+        var review = await _reviewsRepository.GetAsync(id);
+        if (review == null)
+        {
+            return NotFound("Review not found");
+        }
+        var flag = new ReviewFlag
+        {
+            ReviewId = id,
+            UserId = userId,
+            Reason = flagReviewDTO.Reason
+        };
+
+        await _reviewsRepository.FlagReviewAsync(flag);
+        return Ok();
     }
 
     private async Task<bool> ReviewExists(int id)

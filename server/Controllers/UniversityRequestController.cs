@@ -32,6 +32,15 @@ public class UniversityRequestController : ControllerBase
         var result = _mapper.Map<List<GetUniversityRequestDTO>>(requests);
         return Ok(result);
     }
+
+    [HttpGet("my-requests")]
+    public async Task<ActionResult<IEnumerable<GetMyUniversityRequestDTO>>> GetRequestsByUserId()
+    {
+        var userId = GetUserId();
+        var requests = await _universityRequestsRepository.GetUniversityRequestByUser(userId);
+        var result = _mapper.Map<List<GetMyUniversityRequestDTO>>(requests);
+        return Ok(result);
+    }
     [HttpPost]
     public async Task<IActionResult> CreateRequest(UniversityRequestDTO universityRequestDTO)
     {

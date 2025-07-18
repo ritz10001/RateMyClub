@@ -21,4 +21,10 @@ public class ReviewsRepository : GenericRepository<Review>, IReviewsRepository
         .Where(r => r.UserId == userId)
         .ToListAsync();
     }
+    public async Task<ReviewFlag> FlagReviewAsync(ReviewFlag flag)
+    {
+        await _context.ReviewFlags.AddAsync(flag);
+        return flag;
+    }
+
 }

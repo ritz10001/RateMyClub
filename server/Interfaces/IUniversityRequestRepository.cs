@@ -6,5 +6,6 @@ namespace RateMyCollegeClub.Interfaces;
 
 public interface IUniversityRequestsRepository : IGenericRepository<UniversityRequest>
 {
-    Task<List<UniversityRequest>> GetUniversityRequestsInformation(); 
+    Task<List<UniversityRequest>> GetUniversityRequestsInformation();
+    Task<List<UniversityRequest>> GetUniversityRequestByUser(string userId); 
 }
