@@ -23,7 +23,7 @@ public class CollegeClubsDbContext : IdentityDbContext<User> {
     public DbSet<ClubRequest> ClubRequests { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<ReviewVote> ReviewVotes { get; set; }
-
+    public DbSet<ReviewFlag> ReviewFlags { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

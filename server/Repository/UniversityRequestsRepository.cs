@@ -19,4 +19,11 @@ public class UniversityRequestsRepository : GenericRepository<UniversityRequest>
         .Include(r => r.User)
         .ToListAsync();
     }
+
+    public async Task<List<UniversityRequest>> GetUniversityRequestByUser(string userId)
+    {
+        return await _context.UniversityRequests
+        .Where(q => q.UserId == userId)
+        .ToListAsync();
+    }
 }
