@@ -16,7 +16,7 @@ public class UniversityRequestsRepository : GenericRepository<UniversityRequest>
     public async Task<List<UniversityRequest>> GetUniversityRequestsInformation()
     {
         return await _context.UniversityRequests
-        .Include(r => r.User)
+        .Include(q => q.User)
         .ToListAsync();
     }
 

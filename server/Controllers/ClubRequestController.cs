@@ -52,6 +52,14 @@ public class ClubRequestController : ControllerBase
         }
         return Ok(result);
     }
+    [HttpGet("my-club-requests")]
+    public async Task<ActionResult<IEnumerable<GetMyClubRequestsDTO>>> GetRequestsByUserId()
+    {
+        var userId = GetUserId();
+        var requests = await _clubRequestsRepository.GetClubRequestByUser(userId);
+        var results = _mapper.Map<List<GetMyClubRequestsDTO>>(requests);
+        return Ok(results);
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreateRequest([FromBody] ClubRequestDTO clubRequestDTO)
@@ -66,7 +74,18 @@ public class ClubRequestController : ControllerBase
 
         return Ok(responseDTO);
     }
-    
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> WithdrawRequest(int id)
+    {
+        var request = await _clubRequestsRepository.GetAsync(id);
+        if (request == null)
+        {
+            return NotFound();
+        }
+        await _clubRequestsRepository.DeleteAsync(id);
+        return NoContent();
+    }
     private string? GetUserId()
     {
         return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value;

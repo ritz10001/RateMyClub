@@ -10,5 +10,5 @@ public class GetUniversityRequestDTO
     public string? UserId { get; set; }
     public string RequestedBy { get; set; } = string.Empty;
     public DateTime RequestedAt { get; set; }
-    public string Status { get; set; } = string.Empty; // Default status can be
+    public IntPtr Status { get; set; } // Default status can be
 }
