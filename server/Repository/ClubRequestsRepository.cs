@@ -15,9 +15,18 @@ public class ClubRequestsRepository : GenericRepository<ClubRequest>, IClubReque
     public async Task<List<ClubRequest>> GetClubRequestsInformation()
     {
         return await _context.ClubRequests
-        .Include(r => r.User)
-        .Include(r => r.University)
-        .Include(r => r.Category)
+        .Include(q => q.User)
+        .Include(q => q.University)
+        .Include(q => q.Category)
+        .ToListAsync();
+    }
+
+    public async Task<List<ClubRequest>> GetClubRequestByUser(string userId)
+    {
+        return await _context.ClubRequests
+        .Include(q => q.University)
+        .Include(q => q.Category)
+        .Where(q => q.UserId == userId)
         .ToListAsync();
     }
 }

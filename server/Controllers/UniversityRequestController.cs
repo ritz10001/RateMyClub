@@ -33,7 +33,7 @@ public class UniversityRequestController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("my-requests")]
+    [HttpGet("my-university-requests")]
     public async Task<ActionResult<IEnumerable<GetMyUniversityRequestDTO>>> GetRequestsByUserId()
     {
         var userId = GetUserId();
@@ -48,6 +48,17 @@ public class UniversityRequestController : ControllerBase
         request.UserId = GetUserId();
         await _universityRequestsRepository.AddAsync(request);
         return Ok(request);
+    }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> WithdrawRequest(int id)
+    {
+        var request = await _universityRequestsRepository.GetAsync(id);
+        if (request == null)
+        {
+            return NotFound();
+        }
+        await _universityRequestsRepository.DeleteAsync(id);
+        return NoContent();
     }
     private string? GetUserId()
     {

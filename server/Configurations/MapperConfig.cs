@@ -82,6 +82,10 @@ public class MapperConfig : Profile {
         .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.Name))
         .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.RequestStatus.ToString()));
         CreateMap<ClubRequest, ClubRequestDTO>().ReverseMap();
+        CreateMap<ClubRequest, GetMyClubRequestsDTO>()
+        .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
+        .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.Name))
+        .ReverseMap();
         CreateMap<UniversityRequest, UniversityRequestDTO>().ReverseMap(); // or .Email, depends on your User class
         CreateMap<UniversityRequest, GetUniversityRequestDTO>()
         .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
