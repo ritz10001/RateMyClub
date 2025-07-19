@@ -15,5 +15,7 @@ public class UniversityRequest
     public User? User { get; set; } // Assuming User is a class representing the user making the request
     public RequestStatus RequestStatus { get; set; } // 0: Pending, 1: Approved, 2: Rejected
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow; // ISO 8601 format for UTC time
+    public DateTime? ProcessedAt { get; set; }
+    public string? RejectionReason { get; set; }
 }   
 
