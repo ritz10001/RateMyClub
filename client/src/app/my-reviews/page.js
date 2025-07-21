@@ -40,6 +40,10 @@ export default function MyReviewsPage() {
 
   useEffect(() => {
     const fetchReviews = async () => {
+      if (!user?.token) {
+        console.log("User not authenticated yet, skipping fetch");
+        return;
+      }
       try {
         const response = await fetch("http://localhost:5095/api/Review/mine", {
           method: "GET",
