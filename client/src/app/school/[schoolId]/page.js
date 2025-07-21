@@ -16,14 +16,14 @@ import { useRouter } from "next/navigation"
 
 export default function SchoolPage({ params }) {
   const { schoolId } = use(params);
-  const [school, setSchool] = useState(null)
+  const [school, setSchool] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [clubs, setClubs] = useState([])
-  const [filteredClubs, setFilteredClubs] = useState([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState("name")
-  const [filterBy, setFilterBy] = useState("all")
-  const [isLoading, setIsLoading] = useState(true)
+  const [clubs, setClubs] = useState([]);
+  const [filteredClubs, setFilteredClubs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [filterBy, setFilterBy] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -34,6 +34,7 @@ export default function SchoolPage({ params }) {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${user?.token}`
           }
         })
         if(response.ok){
@@ -100,7 +101,6 @@ export default function SchoolPage({ params }) {
 
     setFilteredClubs(results);
   };
-
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -280,17 +280,10 @@ export default function SchoolPage({ params }) {
                         <Star className="w-4 h-4 fill-current" />
                         <span className="text-sm font-medium text-gray-700">{club.averageRating}</span>
                       </div>
-                      <button
-                        className="p-1 rounded-full hover:bg-red-50 transition-colors group/heart"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          // TODO: Implement bookmark functionality
-                          console.log(`Bookmarked ${club.name}`)
-                        }}
-                      >
-                        <Heart className="w-5 h-5 text-red-500 p-0.5 hover:fill-current transition-all group-hover/heart:scale-110" />
-                      </button>
+                      <Heart
+                      className={`w-5 h-5 p-0.5 transition-all group-hover/heart:scale-110 ${
+                        club.isBookmarked ? "text-red-500 fill-current" : "text-red-500"
+                      }`} />
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">

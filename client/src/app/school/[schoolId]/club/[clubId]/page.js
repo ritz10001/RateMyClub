@@ -41,7 +41,7 @@ export default function ClubPage({ params }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [club, setClub] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [advice, setAdvice] = useState("");
@@ -115,15 +115,8 @@ export default function ClubPage({ params }) {
       setIsModalOpen(true);
       return;
     }
-    // if (isProcessing) return;
-
-    // const newBookmarkState = !isBookmarked;
     console.log("BOOKMARK STATE", isBookmarked);
-    // setIsBookmarked(newBookmarkState);
-  // Dismiss any existing toast
     try {
-      // setIsProcessing(true);
-
       // 3. Manage toast
       if (toastId.current) toast.dismiss(toastId.current);
       console.log("inside bookmark now");
@@ -393,23 +386,23 @@ export default function ClubPage({ params }) {
                       </div>
                       {user && review.userId === user.userId && <div className="flex items-center gap-2">
                         <button 
-                          className="p-2 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
+                          className="flex items-center gap-2 p-2 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
                           title="Edit Review"
                           onClick = {() => {
                             setClubData(review);
                             router.push(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
                           }}
-                        >
+                        >Edit
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button 
-                          className="p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
+                          className="flex items-center gap-2 p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
                           title="Delete Review"
                           onClick={() => {
                               setReviewToDelete(review.id)
                               setIsDeleteOpen(true);
                           }}
-                        >
+                        >Delete
                           <Trash2 className="w-4 h-4" />
                         </button>           
                       </div>}

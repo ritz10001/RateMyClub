@@ -18,10 +18,12 @@ public class UniversityController : ControllerBase
 {
     private readonly IMapper _mapper;
     private readonly IUniversityRepository _universityRepository;
-    public UniversityController(IMapper mapper, IUniversityRepository universityRepository)
+    private readonly IClubsRepository _clubsRepository;
+    public UniversityController(IMapper mapper, IUniversityRepository universityRepository, IClubsRepository clubsRepository)
     {
         _mapper = mapper;
         _universityRepository = universityRepository;
+        _clubsRepository = clubsRepository;
     }
 
     [HttpGet]
@@ -37,6 +39,7 @@ public class UniversityController : ControllerBase
     public async Task<ActionResult<GetUniversityDTO>> GetUniversity(int id)
     {
         var university = await _universityRepository.GetIndividualUniversityDetails(id);
+        var userId = GetUserId();
 
         if (university is null)
         {
@@ -44,8 +47,38 @@ public class UniversityController : ControllerBase
         }
 
         var universityDTO = _mapper.Map<GetUniversityDTO>(university);
+        HashSet<int> bookmarkedIds = new();
+        if (!string.IsNullOrEmpty(userId))
+        {
+            bookmarkedIds = await _clubsRepository.GetBookmarkedClubIds(userId);
+        }
+
+        foreach (var clubDTO in universityDTO.Clubs)
+        {
+            clubDTO.IsBookmarked = bookmarkedIds.Contains(clubDTO.Id);
+        }
 
         return Ok(universityDTO);
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<UniversitySearchDTO>>> SearchUniversities([FromQuery] string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return BadRequest("Query cannot be empty");
+        }
+
+        var universities = await _universityRepository.SearchByNameAsync(query);
+        
+        var results = universities.Select(u => new UniversitySearchDTO
+        {
+            Id = u.Id,
+            Name = u.Name,
+            Location = u.Location
+        }).ToList();
+
+        return Ok(results);
     }
     [HttpDelete("{id}")]
     [Authorize(Roles = "Administrator")]
@@ -96,6 +129,10 @@ public class UniversityController : ControllerBase
         return NoContent();
     }
     
+    private string GetUserId()
+    {
+        return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value ?? string.Empty;
+    }
     private async Task<bool> UniversityExists(int id)
     {
         return await _universityRepository.Exists(id);

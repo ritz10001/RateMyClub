@@ -3,6 +3,7 @@ using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Data;
 
 using Microsoft.EntityFrameworkCore;
+using RateMyCollegeClub.Models.Universities;
 
 namespace RateMyCollegeClub.Repository;
 
@@ -28,5 +29,14 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
             .Include(u => u.Clubs).ThenInclude(c => c.Reviews)
             .Include(u => u.Clubs).ThenInclude(c => c.Tags)
             .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    public async Task<List<University>> SearchByNameAsync(string query)
+    {
+        return await _context.Universities
+        .Where(u => u.Name.Contains(query))
+        .OrderBy(u => u.Name)
+        .Take(10)
+        .ToListAsync();
     }
 }

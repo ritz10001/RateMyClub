@@ -4,6 +4,8 @@ using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Clubs;
 
+
+
 namespace RateMyCollegeClub.Repository;
 
 public class ClubsRepository : GenericRepository<Club>, IClubsRepository
@@ -18,6 +20,18 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
     {
         await _context.SaveChangesAsync();
     }
+
+    public async Task<HashSet<int>> GetBookmarkedClubIds(string userId)
+    {
+        return new HashSet<int>(
+            await _context.SavedClubs
+            .Where(sc => sc.UserId == userId)
+            .Select(sc => sc.ClubId)
+            .ToListAsync()
+        );
+
+    }
+
 
     public async Task<List<Club>> GetClubDetails()
     {
