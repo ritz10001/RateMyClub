@@ -25,14 +25,6 @@ public class UniversityRequestController : ControllerBase
         _universityRequestsRepository = universityRequestsRepository;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetUniversityRequestDTO>>> GetAllRequests()
-    {
-        var requests = await _universityRequestsRepository.GetUniversityRequestsInformation();
-        var result = _mapper.Map<List<GetUniversityRequestDTO>>(requests);
-        return Ok(result);
-    }
-
     [HttpGet("my-university-requests")]
     public async Task<ActionResult<IEnumerable<GetMyUniversityRequestDTO>>> GetRequestsByUserId()
     {
