@@ -165,27 +165,26 @@ export default function MyReviewsPage() {
                     <div className="flex items-center justify-center gap-2 mt-1 w-full">
                       <div className="flex items-center gap-2">
                         <div className="flex">{renderStars(review.overallRating)}</div>
-                        <div className="flex font-bold">{review.overallRating}</div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button 
-                          className="p-2 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
+                          className="flex items-center gap-2 p-2 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
                           title="Edit Review"
                           onClick = {() => {
                             // setClubData(review);
                             router.push(`/school/${review.universityId}/club/${review.clubId}/edit-review/${review.id}`);
                           }}
-                        >
+                        >Edit
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button 
-                          className="p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
+                          className="flex items-center gap-2 p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
                           title="Delete Review"
                           onClick={() => {
                               setReviewToDelete(review.id)
                               setIsDeleteOpen(true);
                           }}
-                        >
+                        >Delete
                           <Trash2 className="w-4 h-4" />
                         </button>           
                       </div>

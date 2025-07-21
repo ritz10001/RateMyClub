@@ -11,5 +11,6 @@ public class GetClubsDTO
     public decimal AverageRating { get; set; }
     public int ReviewCount { get; set; }
     public List<string> Tags { get; set; } = [];
+    public bool IsBookmarked { get; set; }
 
 }
