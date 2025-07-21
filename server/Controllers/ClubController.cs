@@ -32,29 +32,29 @@ public class ClubController : ControllerBase {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GetClubsDTO>>> GetAllClubs()
     {
+        var userId = GetUserId();
         var clubs = await _clubsRepository.GetClubDetails();
         var clubsDTO = _mapper.Map<List<GetClubsDTO>>(clubs);
+
+        HashSet<int> bookmarkedIds = new();
+        if (!string.IsNullOrEmpty(userId))
+        {
+            bookmarkedIds = await _clubsRepository.GetBookmarkedClubIds(userId);
+            Console.WriteLine("Bookmarked IDs: " + string.Join(", ", bookmarkedIds));
+        }
+        
         foreach (var clubDTO in clubsDTO)
         {
             var club = clubs.FirstOrDefault(c => c.Id == clubDTO.Id);
             if (club != null)
             {
-                if (club.Reviews != null && club.Reviews.Any())
-                {
-                    clubDTO.AverageRating = Math.Round(club.Reviews.Average(r => r.OverallRating), 1);
-                }
-                else
-                {
-                    clubDTO.AverageRating = 0;
-                }
-                if (club.Tags != null && club.Tags.Any())
-                {
-                    clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
-                }
-                else
-                {
-                    clubDTO.Tags = new List<string>();
-                }
+                clubDTO.AverageRating = (club.Reviews != null && club.Reviews.Any())
+                ? Math.Round(club.Reviews.Average(r => r.OverallRating), 1)
+                : 0;
+                clubDTO.Tags = (club.Tags != null && club.Tags.Any())
+                ? club.Tags.Select(t => t.Name).ToList()
+                : new List<string>();
+                clubDTO.IsBookmarked = bookmarkedIds.Contains(clubDTO.Id);
             }
 
         }

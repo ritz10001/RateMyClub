@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Users, Star, TrendingUp } from "lucide-react"
 import { useAuth } from "./context/AuthContext"
 import Image from 'next/image';
 
 export default function HeroSection() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   const { user } = useAuth();
   const popularSchools = [
     {
@@ -83,14 +84,26 @@ export default function HeroSection() {
       description: "Help clubs improve and grow by providing valuable feedback.",
     },
   ]
+  
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      // TODO: Implement search functionality
-      console.log("Searching for:", searchQuery)
-    }
-  }
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchQuery.trim() === "") {
+        setSearchResults([]); // clear when query is empty
+        return;
+      }
+
+      const fetchResults = async () => {
+        const res = await fetch(`http://localhost:5095/api/University/search?query=${encodeURIComponent(searchQuery)}`);
+        const data = await res.json();
+        setSearchResults(data);
+      };
+
+      fetchResults();
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
   return (
     <>
@@ -111,7 +124,7 @@ export default function HeroSection() {
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Enter your school name to get started</h2>
 
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
+          <form className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
@@ -121,10 +134,26 @@ export default function HeroSection() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 py-3 text-lg border-2 border-blue-200 focus:border-blue-500 rounded-xl"
               />
+              {searchResults.length > 0 && (
+                <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-2 max-h-64 overflow-y-auto">
+                  {searchResults.map((university) => (
+                    <li
+                      key={university.id}
+                      onClick={() => window.location.href = `/school/${university.id}`}
+                      className="px-4 py-3 hover:bg-blue-100 cursor-pointer transition-colors border-b border-gray-200 last:border-b-0"
+                    >
+                      <div className="flex items-center justify-start gap-2 md:gap-3">
+                        <div className="text-sm md:text-md font-medium text-gray-800">{university.name}</div>
+                        <div className="text-xs md:text-sm text-gray-500">{university.location}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg rounded-xl">
+            {/* <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg rounded-xl">
               Search
-            </Button>
+            </Button> */}
           </form>
 
           <div className="mt-6">

@@ -30,7 +30,7 @@ export default function RequestClubPage({ params }) {
     name: "",
     description: "",
     categoryId: null,
-    meetingLocation: "",
+    // meetingLocation: "",
     universityId: schoolId,
     tagIds: []
   })
