@@ -29,6 +29,10 @@ export default function SchoolPage({ params }) {
 
   useEffect(() => {
     const fetchClubs = async () => {
+      if (!user?.token) {
+        console.log("User not authenticated yet, skipping fetch");
+        return;
+      }
       try{
           const response = await fetch(`http://localhost:5095/api/University/${schoolId}`, {
           method: "GET",
@@ -58,7 +62,7 @@ export default function SchoolPage({ params }) {
       }
     }
     fetchClubs();
-  }, []);
+  }, [schoolId, user?.token]);
 
   useEffect(() => {
     updateDisplayedClubs();
@@ -267,6 +271,7 @@ export default function SchoolPage({ params }) {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredClubs.map((club) => (
+            
             <Link key={club.id} href={`/school/1/club/${club.id}`} className="group">
               <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 {/* Club Header */}
@@ -281,9 +286,12 @@ export default function SchoolPage({ params }) {
                         <span className="text-sm font-medium text-gray-700">{club.averageRating}</span>
                       </div>
                       <Heart
-                      className={`w-5 h-5 p-0.5 transition-all group-hover/heart:scale-110 ${
-                        club.isBookmarked ? "text-red-500 fill-current" : "text-red-500"
-                      }`} />
+                        className={`w-5 h-5 p-0.5 transition-all group-hover/heart:scale-110 cursor-pointer ${
+                          club.isBookmarked 
+                            ? "text-red-500 fill-red-500" 
+                            : "text-red-500 hover:fill-red-500"
+                        }`} 
+                      />
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">

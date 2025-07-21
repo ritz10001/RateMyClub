@@ -17,6 +17,10 @@ export default function SavedClubsPage() {
 
   useEffect(() => {
     const fetchSavedClubs = async () => {
+      if (!user?.token) {
+        console.log("User not authenticated yet, skipping fetch");
+        return;
+      }
       try{
         const response = await fetch("http://localhost:5095/api/SavedClub", {
           method: "GET",

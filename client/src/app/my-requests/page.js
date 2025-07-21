@@ -45,31 +45,35 @@ export default function MyRequestsPage(){
 
   useEffect(() => {
     const fetchUniversityRequests = async () => {
-    try {
-      const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${user?.token}`
+      if (!user?.token) {
+        console.log("User not authenticated yet, skipping fetch");
+        return;
+      }
+      try {
+        const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
+          method: "GET",
+          headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${user?.token}`
+          }
+          })
+          if(response.ok){
+            const data = await response.json();
+            console.log(data);
+            setUniversityRequests(data);
+          }
+          else{
+            toast.error("Failed to fetch reviews. Please try again later.")
+          }
         }
-        })
-        if(response.ok){
-          const data = await response.json();
-          console.log(data);
-          setUniversityRequests(data);
+        catch(error){
+          toast.error("An error occured while trying to fetch reviews.");
         }
-        else{
-          toast.error("Failed to fetch reviews. Please try again later.")
+        finally{
+          setIsLoading(false);
         }
       }
-      catch(error){
-        toast.error("An error occured while trying to fetch reviews.");
-      }
-      finally{
-        setIsLoading(false);
-      }
-    }
-    fetchUniversityRequests();
+      fetchUniversityRequests();
   }, [user?.token]);
 
   useEffect(() => {
