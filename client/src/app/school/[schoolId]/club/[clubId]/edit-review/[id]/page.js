@@ -154,13 +154,15 @@ export default function EditReviewPage({ params }) {
     )
   }
 
-  if (isLoading) {
-    return <>
-      <div className="col-span-full flex justify-center py-12 space-x-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="font-bold text-xl">Now Loading..</p>
+  if (isLoading) { 
+    return (
+      <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+        <div className="flex items-center space-x-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <p className="font-bold text-xl">Now Loading..</p>
+        </div>
       </div>
-    </>;
+    ); 
   }
 
   const ratingCategories = [

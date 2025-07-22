@@ -5,6 +5,7 @@ namespace RateMyCollegeClub.Models.Requests;
 
 public class GetClubRequestsDTO
 {
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string RequestedBy { get; set; } = string.Empty;

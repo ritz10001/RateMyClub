@@ -4,44 +4,46 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Check, X, Eye, Clock, GraduationCap, Users } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/app/context/AuthContext"
+import { toast } from "sonner"
 
-// Mock data for university requests
-const mockUniversityRequests = [
-  {
-    id: 1,
-    universityName: "Texas Tech University",
-    requestedBy: "john.doe@email.com",
-    submitterName: "John Doe",
-    location: "Lubbock, TX",
-    schoolType: "Public University",
-    website: "https://www.ttu.edu",
-    submittedDate: "2024-01-15",
-    status: "pending",
-  },
-  {
-    id: 2,
-    universityName: "University of Houston",
-    requestedBy: "sarah.smith@email.com",
-    submitterName: "Sarah Smith",
-    location: "Houston, TX",
-    schoolType: "Public University",
-    website: "https://www.uh.edu",
-    submittedDate: "2024-01-14",
-    status: "pending",
-  },
-  {
-    id: 3,
-    universityName: "Rice University",
-    requestedBy: "mike.johnson@email.com",
-    submitterName: "Mike Johnson",
-    location: "Houston, TX",
-    schoolType: "Private University",
-    website: "https://www.rice.edu",
-    submittedDate: "2024-01-12",
-    status: "pending",
-  },
-]
+// Mock data for university requests5
+// const mockUniversityRequests = [
+//   {
+//     id: 1,
+//     universityName: "Texas Tech University",
+//     requestedBy: "john.doe@email.com",
+//     submitterName: "John Doe",
+//     location: "Lubbock, TX",
+//     schoolType: "Public University",
+//     website: "https://www.ttu.edu",
+//     submittedDate: "2024-01-15",
+//     status: "pending",
+//   },
+//   {
+//     id: 2,
+//     universityName: "University of Houston",
+//     requestedBy: "sarah.smith@email.com",
+//     submitterName: "Sarah Smith",
+//     location: "Houston, TX",
+//     schoolType: "Public University",
+//     website: "https://www.uh.edu",
+//     submittedDate: "2024-01-14",
+//     status: "pending",
+//   },
+//   {
+//     id: 3,
+//     universityName: "Rice University",
+//     requestedBy: "mike.johnson@email.com",
+//     submitterName: "Mike Johnson",
+//     location: "Houston, TX",
+//     schoolType: "Private University",
+//     website: "https://www.rice.edu",
+//     submittedDate: "2024-01-12",
+//     status: "pending",
+//   },
+// ]
 
 // Mock data for club requests
 const mockClubRequests = [
@@ -92,8 +94,75 @@ const mockClubRequests = [
 ]
 
 export default function AdminRequestsPage() {
-  const [universityRequests, setUniversityRequests] = useState(mockUniversityRequests)
-  const [clubRequests, setClubRequests] = useState(mockClubRequests)
+  const [universityRequests, setUniversityRequests] = useState([]);
+  const [clubRequests, setClubRequests] = useState([]);
+  const [isUniversityLoading, setIsUniversityLoading] = useState(true);
+  const [isClubLoading, setIsClubLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchUniversityRequests = async () => {
+      try {
+        const response = await fetch("http://localhost:5095/api/AdminUniversityRequest", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user?.token}`
+          }
+        })
+        if(response.ok){
+          const data = await response.json();
+          console.log(data);
+          setUniversityRequests(data);
+        }
+        else {
+          toast.error("Failed to fetch requests. Please try again later.")
+        }
+      }
+      catch(error){
+        toast.error("An error occured while trying to fetch requests.");
+      }
+      finally {
+        setIsUniversityLoading(false);
+      }
+    }
+    if (user?.token) {
+      fetchUniversityRequests();
+    }
+  }, [user?.token])
+
+  useEffect(() => {
+    const fetchClubRequests = async () => {
+      try {
+        const response = await fetch("http://localhost:5095/api/AdminClubRequest", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user?.token}`
+          }
+        })
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+          setClubRequests(data);
+        } 
+        else {
+          toast.error("Failed to fetch club requests. Please try again later.");
+        }
+      } 
+      catch (error) {
+        toast.error("An error occurred while trying to fetch club requests.");
+      }
+      finally {
+        setIsClubLoading(false);
+      }
+    };
+
+    if (user?.token) {
+      fetchClubRequests();
+    }
+  }, [user?.token]);
+
 
   const handleUniversityAction = (id, action) => {
     setUniversityRequests((prev) =>
@@ -139,7 +208,7 @@ export default function AdminRequestsPage() {
               <div>
                 <p className="text-sm text-gray-600">Pending Universities</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {universityRequests.filter((r) => r.status === "pending").length}
+                  {universityRequests.filter((r) => r.status.toLowerCase() === "pending").length}
                 </p>
               </div>
             </div>
@@ -150,7 +219,7 @@ export default function AdminRequestsPage() {
               <div>
                 <p className="text-sm text-gray-600">Pending Clubs</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {clubRequests.filter((r) => r.status === "pending").length}
+                  {clubRequests.filter((r) => r.status.toLowerCase() === "pending").length}
                 </p>
               </div>
             </div>
@@ -161,7 +230,7 @@ export default function AdminRequestsPage() {
               <div>
                 <p className="text-sm text-gray-600">Total Approved</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {[...universityRequests, ...clubRequests].filter((r) => r.status === "approved").length}
+                  {[...universityRequests, ...clubRequests].filter((r) => r.status.toLowerCase() === "approved").length}
                 </p>
               </div>
             </div>
@@ -178,6 +247,7 @@ export default function AdminRequestsPage() {
         </div>
 
         {/* University Requests Table */}
+        
         <div className="bg-white rounded-2xl shadow-lg mb-8 border border-blue-100">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -194,7 +264,7 @@ export default function AdminRequestsPage() {
                   <TableHead>Location</TableHead>
                   <TableHead>School Type</TableHead>
                   <TableHead>Submitted</TableHead>
-                  <TableHead>Status</TableHead>
+                  {/* <TableHead>Status</TableHead> */}
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -204,20 +274,20 @@ export default function AdminRequestsPage() {
                     <TableCell className="font-medium">{request.universityName}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{request.submitterName}</p>
+                        <p className="font-medium">{request.fullName}</p>
                         <p className="text-sm text-gray-600">{request.requestedBy}</p>
                       </div>
                     </TableCell>
                     <TableCell>{request.location}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="border-blue-200 text-blue-600">
-                        {request.schoolType}
+                        {request.universityType}
                       </Badge>
                     </TableCell>
-                    <TableCell>{new Date(request.submittedDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{getStatusBadge(request.status)}</TableCell>
+                    <TableCell>{new Date(request.requestedAt).toLocaleDateString()}</TableCell>
+                    {/* <TableCell>{getStatusBadge(request.status.toLowerCase())}</TableCell> */}
                     <TableCell>
-                      {request.status === "pending" ? (
+                      {request.status.toLowerCase() === "pending" ? (
                         <div className="flex gap-2">
                           <Button
                             size="sm"
@@ -234,13 +304,13 @@ export default function AdminRequestsPage() {
                           >
                             <X className="w-4 h-4" />
                           </Button>
-                          <Button
+                          {/* <Button
                             size="sm"
                             variant="outline"
                             className="border-blue-200 text-blue-600 hover:bg-blue-50 p-2 rounded-lg bg-transparent"
                           >
                             <Eye className="w-4 h-4" />
-                          </Button>
+                          </Button> */}
                         </div>
                       ) : (
                         <span className="text-sm text-gray-500">Processed</span>
@@ -269,31 +339,43 @@ export default function AdminRequestsPage() {
                   <TableHead>Requested By</TableHead>
                   <TableHead>University</TableHead>
                   <TableHead>Category</TableHead>
+                  <TableHead>Tags</TableHead>
                   <TableHead>Submitted</TableHead>
-                  <TableHead>Status</TableHead>
+                  {/* <TableHead>Status</TableHead> */}
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {clubRequests.map((request) => (
                   <TableRow key={request.id}>
-                    <TableCell className="font-medium">{request.clubName}</TableCell>
+                    <TableCell className="font-medium">{request.name}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{request.submitterName}</p>
+                        <p className="font-medium">{request.fullName}</p>
                         <p className="text-sm text-gray-600">{request.requestedBy}</p>
                       </div>
                     </TableCell>
-                    <TableCell>{request.university}</TableCell>
+                    <TableCell>{request.universityName}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="border-green-200 text-green-600">
                         {request.category}
                       </Badge>
                     </TableCell>
-                    <TableCell>{new Date(request.submittedDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{getStatusBadge(request.status)}</TableCell>
                     <TableCell>
-                      {request.status === "pending" ? (
+                      {request.tags.map((tag, idx) => {
+                        return(
+                          <div key={idx} className="flex flex-col">
+                            <Badge variant="outline" className="border-red-200 text-red-600">
+                              {tag.name}
+                            </Badge>
+                          </div>
+                        );
+                      })}
+                    </TableCell>
+                    <TableCell>{new Date(request.requestedAt).toLocaleDateString()}</TableCell>
+                    {/* <TableCell>{getStatusBadge(request.status.toLowerCase())}</TableCell> */}
+                    <TableCell>
+                      {request.status.toLowerCase() === "pending" ? (
                         <div className="flex gap-2">
                           <Button
                             size="sm"
@@ -310,13 +392,13 @@ export default function AdminRequestsPage() {
                           >
                             <X className="w-4 h-4" />
                           </Button>
-                          <Button
+                          {/* <Button
                             size="sm"
                             variant="outline"
                             className="border-blue-200 text-blue-600 hover:bg-blue-50 p-2 rounded-lg bg-transparent"
                           >
                             <Eye className="w-4 h-4" />
-                          </Button>
+                          </Button> */}
                         </div>
                       ) : (
                         <span className="text-sm text-gray-500">Processed</span>

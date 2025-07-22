@@ -168,13 +168,15 @@ export default function MyRequestsPage(){
     setFilterBy(category);
   }
 
-  if (isLoading) {
-    return <>
-      <div className="col-span-full flex justify-center py-12 space-x-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="font-bold text-xl">Now Loading..</p>
+  if (isLoading) { 
+    return (
+      <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+        <div className="flex items-center space-x-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <p className="font-bold text-xl">Now Loading..</p>
+        </div>
       </div>
-    </>
+    ); 
   }
 
   return(
@@ -268,7 +270,7 @@ export default function MyRequestsPage(){
               <div key={request.id} className="border-b border-gray-500 pb-6 last:border-b-0">
                 <div className="flex justify-between">
                   <p className="font-bold text-xl md:text-2xl mb-2 text-gray-700">{requestType === "university" ? request.universityName : request.name}</p>
-                    <button 
+                    {request.status === 0 && <button 
                     className="flex items-center gap-2 p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
                     title="Delete Review"
                     onClick={() => {
@@ -276,7 +278,7 @@ export default function MyRequestsPage(){
                         setIsDeleteOpen(true);
                     }}>Withdraw Request
                     <Ban className="w-4 h-4" />
-                    </button>           
+                    </button>}      
                 </div>
                 {requestType === "university" && (
                   <p className="text-md mb-2 text-gray-600 font-medium">{request.location}</p>
@@ -296,6 +298,9 @@ export default function MyRequestsPage(){
                       "🕒 Pending"}
                   </span>
                 </div>
+                {request.status === 2 && (
+                  <p className="text-sm mb-2 text-gray-600 font-medium">Comments: {request.rejectionReason}</p>
+                )}
                 <p className="text-sm text-gray-500">{monthNumbers[parseInt(request.requestedAt.slice(5,7))] + " " + parseInt(request.requestedAt.slice(8,10)) + ", " + request.requestedAt.slice(0,4)}</p>
               </div>
             ))}

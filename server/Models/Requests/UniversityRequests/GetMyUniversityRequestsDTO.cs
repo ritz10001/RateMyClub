@@ -9,4 +9,5 @@ public class GetMyUniversityRequestDTO
     public string? UserId { get; set; }
     public DateTime RequestedAt { get; set; }
     public int Status { get; set; } // Default status can be
+    public string RejectionReason { get; set; } = string.Empty;
 }
