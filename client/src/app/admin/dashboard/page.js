@@ -8,97 +8,141 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from "sonner"
 
-// Mock data for university requests5
-// const mockUniversityRequests = [
-//   {
-//     id: 1,
-//     universityName: "Texas Tech University",
-//     requestedBy: "john.doe@email.com",
-//     submitterName: "John Doe",
-//     location: "Lubbock, TX",
-//     schoolType: "Public University",
-//     website: "https://www.ttu.edu",
-//     submittedDate: "2024-01-15",
-//     status: "pending",
-//   },
-//   {
-//     id: 2,
-//     universityName: "University of Houston",
-//     requestedBy: "sarah.smith@email.com",
-//     submitterName: "Sarah Smith",
-//     location: "Houston, TX",
-//     schoolType: "Public University",
-//     website: "https://www.uh.edu",
-//     submittedDate: "2024-01-14",
-//     status: "pending",
-//   },
-//   {
-//     id: 3,
-//     universityName: "Rice University",
-//     requestedBy: "mike.johnson@email.com",
-//     submitterName: "Mike Johnson",
-//     location: "Houston, TX",
-//     schoolType: "Private University",
-//     website: "https://www.rice.edu",
-//     submittedDate: "2024-01-12",
-//     status: "pending",
-//   },
-// ]
+const ConfirmationModal = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  type, // 'approve' | 'reject'
+  requestType, // 'university' | 'club'
+  requestName,
+  rejectionReason,
+  setRejectionReason,
+  logoUrl,
+  setLogoUrl,
+  isProcessing
+}) => {
+  if (!isOpen) return null;
 
-// Mock data for club requests
-const mockClubRequests = [
-  {
-    id: 1,
-    clubName: "AI Research Club",
-    requestedBy: "alice.wilson@email.com",
-    submitterName: "Alice Wilson",
-    university: "Texas Tech University",
-    category: "Engineering",
-    description: "Exploring artificial intelligence and machine learning research",
-    submittedDate: "2024-01-16",
-    status: "pending",
-  },
-  {
-    id: 2,
-    clubName: "Debate Society",
-    requestedBy: "bob.brown@email.com",
-    submitterName: "Bob Brown",
-    university: "University of Houston",
-    category: "Academic",
-    description: "Competitive debate and public speaking club",
-    submittedDate: "2024-01-15",
-    status: "pending",
-  },
-  {
-    id: 3,
-    clubName: "Sustainability Initiative",
-    requestedBy: "emma.davis@email.com",
-    submitterName: "Emma Davis",
-    university: "Rice University",
-    category: "Service",
-    description: "Promoting environmental awareness and sustainable practices",
-    submittedDate: "2024-01-13",
-    status: "pending",
-  },
-  {
-    id: 4,
-    clubName: "Gaming Club",
-    requestedBy: "chris.lee@email.com",
-    submitterName: "Chris Lee",
-    university: "Texas Tech University",
-    category: "Recreation",
-    description: "Video game tournaments and gaming community",
-    submittedDate: "2024-01-11",
-    status: "pending",
-  },
-]
+  const isReject = type === 'reject';
+  const isApprove = type === 'approve';
+  const isUniversityApproval = isApprove && requestType === 'university';
+  const title = isReject ? 'Reject Request' : 'Approve Request';
+  const message = `Are you sure you want to ${type} the ${requestType} "${requestName}"?`;
+
+  return (
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">{title}</h3>
+        
+        <p className="text-gray-600 mb-4">{message}</p>
+
+        {isUniversityApproval && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              University Logo URL <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="url"
+              value={logoUrl}
+              onChange={(e) => setLogoUrl(e.target.value)}
+              placeholder="https://example.com/logo.png"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <div className="text-sm text-gray-500 mt-1">
+              Please provide a valid URL for the university logo
+            </div>
+            {/* Optional: Logo preview */}
+            {logoUrl && (
+              <div className="mt-3">
+                <p className="text-sm text-gray-600 mb-2">Logo Preview:</p>
+                <img 
+                  src={logoUrl} 
+                  alt="Logo preview" 
+                  className="w-16 h-16 object-contain border border-gray-200 rounded-lg"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+                <div className="text-sm text-red-500 mt-1 hidden">
+                  Invalid image URL
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {isReject && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Rejection Reason <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Please provide a reason for rejection..."
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              rows={4}
+              maxLength={500}
+            />
+            <div className="text-sm text-gray-500 mt-1">
+              {rejectionReason.length}/500 characters
+            </div>
+          </div>
+        )}
+        
+        <div className="flex gap-3 justify-end">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isProcessing}
+            className="px-4 py-2"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={onConfirm}
+            disabled={isProcessing || (isReject && !rejectionReason.trim()) ||
+              (isUniversityApproval && !logoUrl.trim())}
+            className={`px-4 py-2 ${
+              isReject 
+                ? 'bg-red-600 hover:bg-red-700 text-white' 
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
+          >
+            {isProcessing ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                Processing...
+              </div>
+            ) : (
+              type === 'approve' ? 'Approve' : 'Reject'
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function AdminRequestsPage() {
   const [universityRequests, setUniversityRequests] = useState([]);
   const [clubRequests, setClubRequests] = useState([]);
   const [isUniversityLoading, setIsUniversityLoading] = useState(true);
   const [isClubLoading, setIsClubLoading] = useState(true);
+  const [logoUrl, setLogoUrl] = useState('');
   const { user } = useAuth();
+
+  // related to modal state
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    type: null, // 'approve' | 'reject'
+    requestType: null, // 'university' | 'club'
+    requestId: null,
+    requestName: '',
+  });
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchUniversityRequests = async () => {
@@ -163,20 +207,190 @@ export default function AdminRequestsPage() {
     }
   }, [user?.token]);
 
+  const openModal = (type, requestType, requestId, requestName) => {
+    setModalState({
+      isOpen: true,
+      type,
+      requestType,
+      requestId,
+      requestName
+    });
+    setRejectionReason(''); // Reset rejection reason
+  };
 
-  const handleUniversityAction = (id, action) => {
-    setUniversityRequests((prev) =>
-      prev.map((request) => (request.id === id ? { ...request, status: action } : request)),
-    )
-    // TODO: Implement actual approval/rejection logic
-    console.log(`University request ${id} ${action}`)
+  const closeModal = () => {
+    if (isProcessing) return; // Prevent closing during processing
+    setModalState({
+      isOpen: false,
+      type: null,
+      requestType: null,
+      requestId: null,
+      requestName: ''
+    });
+    setRejectionReason('');
+    setLogoUrl('');
+  };
+
+
+  const handleUniversityAction = async () => {
+    setIsProcessing(true);
+    const { requestId, type } = modalState;
+    try {
+      const response = await fetch(`http://localhost:5095/api/AdminUniversityRequest/${requestId}/status`, {
+        method: "PUT", // or PATCH, depending on your API
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({
+          status: type === "approve" ? 1 : 2,
+          rejectionReason: type === "rejection" ? rejectionReason : null
+        })
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to update request status: ${response.statusText}`);
+      }
+      if (type === "approve") {
+      // Find the university request data
+        const universityRequest = universityRequests.find(req => req.id === requestId);
+      
+        if (universityRequest) {
+          const universityData = {
+            name: universityRequest.universityName,
+            location: universityRequest.location,
+            logoUrl: logoUrl
+          };
+
+          const universityResponse = await fetch("http://localhost:5095/api/AdminUniversity", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${user?.token}`
+            },
+            body: JSON.stringify(universityData)
+          });
+
+          if (!universityResponse.ok) {
+            // If university creation fails, we might want to revert the status update
+            throw new Error(`Failed to create university record: ${universityResponse.statusText}`);
+          }
+
+          console.log("University created successfully");
+        }
+      }
+      setUniversityRequests((prev) =>
+        prev.map((request) => 
+          request.id === requestId 
+            ? { ...request, status: type === 'approve' ? 'approved' : 'rejected' } 
+            : request
+        )
+      );
+
+      toast.success(
+        type === 'approve' 
+          ? 'University request approved and university created successfully!' 
+          : 'University request rejected successfully!'
+      );
+      closeModal();
+      
+    } 
+    catch (error) {
+      console.error(`Error ${type}ing university request:`, error);
+      toast.error(`An error occurred while ${type === 'approve' ? 'approving' : 'rejecting'} the request: ${error.message}`);
+    } 
+    finally {
+      setIsProcessing(false);
+    }
   }
 
-  const handleClubAction = (id, action) => {
-    setClubRequests((prev) => prev.map((request) => (request.id === id ? { ...request, status: action } : request)))
-    // TODO: Implement actual approval/rejection logic
-    console.log(`Club request ${id} ${action}`)
-  }
+  const handleClubAction = async () => {
+    setIsProcessing(true);
+    const { requestId, type } = modalState;
+    try {
+      // Step 1: Update the request status
+      const payload = {
+        status: type === 'approve' ? 1 : 2, // Assuming 1 = approved, 2 = rejected
+        rejectionReason: type === 'reject' ? rejectionReason : null
+      };
+
+      const response = await fetch(`http://localhost:5095/api/AdminClubRequest/${requestId}/status`, {
+        method: "PUT", // or PATCH, depending on your API
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user?.token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update request status: ${response.statusText}`);
+      }
+
+      // Step 2: If approved, create the club record
+      if (type === "approve") {
+        // Find the club request data
+        const clubRequest = clubRequests.find(req => req.id === requestId);
+        console.log(clubRequest);
+        if (clubRequest) {
+          const clubData = {
+            name: clubRequest.name,
+            description: clubRequest.description,
+            clubLocation: clubRequest.clubLocation,
+            universityId: clubRequest.universityId,
+            categoryId: clubRequest.categoryId,
+            tagIds: clubRequest.tags.map(tag => tag.id) // Extract tag IDs from tags array
+          };
+          console.log("SENDING DATA");
+          console.log(clubData);
+
+          const clubResponse = await fetch("http://localhost:5095/api/AdminClub", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${user?.token}`
+            },
+            body: JSON.stringify(clubData)
+          });
+
+          if (!clubResponse.ok) {
+            throw new Error(`Failed to create club record: ${clubResponse.statusText}`);
+          }
+
+          console.log("Club created successfully");
+        }
+      }
+      // Step 3: Update local state
+      setClubRequests((prev) =>
+        prev.map((request) => 
+          request.id === requestId 
+            ? { ...request, status: type === 'approve' ? 'approved' : 'rejected' } 
+            : request
+        )
+      );
+      toast.success(
+        type === 'approve' 
+          ? 'Club request approved and club created successfully!' 
+          : 'Club request rejected successfully!'
+      );
+      closeModal();
+    } 
+    catch (error) {
+      console.error(`Error ${type}ing club request:`, error);
+      toast.error(`An error occurred while ${type === 'approve' ? 'approving' : 'rejecting'} the request: ${error.message}`);
+    } 
+    finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleModalConfirm = () => {
+    if (modalState.requestType === 'university') {
+      handleUniversityAction();
+    } 
+    else {
+      handleClubAction();
+    }
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -189,6 +403,17 @@ export default function AdminRequestsPage() {
       default:
         return <Badge className="bg-gray-100 text-gray-800">Unknown</Badge>
     }
+  }
+
+  if (isUniversityLoading || isClubLoading) { 
+    return (
+      <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+        <div className="flex items-center space-x-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <p className="font-bold text-xl">Now Loading..</p>
+        </div>
+      </div>
+    ); 
   }
 
   return (
@@ -287,34 +512,25 @@ export default function AdminRequestsPage() {
                     <TableCell>{new Date(request.requestedAt).toLocaleDateString()}</TableCell>
                     {/* <TableCell>{getStatusBadge(request.status.toLowerCase())}</TableCell> */}
                     <TableCell>
-                      {request.status.toLowerCase() === "pending" ? (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleUniversityAction(request.id, "approved")}
-                            className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleUniversityAction(request.id, "rejected")}
-                            className="border-red-200 text-red-600 hover:bg-red-50 p-2 rounded-lg"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                          {/* <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-blue-200 text-blue-600 hover:bg-blue-50 p-2 rounded-lg bg-transparent"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button> */}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-gray-500">Processed</span>
-                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => openModal('approve', 'university', request.id, request.universityName)}
+                          className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg"
+                          disabled={isProcessing}
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openModal('reject', 'university', request.id, request.universityName)}
+                          className="border-red-200 text-red-600 hover:bg-red-50 p-2 rounded-lg"
+                          disabled={isProcessing}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -375,34 +591,25 @@ export default function AdminRequestsPage() {
                     <TableCell>{new Date(request.requestedAt).toLocaleDateString()}</TableCell>
                     {/* <TableCell>{getStatusBadge(request.status.toLowerCase())}</TableCell> */}
                     <TableCell>
-                      {request.status.toLowerCase() === "pending" ? (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleClubAction(request.id, "approved")}
-                            className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleClubAction(request.id, "rejected")}
-                            className="border-red-200 text-red-600 hover:bg-red-50 p-2 rounded-lg"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                          {/* <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-blue-200 text-blue-600 hover:bg-blue-50 p-2 rounded-lg bg-transparent"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button> */}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-gray-500">Processed</span>
-                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => openModal('approve', 'club', request.id, request.name)}
+                          className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg"
+                          disabled={isProcessing}
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openModal('reject', 'club', request.id, request.name)}
+                          className="border-red-200 text-red-600 hover:bg-red-50 p-2 rounded-lg"
+                          disabled={isProcessing}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -410,6 +617,19 @@ export default function AdminRequestsPage() {
             </Table>
           </div>
         </div>
+        <ConfirmationModal
+          isOpen={modalState.isOpen}
+          onClose={closeModal}
+          onConfirm={handleModalConfirm}
+          type={modalState.type}
+          requestType={modalState.requestType}
+          requestName={modalState.requestName}
+          rejectionReason={rejectionReason}
+          setRejectionReason={setRejectionReason}
+          logoUrl={logoUrl}
+          setLogoUrl={setLogoUrl}
+          isProcessing={isProcessing}
+        />
       </div>
     </div>
   )
