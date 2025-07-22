@@ -98,23 +98,6 @@ public class ClubController : ControllerBase {
         return Ok(clubDTO);
     }
 
-    [HttpPost]
-    [Authorize(Roles = "Administrator")]
-    public async Task<ActionResult<CreateClubDTO>> CreateClub(CreateClubDTO createClubDTO)
-    {
-
-        var club = _mapper.Map<Club>(createClubDTO);
-        if (createClubDTO.TagIds != null && createClubDTO.TagIds.Any())
-        {
-            var tags = await _tagsRepository.GetTagsByIdsAsync(createClubDTO.TagIds);
-            club.Tags = tags;
-        }
-        await _clubsRepository.AddAsync(club);
-
-        // return CreatedAtAction("GetClub", new {id = club.Id}, club);
-        return Ok();
-    }
-
     [HttpDelete("{id}")]
     [Authorize(Roles = "Administrator")]
     public async Task<IActionResult> DeleteClub(int id){

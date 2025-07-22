@@ -61,6 +61,7 @@ public class UniversityController : ControllerBase
         return Ok(universityDTO);
     }
 
+
     [HttpGet("search")]
     public async Task<ActionResult<IEnumerable<UniversitySearchDTO>>> SearchUniversities([FromQuery] string query)
     {
