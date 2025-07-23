@@ -10,6 +10,7 @@ public class GetUniversityRequestsDTO
     public string Location { get; set; } = string.Empty;
     public string? UserId { get; set; }
     public string RequestedBy { get; set; } = string.Empty;
+    public string OfficialWebsite { get; set; } = string.Empty;
     public DateTime RequestedAt { get; set; }
     public string Status { get; set; }// Default status can be
     // public string StatusDisplay => ((RequestStatus)Status).GetDisplayName();

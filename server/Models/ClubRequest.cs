@@ -14,7 +14,7 @@ public class ClubRequest
     public Category Category { get; set; }
     public string? UserId { get; set; }
     public User? User { get; set; } // Assuming User is a class representing the user making the request
-    public RequestStatus RequestStatus { get; set; } = RequestStatus.Pending;// 0: Pending, 1: Approved, 2: Rejected
+    public RequestStatus RequestStatus { get; set; }// 0: Pending, 1: Approved, 2: Rejected
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ProcessedAt { get; set; }
     public string? RejectionReason { get; set; } 
