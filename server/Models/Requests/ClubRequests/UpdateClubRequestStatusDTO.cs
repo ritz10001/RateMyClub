@@ -6,4 +6,5 @@ public class UpdateClubRequestStatusDTO
 {
     public RequestStatus Status { get; set; }
     public string? RejectionReason { get; set; }
+    
 }

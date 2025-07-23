@@ -13,6 +13,7 @@ public class University
     public UniversityType UniversityType = UniversityType.Public;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string LogoUrl { get; set; } = string.Empty;
+    public string OfficialWebsite { get; set; } = string.Empty;
     public virtual ICollection<Club> Clubs { get; set; } = [];
     public virtual ICollection<User>? Users { get; set; } = [];
 }
