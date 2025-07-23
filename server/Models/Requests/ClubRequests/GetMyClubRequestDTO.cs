@@ -11,5 +11,6 @@ public class GetMyClubRequestsDTO
     public string Category { get; set; } = string.Empty;
     public DateTime RequestedAt { get; set; }
     public int Status { get; set; }
+    public string RejectionReason { get; set; } = string.Empty;
 
 }

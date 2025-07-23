@@ -34,25 +34,23 @@ public class AdminUniversityRequestController : ControllerBase
 
     [HttpPut("{id}/status")]
     [Authorize(Roles = "Administrator")]
-    public async Task<IActionResult> UpdateRequestStatus(int id, [FromBody] UpdateUniversityRequestStatusDTO updateUniversityRequestStatusDTO)
+    public async Task<IActionResult> UpdateUniversityRequestStatus(int id, [FromBody] UpdateUniversityRequestStatusDTO dto)
     {
         var request = await _universityRequestsRepository.GetAsync(id);
-        if (request == null)
-        {
-            return NotFound("University request not found.");
-        }
+        if (request == null) return NotFound();
 
-        request.RequestStatus = updateUniversityRequestStatusDTO.Status;
-
-        if (updateUniversityRequestStatusDTO.Status == RequestStatus.Rejected)
+        if ((int)dto.Status == 1)
         {
-            request.RejectionReason = updateUniversityRequestStatusDTO.RejectionReason ?? "No reason provided";
+            request.RequestStatus = RequestStatus.Approved;
         }
         else
         {
-            request.RejectionReason = null;
+            request.RequestStatus = RequestStatus.Rejected;
+            request.RejectionReason = dto.RejectionReason;
         }
+        Console.WriteLine($"Status: {dto.Status}, RejectionReason: {dto.RejectionReason}");
         await _universityRequestsRepository.UpdateAsync(request);
         return NoContent();
     }
+
 }

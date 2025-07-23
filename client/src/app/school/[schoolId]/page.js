@@ -300,10 +300,6 @@ export default function SchoolPage({ params }) {
 
                 {/* Club Stats */}
                 <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
-                  {/* <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    <span>{club.memberCount} members</span>
-                  </div> */}
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4" />
                     <span>{club.reviewCount} reviews</span>

@@ -57,25 +57,27 @@ public class AdminClubRequestController : ControllerBase
 
     [HttpPut("{id}/status")]
     [Authorize(Roles = "Administrator")]
-    public async Task<IActionResult> UpdateRequestStatus(int id, [FromBody] UpdateClubRequestStatusDTO updateClubRequestStatusDTO)
+    public async Task<IActionResult> UpdateRequestStatus(int id, [FromBody] UpdateClubRequestStatusDTO dto)
     {
         var request = await _clubRequestsRepository.GetAsync(id);
         if (request == null)
-        {
-            return NotFound("University request not found.");
-        }
+            return NotFound("Club request not found.");
 
-        request.RequestStatus = updateClubRequestStatusDTO.Status;
+        request.RequestStatus = dto.Status;
 
-        if (updateClubRequestStatusDTO.Status == RequestStatus.Rejected)
+        if (dto.Status == RequestStatus.Rejected)
         {
-            request.RejectionReason = updateClubRequestStatusDTO.RejectionReason ?? "No reason provided";
+            request.RejectionReason = string.IsNullOrWhiteSpace(dto.RejectionReason)
+                ? "No reason provided"
+                : dto.RejectionReason;
         }
         else
         {
             request.RejectionReason = null;
         }
+
         await _clubRequestsRepository.UpdateAsync(request);
         return NoContent();
     }
+
 }
