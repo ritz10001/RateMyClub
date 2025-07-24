@@ -227,14 +227,18 @@ const ConfirmationModal = ({
           </Button>
           <Button
             onClick={onConfirm}
-            disabled={isProcessing || 
+            disabled={
+              isProcessing || 
               (isReject && !rejectionReason.trim()) ||
               (isUniversityApproval && (
                 !logoUrl.trim() ||
                 !universityData.universityName.trim() ||
                 !universityData.location.trim()
               )) ||
-              (isClubApproval && !clubData.name.trim() || !clubData.clubLocation.trim()) // Add this line
+              (isClubApproval && (
+                !clubData.name.trim() ||
+                !clubData.clubLocation.trim()
+              ))
             }
             className={`px-4 py-2 ${
               isReject 
@@ -408,7 +412,7 @@ export default function AdminRequestsPage() {
     try {
       if (type === "approve") {
         // STEP 1: Apply admin's changes to the request
-        await fetch(`http://localhost:5095/api/AdminUniversity/${requestId}`, {
+        await fetch(`http://localhost:5095/api/AdminUniversity/edit-request/${requestId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

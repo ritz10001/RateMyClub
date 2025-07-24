@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Users, Star, MapPin, Calendar, Heart } from "lucide-react"
+import { Search, Plus, Users, Star, MapPin, Calendar, Heart, Pencil, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
@@ -12,6 +12,8 @@ import { use } from "react"
 import LoginModal from "@/app/components/login-modal"
 import { useAuth } from "@/app/context/AuthContext"
 import { useRouter } from "next/navigation"
+import DeleteModal from "@/app/components/delete-modal"
+import { toast } from 'sonner';
 // Mock data for school details
 
 export default function SchoolPage({ params }) {
@@ -24,7 +26,10 @@ export default function SchoolPage({ params }) {
   const [sortBy, setSortBy] = useState("name");
   const [filterBy, setFilterBy] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [universityToDelete, setUniversityToDelete] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { user } = useAuth();
+  console.log("USER INFO", user);
   const router = useRouter();
 
   useEffect(() => {
@@ -170,9 +175,31 @@ export default function SchoolPage({ params }) {
                   <div className="text-sm text-gray-600">Total Reviews</div>
                 </div>
               </div>
-            </div>
-
+            </div>            
             {/* Action Button */}
+            {user && user.roles.includes("Administrator") &&
+              <div className="flex items-center gap-2">
+                <Button 
+                  className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                  title="Edit University"
+                  onClick = {() => {
+                    router.push(`http://localhost:3000/admin/school/${schoolId}/edit`);
+                  }}
+                >Edit
+                  <Pencil className="w-4 h-4" />
+                </Button>
+                <Button 
+                  className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                  title="Delete University"
+                  onClick={() => {
+                      setUniversityToDelete(schoolId);
+                      setIsDeleteOpen(true);
+                  }}
+                >Delete
+                  <Trash2 className="w-4 h-4" />
+                </Button>           
+              </div>
+            }
             <div className="flex flex-col gap-3">
               <Button
                 variant="outline"
@@ -181,6 +208,7 @@ export default function SchoolPage({ params }) {
                 Get & Add Your Club
               </Button>
             </div>
+            
           </div>
         </div>
 
@@ -329,6 +357,40 @@ export default function SchoolPage({ params }) {
           </Button>
         </div>
       </div>
+      {isDeleteOpen &&
+            
+      <DeleteModal 
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        modalText = "University"
+        onDelete={async () => {
+          if(!universityToDelete){
+            return;
+          }
+          try{
+            const response = await fetch(`http://localhost:5095/api/AdminUniversity/${universityToDelete}`, {
+              method: "DELETE",
+              headers: {
+                "Authorization": `Bearer ${user.token}`
+              }
+            });
+            if (!response.ok) throw new Error("Delete failed");
+            toast.success("University deleted successfully!", {
+              duration: 5000, // 5 seconds
+            });
+          }
+          catch(error){
+            console.error(error);
+            toast.error(errorData.message || "Deletion failed. Please try again.");
+          }
+          finally {
+            setIsDeleteOpen(false);
+            setUniversityToDelete(null);
+            router.push("http://localhost:3000/all-schools");
+          }
+        }}
+      />}
     </div>
+    
   )
 }
