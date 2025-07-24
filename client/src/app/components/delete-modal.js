@@ -4,7 +4,7 @@ import { UserRound, X, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useEffect } from "react"
 
-export default function DeleteReviewModal({isOpen, onClose, onDelete}) {
+export default function DeleteModal({isOpen, onClose, modalText, onDelete}) {
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === "Escape") {
@@ -45,9 +45,9 @@ export default function DeleteReviewModal({isOpen, onClose, onDelete}) {
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Trash2 className="w-8 h-8 text-red-600" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Delete Review</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Delete {modalText}</h2>
                 <p className="text-gray-600 text-lg">
-                    Are you sure you want to delete this review?
+                    Are you sure you want to delete this {modalText.toLowerCase()}?
                 </p>
             </div>
             <div className="px-6 pb-6">

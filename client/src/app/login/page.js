@@ -47,7 +47,8 @@ export default function LoginPage() {
           email: authResponse.email,
           userId: authResponse.userId,
           token: authResponse.token,
-          refreshToken: authResponse.refreshToken
+          refreshToken: authResponse.refreshToken,
+          roles: authResponse.roles
         };
         setUser(userData);
         console.log(authResponse);
