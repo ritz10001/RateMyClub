@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Requests;
@@ -35,6 +36,50 @@ public class AdminUniversityController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> UpdateUniversity(int id, UpdateUniversityDTO updateUniversityDTO)
+    {
+        var university = await _universityRepository.GetAsync(id);
+        if (university == null)
+        {
+            return NotFound();
+        }
+
+        _mapper.Map(updateUniversityDTO, university);
+
+        try
+        {
+            await _universityRepository.UpdateAsync(university);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await UniversityExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> DeleteUniversity(int id)
+    {
+        var university = await _universityRepository.GetAsync(id);
+        if (university == null)
+        {
+            return NotFound();
+        }
+
+        await _universityRepository.DeleteAsync(id);
+        return NoContent();
+    }
+
+    [HttpPut("edit-request/{id}")]
+    [Authorize(Roles = "Administrator")]
     public async Task<IActionResult> EditUniversityRequest(int id, [FromBody] EditUniversityRequestDTO dto)
     {
         var request = await _universityRequestsRepository.GetAsync(id);
@@ -46,6 +91,15 @@ public class AdminUniversityController : ControllerBase
 
         await _universityRequestsRepository.UpdateAsync(request);
         return NoContent();
+    }
+
+    private string GetUserId()
+    {
+        return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value ?? string.Empty;
+    }
+    private async Task<bool> UniversityExists(int id)
+    {
+        return await _universityRepository.Exists(id);
     }
 
 }

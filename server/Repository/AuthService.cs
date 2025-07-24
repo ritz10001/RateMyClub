@@ -43,6 +43,7 @@ public class AuthService : IAuthService
             return null;
         }
         var token = await GenerateToken();
+        var roles = await _userManager.GetRolesAsync(_user);
         return new AuthResponseDTO
         {
             Token = token,
@@ -50,7 +51,8 @@ public class AuthService : IAuthService
             RefreshToken = await CreateRefreshToken(),
             FirstName = _user.FirstName,
             LastName = _user.LastName,
-            Email = _user.Email
+            Email = _user.Email,
+            Roles = roles.ToList()
         };
     }
 
@@ -68,6 +70,7 @@ public class AuthService : IAuthService
             await _userManager.AddToRoleAsync(_user, role);
             var token = await GenerateToken();
             var refreshToken = await CreateRefreshToken();
+            var roles = await _userManager.GetRolesAsync(_user);
 
             var authResponse = new AuthResponseDTO
             {
@@ -76,7 +79,8 @@ public class AuthService : IAuthService
                 RefreshToken = refreshToken,
                 FirstName = _user.FirstName,
                 LastName = _user.LastName,
-                Email = _user.Email
+                Email = _user.Email,
+                Roles = roles.ToList()
             };
             return (authResponse, null);
         }

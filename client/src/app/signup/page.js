@@ -60,7 +60,8 @@ export default function SignUpPage() {
           userId: authResponse.userId,
           token: authResponse.token,
           refreshToken: authResponse.refreshToken,
-          email: authResponse.email
+          email: authResponse.email,
+          roles: authResponse.roles
         };
         setUser(userData);
         localStorage.setItem("token", authResponse.token);

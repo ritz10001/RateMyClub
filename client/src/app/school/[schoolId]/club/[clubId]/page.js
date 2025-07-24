@@ -12,7 +12,7 @@ import LoginModal from "@/app/components/login-modal"
 import { useAuth } from "@/app/context/AuthContext"
 import { useRouter } from "next/navigation"
 import { useClub } from "@/app/context/ClubContext"
-import DeleteReviewModal from "@/app/components/delete-review-modal"
+import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
 import { Elsie_Swash_Caps } from "next/font/google"
 
@@ -387,8 +387,8 @@ export default function ClubPage({ params }) {
                         <div className="flex font-bold">{((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1)}</div>
                       </div>
                       {user && review.userId === user.userId && <div className="flex items-center gap-2">
-                        <button 
-                          className="flex items-center gap-2 p-2 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
+                        <Button 
+                          className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                           title="Edit Review"
                           onClick = {() => {
                             setClubData(review);
@@ -396,9 +396,9 @@ export default function ClubPage({ params }) {
                           }}
                         >Edit
                           <Pencil className="w-4 h-4" />
-                        </button>
-                        <button 
-                          className="flex items-center gap-2 p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
+                        </Button>
+                        <Button 
+                          className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                           title="Delete Review"
                           onClick={() => {
                               setReviewToDelete(review.id)
@@ -406,7 +406,7 @@ export default function ClubPage({ params }) {
                           }}
                         >Delete
                           <Trash2 className="w-4 h-4" />
-                        </button>           
+                        </Button>           
                       </div>}
                     </div>
                     <div className="text-sm mt-1 text-gray-500">{monthNumbers[parseInt(review.createdAt.slice(5,7))] + " " + parseInt(review.createdAt.slice(8,10)) + ", " + review.createdAt.slice(0,4)}</div>
@@ -432,9 +432,10 @@ export default function ClubPage({ params }) {
               </div>
             ))}
           </div>
-          <DeleteReviewModal 
+          <DeleteModal 
             isOpen={isDeleteOpen}
             onClose={() => setIsDeleteOpen(false)}
+            modalText="Review"
             onDelete={async () => {
               if(!reviewToDelete){
                 return;
