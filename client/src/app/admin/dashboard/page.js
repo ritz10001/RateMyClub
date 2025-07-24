@@ -490,7 +490,7 @@ export default function AdminRequestsPage() {
     try {
       if (type === "approve") {
         // STEP 1: Apply admin's changes to the request
-        await fetch(`http://localhost:5095/api/AdminClub/${requestId}`, {
+        await fetch(`http://localhost:5095/api/AdminClub/edit-request/${requestId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

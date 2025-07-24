@@ -101,7 +101,7 @@ export default function RequestClubPage({ params }) {
     const { name, description, categoryId } = clubData;
 
     return name.trim().length > 3 && 
-            description.trim().length > 20 &&
+            description.trim().length >= 20 &&
             categoryId;
     };
 

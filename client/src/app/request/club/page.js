@@ -182,21 +182,6 @@ export default function RequestClubPage({ params }) {
                 />
               </div>
 
-              {/* Meeting Time */}
-              {/* <div>
-                <Label htmlFor="meetingTime" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Meeting Time <span className="text-gray-400">(Optional)</span>
-                </Label>
-                <Input
-                  id="meetingTime"
-                  type="text"
-                  placeholder="When does your club meet? (e.g., Wednesdays 7:00 PM)"
-                  value={clubData.meetingTime}
-                  onChange={(e) => handleInputChange("meetingTime", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                />
-              </div> */}
-
               {/* Additional Information */}
               {/* <div>
                 <Label htmlFor="additionalInfo" className="text-sm font-medium text-gray-700 mb-2 block">
