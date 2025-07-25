@@ -200,14 +200,14 @@ export default function SchoolPage({ params }) {
                 </Button>           
               </div>
             }
-            <div className="flex flex-col gap-3">
+            {/* <div className="flex flex-col gap-3">
               <Button
                 variant="outline"
                 className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
               >
                 Get & Add Your Club
               </Button>
-            </div>
+            </div> */}
             
           </div>
         </div>
