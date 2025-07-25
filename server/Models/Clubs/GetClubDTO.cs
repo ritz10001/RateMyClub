@@ -9,6 +9,7 @@ public class GetClubDTO : BaseClubDTO
     public DateTime CreatedAt { get; set; }
     public string LogoUrl { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
+    public int CategoryId { get; set; }
     public string UniversityName { get; set; } = string.Empty;
     public decimal AverageRating { get; set; }
     public int ReviewCount { get; set; }

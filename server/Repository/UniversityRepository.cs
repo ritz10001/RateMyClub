@@ -34,7 +34,7 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
     public async Task<List<University>> SearchByNameAsync(string query)
     {
         return await _context.Universities
-        .Where(u => u.Name.Contains(query))
+        .Where(u => u.Name.Contains(query) || u.Location.Contains(query))
         .OrderBy(u => u.Name)
         .Take(10)
         .ToListAsync();

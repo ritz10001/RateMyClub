@@ -37,6 +37,7 @@ export default function ClubPage({ params }) {
   const router = useRouter();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState(null);
+  const [clubToDelete, setClubToDelete] = useState(null);
   const [isUserReview, setIsUserReview] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [club, setClub] = useState(null);
@@ -54,6 +55,7 @@ export default function ClubPage({ params }) {
   })
   const [userVotes, setUserVotes] = useState({});
   const [isVoting, setIsVoting] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(null);
   const { schoolId, clubId } = use(params);
   console.log("Club ID:", clubId);
   console.log("bookmark status", isBookmarked);
@@ -288,6 +290,7 @@ export default function ClubPage({ params }) {
                     {club.universityName}
                   </Link>
                 </div>
+                
                 <button onClick={handleBookmark} className="p-2 rounded-full hover:bg-red-50 transition-colors group">
                   <Heart
                     className={`w-6 h-6 transition-all ${
@@ -296,7 +299,33 @@ export default function ClubPage({ params }) {
                   />
                 </button>
               </div>
-
+              <div className="mb-4">
+              {user && user.roles.includes("Administrator") &&
+                <div className="flex items-center gap-2">
+                  <Button 
+                    className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                    title="Edit University"
+                    onClick = {() => {
+                      router.push(`http://localhost:3000/admin/club/${clubId}/edit`);
+                    }}
+                  >Edit
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                    title="Delete Club"
+                    onClick={() => {
+                        setIsDeleteOpen(true);
+                        setClubToDelete(clubId);
+                        console.log("this is club id", clubId);
+                        setDeleteMode("Club");
+                    }}
+                  >Delete
+                    <Trash2 className="w-4 h-4" />
+                  </Button>           
+                </div>
+              }
+              </div>
               <div className="flex flex-wrap gap-2 mb-4">
                 <Badge className="bg-blue-100 text-blue-800">{club.categoryName}</Badge>
                 {club.tags.map((tag, index) => (
@@ -386,28 +415,40 @@ export default function ClubPage({ params }) {
                         <div className="flex">{renderStars(((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1))}</div>
                         <div className="flex font-bold">{((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1)}</div>
                       </div>
-                      {user && review.userId === user.userId && <div className="flex items-center gap-2">
-                        <Button 
-                          className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
-                          title="Edit Review"
-                          onClick = {() => {
-                            setClubData(review);
-                            router.push(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
-                          }}
-                        >Edit
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
-                          title="Delete Review"
-                          onClick={() => {
-                              setReviewToDelete(review.id)
-                              setIsDeleteOpen(true);
-                          }}
-                        >Delete
-                          <Trash2 className="w-4 h-4" />
-                        </Button>           
-                      </div>}
+                      {user && (
+                        <div className="flex items-center gap-2">
+                          {/* Only allows editing if the user is the owner */}
+                          {review.userId === user.userId && (
+                            <Button 
+                              className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                              title="Edit Review"
+                              onClick={() => {
+                                setClubData(review);
+                                router.push(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
+                              }}
+                            >
+                              Edit
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                          )}
+
+                          {/* Allow deletion if the user is the owner OR an admin */}
+                          {(review.userId === user.userId || user.roles.includes("Administrator")) && (
+                            <Button 
+                              className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                              title="Delete Review"
+                              onClick={() => {
+                                setReviewToDelete(review.id);
+                                setDeleteMode("Review");
+                                setIsDeleteOpen(true);
+                              }}
+                            >
+                              Delete
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className="text-sm mt-1 text-gray-500">{monthNumbers[parseInt(review.createdAt.slice(5,7))] + " " + parseInt(review.createdAt.slice(8,10)) + ", " + review.createdAt.slice(0,4)}</div>
                   </div>
@@ -435,34 +476,41 @@ export default function ClubPage({ params }) {
           <DeleteModal 
             isOpen={isDeleteOpen}
             onClose={() => setIsDeleteOpen(false)}
-            modalText="Review"
+            modalText={deleteMode}
             onDelete={async () => {
-              if(!reviewToDelete){
+              if((deleteMode === "Review" && !reviewToDelete) || (deleteMode === "Club" && !clubToDelete)){
                 return;
               }
               try{
-                console.log("THIS REVIEW TO DELETE", reviewToDelete);
-                const response = await fetch(`http://localhost:5095/api/Review/${reviewToDelete}`, {
+                console.log("club id is", clubToDelete);
+                const url = deleteMode === "Review" ? `http://localhost:5095/api/Review/${reviewToDelete}` : `http://localhost:5095/api/AdminClub/${clubToDelete}`;
+                console.log(url);
+                const response = await fetch(url, {
                   method: "DELETE",
                   headers: {
                     "Authorization": `Bearer ${user.token}`
                   }
                 });
                 if (!response.ok) throw new Error("Delete failed");
-                setReviews((prevReviews) =>
-                  prevReviews.filter((r) => r.id !== reviewToDelete)
-                );
-                toast.success("Review deleted successfully!", {
+                if (deleteMode === "Review") {
+                  setReviews((prevReviews) =>
+                    prevReviews.filter((r) => r.id !== reviewToDelete)
+                  );
+                };
+                toast.success(`${deleteMode} deleted successfully!`, {
                   duration: 5000, // 5 seconds
                 });
+                router.push(`/school/${schoolId}`);
               }
               catch(error){
                 console.error(error);
-                toast.error(errorData.message || "Deletion failed. Please try again.");
+                toast.error("Deletion failed. Please try again.");
               }
               finally {
                 setIsDeleteOpen(false);
                 setReviewToDelete(null);
+                setDeleteMode(null);
+                setClubToDelete(null);
               }
             }}
           />

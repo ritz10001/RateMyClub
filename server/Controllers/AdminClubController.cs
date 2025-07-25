@@ -47,7 +47,7 @@ public class AdminClubController : ControllerBase
     [Authorize(Roles = "Administrator")]
     public async Task<IActionResult> DeleteClub(int id)
     {
-        var club = _clubsRepository.GetAsync(id);
+        var club = await _clubsRepository.GetAsync(id);
 
         if (club is null)
         {
@@ -64,17 +64,22 @@ public class AdminClubController : ControllerBase
     public async Task<IActionResult> UpdateClub(int id, UpdateClubDTO updateClubDTO)
     {
 
-        var club = await _clubsRepository.GetAsync(id);
+        var club = await _clubsRepository.GetIndividualClubDetails(id);
 
         if (club is null)
         {
             return NotFound();
         }
-
+        
+        club.Tags.Clear();
+        
         if (updateClubDTO.TagIds != null && updateClubDTO.TagIds.Any())
         {
             var tags = await _tagsRepository.GetTagsByIdsAsync(updateClubDTO.TagIds);
-            club.Tags = tags;
+            foreach (var tag in tags)
+            {
+                club.Tags.Add(tag);
+            }
         }
 
         _mapper.Map(updateClubDTO, club);

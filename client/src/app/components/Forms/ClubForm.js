@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 
 
-export default function ClubForm({ clubData, setClubData, handleSubmit, submitLabel = "Submit", universities, categories, tags, selectedTags, setSelectedTags }) {
+export default function ClubForm({ clubData, setClubData, handleSubmit, submitLabel = "Submit", universities, categories, tags, selectedTags, setSelectedTags, isEditMode }) {
 
   const handleInputChange = (field, value) => {
     setClubData((prev) => ({
@@ -35,14 +35,18 @@ export default function ClubForm({ clubData, setClubData, handleSubmit, submitLa
 
   const isFormValid = () => {
     const {name, description, clubLocation, universityId, categoryId, tagIds} = clubData;
-    return (
-        name.trim().length > 3 && 
-        description.trim().length >= 20 &&  
-        clubLocation &&  
-        !!universityId &&  
-        !!categoryId &&   
-        tagIds.length > 0
-    );
+    const baseValid = name.trim().length > 3 &&
+    description.trim().length >= 20 &&
+    clubLocation &&
+    !!categoryId &&
+    tagIds.length > 0;
+    
+    if(isEditMode){
+      return baseValid;
+    }
+    else{
+      return baseValid && !!universityId;
+    }
   }
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -96,28 +100,30 @@ export default function ClubForm({ clubData, setClubData, handleSubmit, submitLa
               />
             </div>
             {/* University Selection */}
-            <div>
-              <Label htmlFor="university" className="text-sm font-medium text-gray-700 mb-2 block">
-                  University <span className="text-red-500">*</span>
-              </Label>
-              <Select onValueChange={(value) => handleInputChange("universityId", value)}>
-                <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
-                  <SelectValue placeholder="Select a University..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {universities.map((university) => (
-                    <SelectItem key={university.id} value={university.id.toString()}>
-                      {university.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {!isEditMode && 
+              <div>
+                <Label htmlFor="university" className="text-sm font-medium text-gray-700 mb-2 block">
+                    University <span className="text-red-500">*</span>
+                </Label>
+                <Select onValueChange={(value) => handleInputChange("universityId", value)}>
+                  <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
+                    <SelectValue placeholder="Select a University..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {universities.map((university) => (
+                      <SelectItem key={university.id} value={university.id.toString()}>
+                        {university.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            }
             <div>
               <Label htmlFor="category" className="text-sm font-medium text-gray-700 mb-2 block">
                   Category <span className="text-red-500">*</span>
               </Label>
-              <Select onValueChange={(value) => handleInputChange("categoryId", value)}>
+              <Select value={isEditMode ? clubData.categoryId.toString() : undefined} onValueChange={(value) => handleInputChange("categoryId", value)}>
                 <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
                   <SelectValue placeholder="Select a category for your club..." />
                 </SelectTrigger>

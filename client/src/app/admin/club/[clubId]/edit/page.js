@@ -12,82 +12,108 @@ import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
 import { useParams, useRouter } from "next/navigation"
 import UniversityForm from "@/app/components/Forms/UniversityForm"
+import ClubForm from "@/app/components/Forms/ClubForm"
+// 
 
-export default function EditUniversityPage({ params }) {
-  const { schoolId } = useParams();
-  console.log("this is school id", schoolId);
+export default function EditClubPage({ params }) {
+  const { clubId } = useParams();
+  console.log(clubId);
   const { user } = useAuth();
   const router = useRouter();
-  const [universityData, setUniversityData] = useState({
-    name: "",
-    location: "",
-    officialWebsite: "",
-    description: "",
-    logoUrl: ""
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [clubData, setClubData] = useState(null);
+  const [tagNamesFromClub, setTagNamesFromClub] = useState([]);
+
 
   useEffect(() => {
-    const fetchUniversityData = async () => {
-      try{
-        const response = await fetch(`http://localhost:5095/api/University/${schoolId}`, {
-          method: "GET",
+    const fetchClub = async () => {
+      try {
+        const res = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
           headers: {
-            "Content-Type": "application/json",
             "Authorization": `Bearer ${user?.token}`
           }
         });
-        if(response.ok){
-            const data = await response.json();
-            console.log(data);
-            setUniversityData(data);
-        }
+        if (!res.ok) throw new Error("Failed to fetch club.");
+        const data = await res.json();
+        setClubData(data);
+        console.log("DATA", data);
+        setSelectedTags(data.tagIds || []);
+        setClubData({
+          name: data.name,
+          description: data.description,
+          clubLocation: data.clubLocation,
+          categoryId: data.categoryId,
+          tagIds: [],         // Temporarily empty
+        });
+        setTagNamesFromClub(data.tags);
+      } 
+      catch (err) {
+        toast.error("Could not load club data.");
       }
-      catch(error){
-        toast.error("Failed to fetch university", error);
-      }
-      finally {
-        setIsLoading(false);
-      }
+    };
+    const fetchMeta = async () => {
+      const [categoriesRes, tagsRes] = await Promise.all([
+        fetch('http://localhost:5095/api/Categories'),
+        fetch('http://localhost:5095/api/Tag')
+      ]);
+      setCategories(await categoriesRes.json());
+      setTags(await tagsRes.json());
+    };
+
+    fetchClub();
+    fetchMeta();
+  }, [clubId, user]);
+
+  useEffect(() => {
+    if (tags.length > 0 && tagNamesFromClub.length > 0) {
+      const matchedTagIds = tags
+        .filter(tag => tagNamesFromClub.includes(tag.name))
+        .map(tag => tag.id);
+
+      setSelectedTags(matchedTagIds);
+      setClubData(prev => ({ ...prev, tagIds: matchedTagIds }));
     }
-    fetchUniversityData();
-  }, []);
+  }, [tags, tagNamesFromClub]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      console.log("UNIVERSITY DATA");
-      console.log(universityData);
-      console.log("this is college id", schoolId);
-      const response = await fetch(`http://localhost:5095/api/AdminUniversity/${schoolId}`, {
+      const response = await fetch(`http://localhost:5095/api/AdminClub/${clubId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${user?.token}`
         },
-        body: JSON.stringify({
-          name: universityData.name,
-          location: universityData.location,
-          logoUrl: universityData.logoUrl,
-          description: universityData.description,
-          officialWebsite: universityData.officialWebsite
-        })
+        body: JSON.stringify(clubData)
       })
       if(response.ok){
-        toast.success("University update completed!", {
+        toast.success("Club successfully updated!", {
           duration: 5000, // 5 seconds
         });
         router.push("/all-schools");
       }
       else{
         const errorData = await response.json();
-        toast.error(errorData.message || "Update failed. Please try again.");
+        toast.error(errorData.message || "Update failed.");
       }
     }
     catch(error){
       toast.error("Network error. Please check your connection.");
-      console.error("Update Submission failed");
     }
+  }
+
+  if(!clubData){
+   return(
+    <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+      <div className="flex items-center space-x-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="font-bold text-xl">Now Loading..</p>
+      </div>
+    </div>
+    )
   }
 
   return (
@@ -103,14 +129,19 @@ export default function EditUniversityPage({ params }) {
           </Link>
           <div className="flex items-center gap-3 mb-2">
             <GraduationCap className="w-8 h-8 text-blue-600" />
-            <h1 className="text-4xl font-bold text-gray-900">Update University</h1>
+            <h1 className="text-4xl font-bold text-gray-900">Edit Club</h1>
           </div>
         </div>
-        <UniversityForm
-            universityData={universityData}
-            setUniversityData={setUniversityData}
-            handleSubmit={handleSubmit}
-            submitLabel="Update University"
+        <ClubForm
+          clubData={clubData}
+          setClubData={setClubData}
+          handleSubmit={handleSubmit}
+          submitLabel="Edit Club"
+          tags={tags}
+          categories={categories}
+          selectedTags={selectedTags}
+          setSelectedTags={setSelectedTags}
+          isEditMode={true}
         />
       </div>
     </div>
