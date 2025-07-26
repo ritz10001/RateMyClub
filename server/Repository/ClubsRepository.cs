@@ -3,6 +3,7 @@ using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Clubs;
+using RateMyCollegeClub.Utils;
 
 
 
@@ -31,8 +32,6 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         );
 
     }
-
-
     public async Task<List<Club>> GetClubDetails()
     {
         return await _context.Clubs
@@ -54,10 +53,65 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         .FirstOrDefaultAsync(q => q.Id == id);
     }
 
-    // public async Task<List<Club>> GetClubsByFilters(List<string> tags)
-    // {
-    //     return await _context.Clubs
-    //         .Where(c => tags.All(t => c.Tags.Contains(t))) // All tags must match
-    //         .ToListAsync();
-    // }
+    public async Task<List<Club>> GetPagedClubsAsync(int page, int pageSize, int universityId, string? search)
+    {
+        var query = _context.Clubs
+        .Where(c => c.UniversityId == universityId)
+        .Include(q => q.Category)
+        .Include(q => q.University)
+        .Include(q => q.Reviews)
+        .Include(q => q.Tags)
+        .AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(u => u.Name.Contains(search));
+        }
+
+        return await query
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+    }
+
+    public async Task<int> GetTotalClubCountAsync(int universityId, string? search)
+    {
+        var query = _context.Clubs.Where(c => c.UniversityId == universityId);
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(u => u.Name.Contains(search));
+        }
+
+        return await query.CountAsync();
+    }
+
+    public async Task<PagedResult<Club>> GetPagedClubsForUniversity(int universityId, int page, int pageSize, string? search)
+    {
+        var query = _context.Clubs
+        .Where(c => c.UniversityId == universityId)
+        .AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(c => c.Name.Contains(search));
+        }
+
+        var total = await query.CountAsync();
+
+        var items = await query
+        .OrderBy(c => c.Name)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+
+        return new PagedResult<Club>
+        {
+            Items = items,
+            TotalCount = total,
+            Page = page,
+            PageSize = pageSize
+        };
+
+    }
 }

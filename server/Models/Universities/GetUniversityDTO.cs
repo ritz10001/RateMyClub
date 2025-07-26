@@ -13,5 +13,5 @@ public class GetUniversityDTO : BaseUniversityDTO
     public DateTime CreatedAt { get; set; }
     public string Description { get; set; } = string.Empty;
     public string OfficialWebsite { get; set; } = string.Empty;
-    public ICollection<GetClubsDTO> Clubs { get; set; } = new List<GetClubsDTO>();
+    // public ICollection<GetClubsDTO> Clubs { get; set; } = new List<GetClubsDTO>();
 }

@@ -14,11 +14,15 @@ import { useAuth } from "@/app/context/AuthContext"
 import { useRouter } from "next/navigation"
 import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
+import PageNav from "@/app/components/PageNav"
 // Mock data for school details
 
 export default function SchoolPage({ params }) {
-  const { schoolId } = use(params);
-  const [school, setSchool] = useState(null);
+  const { schoolId } = useParams();
+  console.log("params:", params);
+  console.log("universityId:", schoolId);
+
+  const [university, setUniversity] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clubs, setClubs] = useState([]);
   const [filteredClubs, setFilteredClubs] = useState([]);
@@ -28,6 +32,9 @@ export default function SchoolPage({ params }) {
   const [isLoading, setIsLoading] = useState(true);
   const [universityToDelete, setUniversityToDelete] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(6);
+  const [totalPages, setTotalPages] = useState(1);
   const { user } = useAuth();
   console.log("USER INFO", user);
   const router = useRouter();
@@ -35,7 +42,7 @@ export default function SchoolPage({ params }) {
   useEffect(() => {
     const fetchClubs = async () => {
       try{
-          const response = await fetch(`http://localhost:5095/api/University/${schoolId}`, {
+          const response = await fetch(`http://localhost:5095/api/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -45,10 +52,10 @@ export default function SchoolPage({ params }) {
         if(response.ok){
           const data = await response.json();
           console.log("Fetched clubs:", data);
-          setSchool(data);
-          setClubs(data.clubs || []);
-          setFilteredClubs(data.clubs || []);
-          // setFilteredClubs(data);
+          setUniversity(data.university);
+          setClubs(data.clubs.items || []);
+          setFilteredClubs(data.clubs.items || []);
+          setTotalPages(Math.ceil(data.clubs.totalCount / pageSize));
         }
         else{
           console.log("Failed to fetch clubs");
@@ -63,7 +70,7 @@ export default function SchoolPage({ params }) {
       }
     }
     fetchClubs();
-  }, [schoolId, user?.token]);
+  }, [schoolId, user?.token, searchQuery, page]);
 
   useEffect(() => {
     updateDisplayedClubs();
@@ -99,16 +106,14 @@ export default function SchoolPage({ params }) {
           return b.averageRating - a.averageRating;
         case "reviews":
           return b.reviewCount - a.reviewCount;
+        case "bookmarked":
+          return (b.isBookmarked ? 1 : 0) - (a.isBookmarked ? 1 : 0);
         default:
           return 0;
       }
     });
 
     setFilteredClubs(results);
-  };
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
   };
 
   const handleSort = (value) => {
@@ -130,8 +135,8 @@ export default function SchoolPage({ params }) {
     ); 
   }
 
-  if (!school) {
-    return <div className="text-center py-8">School not found</div>;
+  if (!university) {
+    return <div className="text-center py-8">University not found</div>;
   }
 
   const categories = ["all", ...new Set(clubs.map(club => club.categoryName.toLowerCase()))];
@@ -144,30 +149,26 @@ export default function SchoolPage({ params }) {
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
             {/* School Logo */}
             <img
-              src={"/placeholder.svg"}
-              alt={`${school.name} logo`}
+              src={"https://www.texastech.edu/universities/ttu-campus-2022.jpg"}
+              alt={`${university.name} logo`}
               className="w-32 h-32 rounded-full border-4 border-blue-100"
             />
 
             {/* School Info */}
             <div className="flex-1 text-center lg:text-left">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{school.name}</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">{university.name}</h1>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-gray-600 mb-4">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  <span>{school.location}</span>
+                  <span>{university.location}</span>
                 </div>
-                {/* <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  <span>Est. {mockSchool.established}</span>
-                </div> */}
               </div>
-              <p className="text-gray-700 mb-6 max-w-2xl">{school.description}</p>
+              <p className="text-gray-700 mb-6 max-w-2xl">{university.description}</p>
 
               {/* Stats */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{school.clubsCount}</div>
+                  <div className="text-2xl font-bold text-blue-600">{university.clubsCount}</div>
                   <div className="text-sm text-gray-600">Active Clubs</div>
                 </div>
                 <div className="text-center">
@@ -199,16 +200,7 @@ export default function SchoolPage({ params }) {
                   <Trash2 className="w-4 h-4" />
                 </Button>           
               </div>
-            }
-            {/* <div className="flex flex-col gap-3">
-              <Button
-                variant="outline"
-                className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
-              >
-                Get & Add Your Club
-              </Button>
-            </div> */}
-            
+            } 
           </div>
         </div>
 
@@ -245,7 +237,7 @@ export default function SchoolPage({ params }) {
                 type="text"
                 placeholder="Search clubs by name, description, or tags..."
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 py-3 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl w-full"
               />
             </div>
@@ -260,8 +252,8 @@ export default function SchoolPage({ params }) {
                 <SelectContent>
                   <SelectItem value="name">Club Name</SelectItem>
                   <SelectItem value="rating">Highest Rated</SelectItem>
-                  {/* <SelectItem value="members">Most Members</SelectItem> */}
                   <SelectItem value="reviews">Most Reviews</SelectItem>
+                  <SelectItem value="bookmarked">Bookmarked</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -349,12 +341,7 @@ export default function SchoolPage({ params }) {
 
         {/* Load More Button */}
         <div className="text-center">
-          <Button
-            variant="outline"
-            className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-xl font-semibold bg-transparent"
-          >
-            Load More Clubs
-          </Button>
+          <PageNav current={page} total={totalPages} onChange={setPage} />
         </div>
       </div>
       {isDeleteOpen &&

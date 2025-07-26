@@ -38,15 +38,26 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     public async Task<T> GetAsync(int? id)
     {
-        if(id is null){
+        if (id is null)
+        {
             return null;
         }
         return await _context.Set<T>().FindAsync(id);
     }
-
     public async Task UpdateAsync(T entity)
     {
         _context.Update(entity);
         await _context.SaveChangesAsync();
+    }
+    public async Task<List<T>> GetPagedAsync(int page, int pageSize)
+    {
+        return await _context.Set<T>()
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+    }
+    public async Task<int> GetCountAsync()
+    {
+        return await _context.Set<T>().CountAsync();
     }
 }

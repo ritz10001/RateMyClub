@@ -8,6 +8,7 @@ using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Clubs;
 using RateMyCollegeClub.Repository;
+using RateMyCollegeClub.Utils;
 
 namespace RateMyCollegeClub.Controllers;
 
@@ -98,13 +99,24 @@ public class ClubController : ControllerBase {
         return Ok(clubDTO);
     }
 
-    // [HttpGet("clubs/filter-multiple")]
-    // public async Task<IActionResult> GetClubsByTags([FromQuery] List<string> tags)
-    // {
-    //     var clubs = await _clubsRepository.GetClubsByFilters(tags);
-    //     return Ok(clubs);
-    // }
-
+    [HttpGet]
+    [Route("paged")]
+    public async Task<ActionResult<IEnumerable<GetClubsDTO>>> GetPagedClubs(int page = 1, int pageSize = 6, int universityId = 1, string? search = null)
+    {
+        if (page <= 0 || pageSize <= 0)
+        {
+            return BadRequest("Page and pageSize must be greater than zero.");
+        }
+        var clubs = await _clubsRepository.GetPagedClubsAsync(page, pageSize, universityId, search);
+        var totalCount = await _clubsRepository.GetTotalClubCountAsync(universityId, search);
+        var clubDTOs = _mapper.Map<List<GetClubsDTO>>(clubs);
+        var result = new
+        {
+            data = clubDTOs,
+            total = totalCount
+        };
+        return Ok(result);
+    }
     private string GetUserId()
     {
         return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value ?? string.Empty;

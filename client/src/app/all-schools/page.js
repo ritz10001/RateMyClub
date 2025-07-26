@@ -5,75 +5,23 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Plus, Users, Building } from "lucide-react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-
-
-  
-
-// Mock data for schools
-const mockSchools = [
-  {
-    id: 1,
-    name: "Texas Tech University",
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoImEBJpYSEzalfibFb51kyqGCgYJa5wPinQ&s",
-    reviewCount: 245,
-    clubCount: 89,
-    location: "Lubbock, TX",
-  },
-  {
-    id: 2,
-    name: "Massachusetts Institute of Technology",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg",
-    reviewCount: 412,
-    clubCount: 156,
-    location: "Cambridge, MA",
-  },
-  {
-    id: 3,
-    name: "Stanford University",
-    logo: "/placeholder.svg?height=80&width=80",
-    reviewCount: 389,
-    clubCount: 134,
-    location: "Stanford, CA",
-  },
-  {
-    id: 4,
-    name: "University of California, Berkeley",
-    logo: "/placeholder.svg?height=80&width=80",
-    reviewCount: 298,
-    clubCount: 112,
-    location: "Berkeley, CA",
-  },
-  {
-    id: 5,
-    name: "Harvard University",
-    logo: "/placeholder.svg?height=80&width=80",
-    reviewCount: 356,
-    clubCount: 98,
-    location: "Cambridge, MA",
-  },
-  {
-    id: 6,
-    name: "University of Michigan",
-    logo: "/placeholder.svg?height=80&width=80",
-    reviewCount: 267,
-    clubCount: 145,
-    location: "Ann Arbor, MI",
-  },
-]
+import PageNav from "../components/PageNav"
 
 export default function DirectoryPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState("name")
-  const [filteredSchools, setFilteredSchools] = useState([])
-  const [schools, setSchools] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [filteredSchools, setFilteredSchools] = useState([]);
+  const [schools, setSchools] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(6);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
   const fetchSchools = async () => {
     try{
-      const response = await fetch("http://localhost:5095/api/University/all-colleges", {
+      const response = await fetch(`http://localhost:5095/api/University/paged?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -82,8 +30,9 @@ export default function DirectoryPage() {
       if(response.ok){
         const data = await response.json();
         console.log("Fetched schools:", data);
-        setSchools(data);
-        setFilteredSchools(data);
+        setSchools(data.data);
+        setFilteredSchools(data.data);
+        setTotalPages(Math.ceil(data.total / pageSize));
       }
       else{
         console.log("Failed to fetch schools");
@@ -98,7 +47,7 @@ export default function DirectoryPage() {
     }
   }
   fetchSchools();
-}, [])
+}, [searchQuery, page])
 
   const updateDisplayedSchools = () => {
     let results = [...schools]
@@ -128,11 +77,6 @@ export default function DirectoryPage() {
     updateDisplayedSchools()
   }, [searchQuery, sortBy, schools])
 
-  // Handler for search input
-  const handleSearch = (query) => {
-    setSearchQuery(query)
-  }
-
   // Handler for sort select
   const handleSort = (value) => {
     setSortBy(value)
@@ -156,7 +100,7 @@ export default function DirectoryPage() {
                 type="text"
                 placeholder="Search schools by name or location..."
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 py-3 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl w-full"
               />
             </div>
@@ -189,7 +133,7 @@ export default function DirectoryPage() {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-600">
-            Showing {filteredSchools.length} of {mockSchools.length} schools
+            Showing {filteredSchools.length} schools
           </p>
         </div>
 
@@ -246,16 +190,9 @@ export default function DirectoryPage() {
             ))}
           </div>
           }
-        
-
         {/* Load More Button */}
         <div className="text-center">
-          <Button
-            variant="outline"
-            className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-xl font-semibold bg-transparent"
-          >
-            Load More Schools
-          </Button>
+          <PageNav current={page} total={totalPages} onChange={setPage} />
         </div>
       </div>
     </div>
