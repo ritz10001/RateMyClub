@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Star, Heart, Users, Calendar, MapPin, Plus, Pencil, Trash2, ArrowBigUp, ArrowBigDown, Flag } from "lucide-react"
+import { Star, Heart, Users, Calendar, MapPin, Plus, Pencil, Trash2, ArrowBigUp, ArrowBigDown, Flag, NotebookPen } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
 import { use } from "react"; 
@@ -420,14 +420,14 @@ export default function ClubPage({ params }) {
               <div className="flex justify-center gap-1 mb-2">
                 {renderStars(Math.round(club.averageRating), "w-6 h-6")}
               </div>
-              <p className="text-gray-600">Based on {reviews.length} reviews</p>
+              <p className="text-gray-600">Based on {club.reviewCount} review(s)</p>
             </div>
 
             {/* Rating Distribution */}
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-4">Rating Breakdown</h3>
               {[5, 4, 3, 2, 1].map((star) =>
-                renderRatingBar(star, club.ratingDistribution[star], reviews.length),
+                renderRatingBar(star, club.ratingDistribution[star], club.reviewCount),
               )}
             </div>
 
@@ -452,141 +452,164 @@ export default function ClubPage({ params }) {
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Rating Breakdown</h2>
             <div className="space-y-1">
-              {renderCategoryRating("leadership", (reviews.reduce((acc, review) => acc + review.leadershipRating, 0) / reviews.length).toFixed(1))}
-              {renderCategoryRating("inclusivity", (reviews.reduce((acc, review) => acc + review.inclusivityRating, 0) / reviews.length).toFixed(1))}
-              {renderCategoryRating("networking", (reviews.reduce((acc, review) => acc + review.networkingRating, 0) / reviews.length).toFixed(1))}
-              {renderCategoryRating("skillsDevelopment", (reviews.reduce((acc, review) => acc + review.skillsDevelopmentRating, 0) / reviews.length).toFixed(1))}
+              {renderCategoryRating("leadership", club.leadershipRating)}
+              {renderCategoryRating("inclusivity", club.inclusivityRating)}
+              {renderCategoryRating("networking", club.networkingRating)}
+              {renderCategoryRating("skillsDevelopment", club.skillsDevelopmentRating)}
             </div>
           </div>
         </div>
 
         {/* Reviews Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({reviews.length})</h2>
-
-
-          {/* Reviews List */}
-          <div className="space-y-6 border-t border-gray-500 p-4">
-            {reviews.map((review) => (
-              <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                <p>{console.log("REVIEW USER ID", review.userId)}</p>
-                {user && review.userId === user.userId && <p className="font-bold">(MY REVIEW)</p>}
-                <div className="flex justify-between mb-3">
-                  <div>
-                    <div className="flex items-center justify-center gap-2 mt-1 w-full">
-                      <div className="flex items-center gap-2">
-                        <div className="flex">{renderStars(((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1))}</div>
-                        <div className="flex font-bold">{((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1)}</div>
-                      </div>
-                      {user && (
+        {/* {reviews.length > 0 &&} */}
+        {reviews.length === 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-12 border border-blue-100 text-center">
+            <div className="text-gray-400 mb-4">
+              <NotebookPen className="w-16 h-16 mx-auto" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Reviews</h3>
+            <p className="text-gray-600 mb-6">
+              No ratings yet. Be the first one to review!
+            </p>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold"
+              onClick={() => {
+                if(user) {
+                  router.push(`/school/${schoolId}/club/${clubId}/add-review`);
+                }
+                else{
+                  setIsModalOpen(true);
+                  return;
+                }
+              }}>Write a Review
+            </Button>
+          </div>
+        )}
+        {reviews.length > 0 && 
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({reviews.length})</h2>
+            {/* Reviews List */}
+            <div className="space-y-6 border-t border-gray-500 p-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                  <p>{console.log("REVIEW USER ID", review.userId)}</p>
+                  {user && review.userId === user.userId && <p className="font-bold">(MY REVIEW)</p>}
+                  <div className="flex justify-between mb-3">
+                    <div>
+                      <div className="flex items-center justify-center gap-2 mt-1 w-full">
                         <div className="flex items-center gap-2">
-                          {/* Only allows editing if the user is the owner */}
-                          {review.userId === user.userId && (
-                            <Button 
-                              className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
-                              title="Edit Review"
-                              onClick={() => {
-                                setClubData(review);
-                                router.push(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
-                              }}
-                            >
-                              Edit
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                          )}
-
-                          {/* Allow deletion if the user is the owner OR an admin */}
-                          {(review.userId === user.userId || user.roles.includes("Administrator")) && (
-                            <Button 
-                              className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
-                              title="Delete Review"
-                              onClick={() => {
-                                setReviewToDelete(review.id);
-                                setDeleteMode("Review");
-                                setIsDeleteOpen(true);
-                              }}
-                            >
-                              Delete
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
+                          <div className="flex">{renderStars(((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1))}</div>
+                          <div className="flex font-bold">{((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1)}</div>
                         </div>
-                      )}
-                    </div>
-                    <div className="text-sm mt-1 text-gray-500">{monthNumbers[parseInt(review.createdAt.slice(5,7))] + " " + parseInt(review.createdAt.slice(8,10)) + ", " + review.createdAt.slice(0,4)}</div>
-                  </div>
-                </div>
-                <p className="text-gray-700 leading-relaxed mb-3">{review.comment}</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center gap-4">
-                    <button className={`transition-colors ${userVotes[review.id] === 1 ? "text-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
-                    onClick={() => handleVoteClick(1, review.id)} disabled={isVoting}>
-                      <ArrowBigUp className={`hover:text-green-600 transition-colors ${userVotes[review.id] === 1 ? "fill-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
-                    </button>
-                    <p className="font-bold">{review.netScore}</p>
-                    <button className={`transition-colors ${userVotes[review.id] === -1 ? "text-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
-                    onClick={() => handleVoteClick(-1, review.id)} disabled={isVoting}>
-                    <ArrowBigDown className={`hover:text-red-600 transition-colors ${userVotes[review.id] === -1 ? "fill-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
-                    </button>
-                  </div>
-                  <button className="flex items-center gap-2 text-sm hover:text-red-500 font-medium">
-                    <span className="text-black font-bold"></span><Flag className="hover:fill-red-500 transition-colors" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <DeleteModal 
-            isOpen={isDeleteOpen}
-            onClose={() => setIsDeleteOpen(false)}
-            modalText={deleteMode}
-            onDelete={async () => {
-              if((deleteMode === "Review" && !reviewToDelete) || (deleteMode === "Club" && !clubToDelete)){
-                return;
-              }
-              try{
-                console.log("club id is", clubToDelete);
-                const url = deleteMode === "Review" ? `http://localhost:5095/api/Review/${reviewToDelete}` : `http://localhost:5095/api/AdminClub/${clubToDelete}`;
-                console.log(url);
-                const response = await fetch(url, {
-                  method: "DELETE",
-                  headers: {
-                    "Authorization": `Bearer ${user.token}`
-                  }
-                });
-                if (!response.ok) throw new Error("Delete failed");
-                if (deleteMode === "Review") {
-                  setReviews((prevReviews) =>
-                    prevReviews.filter((r) => r.id !== reviewToDelete)
-                  );
-                };
-                toast.success(`${deleteMode} deleted successfully!`, {
-                  duration: 5000, // 5 seconds
-                });
-                router.push(`/school/${schoolId}`);
-              }
-              catch(error){
-                console.error(error);
-                toast.error("Deletion failed. Please try again.");
-              }
-              finally {
-                setIsDeleteOpen(false);
-                setReviewToDelete(null);
-                setDeleteMode(null);
-                setClubToDelete(null);
-              }
-            }}
-          />
+                        {user && (
+                          <div className="flex items-center gap-2">
+                            {/* Only allows editing if the user is the owner */}
+                            {review.userId === user.userId && (
+                              <Button 
+                                className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                                title="Edit Review"
+                                onClick={() => {
+                                  setClubData(review);
+                                  router.push(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
+                                }}
+                              >
+                                Edit
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            )}
 
-          {/* Load More Reviews */}
-          <div className="text-center mt-8">
-            {reviews.length < totalReviewCount && (
-              <button onClick={() => fetchReviewsPage(currentPage + 1)}>
-                Load More Reviews
-              </button>
-            )}
+                            {/* Allow deletion if the user is the owner OR an admin */}
+                            {(review.userId === user.userId || user.roles.includes("Administrator")) && (
+                              <Button 
+                                className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                                title="Delete Review"
+                                onClick={() => {
+                                  setReviewToDelete(review.id);
+                                  setDeleteMode("Review");
+                                  setIsDeleteOpen(true);
+                                }}
+                              >
+                                Delete
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-sm mt-1 text-gray-500">{monthNumbers[parseInt(review.createdAt.slice(5,7))] + " " + parseInt(review.createdAt.slice(8,10)) + ", " + review.createdAt.slice(0,4)}</div>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed mb-3">{review.comment}</p>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center gap-4">
+                      <button className={`transition-colors ${userVotes[review.id] === 1 ? "text-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
+                      onClick={() => handleVoteClick(1, review.id)} disabled={isVoting}>
+                        <ArrowBigUp className={`hover:text-green-600 transition-colors ${userVotes[review.id] === 1 ? "fill-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
+                      </button>
+                      <p className="font-bold">{review.netScore}</p>
+                      <button className={`transition-colors ${userVotes[review.id] === -1 ? "text-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
+                      onClick={() => handleVoteClick(-1, review.id)} disabled={isVoting}>
+                      <ArrowBigDown className={`hover:text-red-600 transition-colors ${userVotes[review.id] === -1 ? "fill-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
+                      </button>
+                    </div>
+                    <button className="flex items-center gap-2 text-sm hover:text-red-500 font-medium">
+                      <span className="text-black font-bold"></span><Flag className="hover:fill-red-500 transition-colors" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <DeleteModal 
+              isOpen={isDeleteOpen}
+              onClose={() => setIsDeleteOpen(false)}
+              modalText={deleteMode}
+              onDelete={async () => {
+                if((deleteMode === "Review" && !reviewToDelete) || (deleteMode === "Club" && !clubToDelete)){
+                  return;
+                }
+                try{
+                  console.log("club id is", clubToDelete);
+                  const url = deleteMode === "Review" ? `http://localhost:5095/api/Review/${reviewToDelete}` : `http://localhost:5095/api/AdminClub/${clubToDelete}`;
+                  console.log(url);
+                  const response = await fetch(url, {
+                    method: "DELETE",
+                    headers: {
+                      "Authorization": `Bearer ${user.token}`
+                    }
+                  });
+                  if (!response.ok) throw new Error("Delete failed");
+                  if (deleteMode === "Review") {
+                    setReviews((prevReviews) =>
+                      prevReviews.filter((r) => r.id !== reviewToDelete)
+                    );
+                  };
+                  toast.success(`${deleteMode} deleted successfully!`, {
+                    duration: 5000, // 5 seconds
+                  });
+                  router.push(`/school/${schoolId}`);
+                }
+                catch(error){
+                  console.error(error);
+                  toast.error("Deletion failed. Please try again.");
+                }
+                finally {
+                  setIsDeleteOpen(false);
+                  setReviewToDelete(null);
+                  setDeleteMode(null);
+                  setClubToDelete(null);
+                }
+              }}
+            />
+
+            {/* Load More Reviews */}
+            <div className="text-center mt-8">
+              {reviews.length < totalReviewCount && (
+                <Button className="bg-white text-blue-600 border border-blue-300 hover:bg-gray-100 hover:text-blue-700 hover:border-blue-400 transition-colors duration-200" onClick={() => fetchReviewsPage(currentPage + 1)}>
+                  Load More Reviews
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        }
       </div>
       <LoginModal 
         isOpen={isModalOpen} 

@@ -199,22 +199,6 @@ export default function MyReviewsPage() {
                   </div>
                 </div>
                 <p className="text-gray-700 leading-relaxed mb-3">{review.comment}</p>
-                {/* <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center gap-4">
-                    <button className={`transition-colors ${userVotes[review.id] === 1 ? "text-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
-                    onClick={() => handleVoteClick(1, review.id)} disabled={isVoting}>
-                      <ArrowBigUp className={`hover:text-green-600 transition-colors ${userVotes[review.id] === 1 ? "fill-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
-                    </button>
-                    <p className="font-bold">{review.netScore}</p>
-                    <button className={`transition-colors ${userVotes[review.id] === -1 ? "text-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
-                    onClick={() => handleVoteClick(-1, review.id)} disabled={isVoting}>
-                    <ArrowBigDown className={`hover:text-red-600 transition-colors ${userVotes[review.id] === -1 ? "fill-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
-                    </button>
-                  </div>
-                  <button className="flex items-center gap-2 text-sm hover:text-red-500 font-medium">
-                    <span className="text-black font-bold"></span><Flag className="hover:fill-red-500 transition-colors" />
-                  </button>
-                </div> */}
               </div>
             ))}
           </div>

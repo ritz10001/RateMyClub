@@ -3,6 +3,7 @@ using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Clubs;
+using RateMyCollegeClub.Models.Reviews;
 using RateMyCollegeClub.Utils;
 using server.Models;
 
@@ -193,5 +194,18 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         return Math.Round(avg ?? 0, 1);
     }
 
-
+    public async Task<CategoryAveragesDTO> GetCategoryAveragesForClubAsync(int clubId)
+    {
+        return await _context.Reviews
+            .Where(r => r.ClubId == clubId)
+            .GroupBy(r => 1) // Group all reviews for the club
+            .Select(g => new CategoryAveragesDTO
+            {
+                LeadershipRating = (decimal)g.Average(r => r.LeadershipRating),
+                InclusivityRating = (decimal)g.Average(r => r.InclusivityRating),
+                NetworkingRating = (decimal)g.Average(r => r.NetworkingRating),
+                SkillsDevelopmentRating = (decimal)g.Average(r => r.SkillsDevelopmentRating)
+            })
+            .FirstOrDefaultAsync() ?? new CategoryAveragesDTO();
+    }
 }
