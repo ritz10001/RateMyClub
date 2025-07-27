@@ -27,4 +27,11 @@ public class ReviewsRepository : GenericRepository<Review>, IReviewsRepository
         return flag;
     }
 
+    public async Task<int> GetReviewCountAsync(int clubId)
+    {
+        return await _context.Reviews
+        .Where(r => r.ClubId == clubId)
+        .CountAsync();
+    }
+
 }

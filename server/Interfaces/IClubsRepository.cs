@@ -1,4 +1,6 @@
 using RateMyCollegeClub.Models;
+using RateMyCollegeClub.Models.Clubs;
+using RateMyCollegeClub.Models.Reviews;
 using RateMyCollegeClub.Utils;
 
 namespace RateMyCollegeClub.Interfaces;
@@ -12,4 +14,8 @@ public interface IClubsRepository : IGenericRepository<Club>
     Task<List<Club>> GetPagedClubsAsync(int page, int pageSize, int universityId, string? search);
     Task<int> GetTotalClubCountAsync(int universityId, string? search);
     Task<PagedResult<Club>> GetPagedClubsForUniversity(int id, int page, int pageSize, string? search);
+    Task<PaginatedReviewEntityResult> GetPaginatedReviewsForClub(int clubId, int page, int pageSize, string? userId);
+    Task<Dictionary<int, int>> GetRatingDistributionForClub(int clubId);
+    Task<decimal> GetAverageRatingForClub(int clubId);
+    Task<CategoryAveragesDTO> GetCategoryAveragesForClubAsync(int clubId);
 }

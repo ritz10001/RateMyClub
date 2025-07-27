@@ -21,7 +21,8 @@ export default function DirectoryPage() {
   useEffect(() => {
   const fetchSchools = async () => {
     try{
-      const response = await fetch(`http://localhost:5095/api/University/paged?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
+      const effectivePage = searchQuery ? 1 : page;
+      const response = await fetch(`http://localhost:5095/api/University/paged?page=${effectivePage}&pageSize=${pageSize}&search=${searchQuery}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

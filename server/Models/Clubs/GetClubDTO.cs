@@ -12,6 +12,10 @@ public class GetClubDTO : BaseClubDTO
     public int CategoryId { get; set; }
     public string UniversityName { get; set; } = string.Empty;
     public decimal AverageRating { get; set; }
+    public decimal LeadershipRating { get; set; }
+    public decimal InclusivityRating { get; set; }
+    public decimal NetworkingRating { get; set; }
+    public decimal SkillsDevelopmentRating { get; set; }
     public int ReviewCount { get; set; }
     public Dictionary<int, int> RatingDistribution { get; set; } = new() { { 1, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 5, 0 } };
     public List<GetReviewDTO> Reviews { get; set; } = [];
