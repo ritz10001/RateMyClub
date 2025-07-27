@@ -51,17 +51,11 @@ export default function EditReviewPage({ params }) {
     }
 
     fetchReviewData();
-  }, []);
+  }, [id]);
 
   const isFormValid = () => {
     const { comment, leadershipRating, inclusivityRating, networkingRating, skillsDevelopmentRating, recommendation } = reviewData;
-    console.log("VALIDATION");
-    console.log(comment);
-    console.log(recommendation);
-    console.log(leadershipRating);
-    console.log(inclusivityRating);
-
-    return comment.trim().length > 20 && 
+    return comment.trim().length >= 20 && 
             recommendation &&
             leadershipRating > 0 && 
             inclusivityRating > 0 && 
@@ -128,7 +122,7 @@ export default function EditReviewPage({ params }) {
     }
     catch(error){
       console.error('Login error:', error);
-      toast.error(errorData.message || "Submission failed. Please try again.");
+      toast.error("Network error. Please try again.");
       alert('Network error. Please try again.');
     }
   }
@@ -294,7 +288,7 @@ export default function EditReviewPage({ params }) {
                   className="border-2 border-gray-200 text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
-                  <Link href={`/club/${params.id}`}>Cancel</Link>
+                  <Link href={`/school/${schoolId}/club/${clubId}`}>Cancel</Link>
                 </Button>
                 <Button
                   type="submit"

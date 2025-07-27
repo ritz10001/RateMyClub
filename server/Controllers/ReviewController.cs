@@ -2,6 +2,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -49,6 +51,13 @@ public class ReviewController : ControllerBase
         var userId = GetUserId();
         var reviews = await _reviewsRepository.GetReviewsByUserId(userId);
         var reviewDTOs = _mapper.Map<List<GetMyReviewsDTO>>(reviews);
+        var json = JsonSerializer.Serialize(reviewDTOs, new JsonSerializerOptions
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            WriteIndented = true
+        });
+        Console.WriteLine("---------------------------------------------------");
+        Console.WriteLine(json);
         return Ok(reviewDTOs);
     }
 

@@ -286,7 +286,6 @@ export default function SchoolPage({ params }) {
         </div>
 
         {/* Clubs Grid */}
-        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredClubs.map((club) => (
             
@@ -340,43 +339,46 @@ export default function SchoolPage({ params }) {
         </div>
 
         {/* Load More Button */}
-        <div className="text-center">
-          <PageNav current={page} total={totalPages} onChange={setPage} />
-        </div>
+        {clubs.length > 0 &&
+          <div className="text-center">
+            <PageNav current={page} total={totalPages} onChange={setPage} />
+          </div>
+        }
       </div>
       {isDeleteOpen &&
             
-      <DeleteModal 
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
-        modalText = "University"
-        onDelete={async () => {
-          if(!universityToDelete){
-            return;
-          }
-          try{
-            const response = await fetch(`http://localhost:5095/api/AdminUniversity/${universityToDelete}`, {
-              method: "DELETE",
-              headers: {
-                "Authorization": `Bearer ${user.token}`
-              }
-            });
-            if (!response.ok) throw new Error("Delete failed");
-            toast.success("University deleted successfully!", {
-              duration: 5000, // 5 seconds
-            });
-          }
-          catch(error){
-            console.error(error);
-            toast.error(errorData.message || "Deletion failed. Please try again.");
-          }
-          finally {
-            setIsDeleteOpen(false);
-            setUniversityToDelete(null);
-            router.push("http://localhost:3000/all-schools");
-          }
-        }}
-      />}
+        <DeleteModal 
+          isOpen={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          modalText = "University"
+          onDelete={async () => {
+            if(!universityToDelete){
+              return;
+            }
+            try{
+              const response = await fetch(`http://localhost:5095/api/AdminUniversity/${universityToDelete}`, {
+                method: "DELETE",
+                headers: {
+                  "Authorization": `Bearer ${user.token}`
+                }
+              });
+              if (!response.ok) throw new Error("Delete failed");
+              toast.success("University deleted successfully!", {
+                duration: 5000, // 5 seconds
+              });
+            }
+            catch(error){
+              console.error(error);
+              toast.error(errorData.message || "Deletion failed. Please try again.");
+            }
+            finally {
+              setIsDeleteOpen(false);
+              setUniversityToDelete(null);
+              router.push("http://localhost:3000/all-schools");
+            }
+          }}
+        />
+      }
     </div>
     
   )

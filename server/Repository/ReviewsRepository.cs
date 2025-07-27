@@ -16,9 +16,10 @@ public class ReviewsRepository : GenericRepository<Review>, IReviewsRepository
     public async Task<List<Review>> GetReviewsByUserId(string userId)
     {
         return await _context.Reviews
-        .Include(r => r.Club)
-        .Include(r => r.Club.University)
+        .Include(r => r.Club).ThenInclude(c => c.University)
         .Where(r => r.UserId == userId)
+        .OrderByDescending(r => r.CreatedAt)
+        .AsNoTracking()
         .ToListAsync();
     }
     public async Task<ReviewFlag> FlagReviewAsync(ReviewFlag flag)
