@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -93,7 +94,6 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-
 
 var app = builder.Build();
 

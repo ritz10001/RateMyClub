@@ -68,18 +68,16 @@ export default function MyReviewsPage() {
       }
     }
     fetchReviews();
-  });
+  }, [user?.token]);
   
   const handleSort = (value) => {
     setSortBy(value)
-    const sorted = [...savedClubs].sort((a, b) => {
+    const sorted = [...reviews].sort((a, b) => {
       switch (value) {
         case "recent":
-          return new Date(b.savedDate) - new Date(a.savedDate)
-        case "name":
-          return a.name.localeCompare(b.name)
-        case "school":
-          return a.school.localeCompare(b.school)
+          return new Date(b.createdAt) - new Date(a.createdAt)
+        case "highest":
+          return b.overallRating - a.overallRating
         default:
           return 0
       }
@@ -131,8 +129,7 @@ export default function MyReviewsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="recent">Recent Comments</SelectItem>
-                  <SelectItem value="name">Club Name</SelectItem>
-                  <SelectItem value="school">School Name</SelectItem>
+                  <SelectItem value="highest">Highest Rated</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -164,36 +161,40 @@ export default function MyReviewsPage() {
           <div className="space-y-6 border-t border-gray-500 py-4">
             {reviews.map((review) => (
               <div key={review.id} className="border-b border-gray-500 pb-6 last:border-b-0">
-                {/* <p>{console.log("REVIEW USER ID", review.userId)}</p> */}
-                {/* {user && review.userId === user.userId && <p className="font-bold">(MY REVIEW)</p>} */}
+                <div className="flex justify-between">
+                  <p className="text-xl font-bold md:text-2xl mb-2">{review.clubName}</p>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      className="flex items-center gap-2 p-2 border-2 bg-white border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
+                      title="Edit Review"
+                      onClick = {() => {
+                        // setClubData(review);
+                        router.push(`/school/${review.universityId}/club/${review.clubId}/edit-review/${review.id}`);
+                      }}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      className="flex items-center gap-2 p-2 border-2 bg-white border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
+                      title="Delete Review"
+                      onClick={() => {
+                          setReviewToDelete(review.id)
+                          setIsDeleteOpen(true);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>           
+                  </div>
+                </div>
+                
+                <p className="text-lg font-bold md:text-xl text-gray-700 mb-2">{review.universityName}</p>
                 <div className="flex justify-between mb-3">
                   <div>
                     <div className="flex items-center justify-center gap-2 mt-1 w-full">
                       <div className="flex items-center gap-2">
                         <div className="flex">{renderStars(review.overallRating)}</div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          className="flex items-center gap-2 p-2 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg transition-all duration-200 hover:scale-105"
-                          title="Edit Review"
-                          onClick = {() => {
-                            // setClubData(review);
-                            router.push(`/school/${review.universityId}/club/${review.clubId}/edit-review/${review.id}`);
-                          }}
-                        >Edit
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button 
-                          className="flex items-center gap-2 p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
-                          title="Delete Review"
-                          onClick={() => {
-                              setReviewToDelete(review.id)
-                              setIsDeleteOpen(true);
-                          }}
-                        >Delete
-                          <Trash2 className="w-4 h-4" />
-                        </button>           
-                      </div>
+                      
                     </div>
                     <div className="text-sm mt-1 text-gray-500">{monthNumbers[parseInt(review.createdAt.slice(5,7))] + " " + parseInt(review.createdAt.slice(8,10)) + ", " + review.createdAt.slice(0,4)}</div>
                   </div>

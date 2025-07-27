@@ -42,9 +42,12 @@ public class MapperConfig : Profile {
         CreateMap<Review, GetReviewsDTO>().ReverseMap();
         CreateMap<Review, GetMyReviewsDTO>()
         .ForMember(dest => dest.ClubName, opt => opt.MapFrom(src => src.Club.Name))
+        .ForMember(dest => dest.UniversityId, opt => opt.MapFrom(src => src.Club.University.Id))
         .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.Club.University.Name))
-        .ForMember(dest => dest.UniversityId, opt => opt.MapFrom(src => src.Club.UniversityId))
-        .ReverseMap();
+        .ForMember(dest => dest.OverallRating, opt => opt.MapFrom(src => src.OverallRating))
+        .ForMember(dest => dest.Comment, opt => opt.MapFrom(src => src.Comment))
+        .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+
         CreateMap<Review, UpdateReviewDTO>().ReverseMap();
         CreateMap<Category, CreateCategoryDTO>().ReverseMap();
         CreateMap<Category, GetCategoryDTO>().ReverseMap();
