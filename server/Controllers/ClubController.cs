@@ -74,21 +74,26 @@ public class ClubController : ControllerBase {
         if (club is null) {
             return NotFound();
         }
-
+        var averages = await _clubsRepository.GetCategoryAveragesForClubAsync(id);
         var clubDTO = _mapper.Map<GetClubDTO>(club);
         clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(id, userId ?? string.Empty);
         if (club.Tags != null && club.Tags.Any())
         {
             clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
         }
+        clubDTO.ReviewCount = await _reviewsRepository.GetReviewCountAsync(id);
         clubDTO.RatingDistribution = await _clubsRepository.GetRatingDistributionForClub(id);
 
         clubDTO.AverageRating = await _clubsRepository.GetAverageRatingForClub(id);
+        clubDTO.LeadershipRating = averages.LeadershipRating;
+        clubDTO.InclusivityRating = averages.InclusivityRating;
+        clubDTO.NetworkingRating = averages.NetworkingRating;
+        clubDTO.SkillsDevelopmentRating = averages.SkillsDevelopmentRating;
 
         // if (!string.IsNullOrEmpty(userId) && club.Reviews.Any())
         // {
         //     var reviewIds = club.Reviews.Select(r => r.Id).ToList();
-            
+
         //     var userVotes = await _reviewVoteRepository.GetVotesByUserForReviewsAsync(userId, reviewIds);
 
         //     // Attach vote to each review DTO
