@@ -61,6 +61,11 @@ public class ReviewController : ControllerBase
         var review = _mapper.Map<Review>(createReviewDTO);
         review.UserId = userId;
 
+        review.OverallRating = Math.Round(
+            (review.LeadershipRating + review.InclusivityRating + review.NetworkingRating + review.SkillsDevelopmentRating) / 4.0m, 
+            2
+        );
+
         await _reviewsRepository.AddAsync(review);
         return CreatedAtAction("GetReview", new { id = review.Id }, review);
     }

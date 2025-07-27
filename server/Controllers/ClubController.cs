@@ -21,13 +21,15 @@ public class ClubController : ControllerBase {
     private readonly ITagsRepository  _tagsRepository;
     private readonly IReviewVoteRepository _reviewVoteRepository;
     private readonly ISavedClubsRepository _savedClubsRepository;
-    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository, ISavedClubsRepository savedClubsRepository)
+    private readonly IReviewsRepository _reviewsRepository;
+    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository, ISavedClubsRepository savedClubsRepository, IReviewsRepository reviewsRepository)
     {
         _mapper = mapper;
         _clubsRepository = clubsRepository;
         _tagsRepository = tagsRepository;
         _reviewVoteRepository = reviewVoteRepository;
         _savedClubsRepository = savedClubsRepository;
+        _reviewsRepository = reviewsRepository;
     }
 
     [HttpGet]
@@ -66,6 +68,7 @@ public class ClubController : ControllerBase {
     [HttpGet("{id}")]
     public async Task<ActionResult<GetClubDTO>> GetClub(int id){
         var club = await _clubsRepository.GetIndividualClubDetails(id);
+        Console.WriteLine($"Fetched club with {club.Reviews?.Count} reviews");
         var userId = GetUserId();
         
         if (club is null) {
@@ -78,26 +81,47 @@ public class ClubController : ControllerBase {
         {
             clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
         }
-        clubDTO.RatingDistribution = RatingDistributionService.Calculate(club.Reviews);
-        clubDTO.AverageRating = club.Reviews.Count != 0 ? Math.Round(club.Reviews.Average(r => r.OverallRating), 1) : 0;
+        clubDTO.RatingDistribution = await _clubsRepository.GetRatingDistributionForClub(id);
 
+        clubDTO.AverageRating = await _clubsRepository.GetAverageRatingForClub(id);
 
-        if (!string.IsNullOrEmpty(userId) && club.Reviews.Any())
-        {
-            var reviewIds = club.Reviews.Select(r => r.Id).ToList();
+        // if (!string.IsNullOrEmpty(userId) && club.Reviews.Any())
+        // {
+        //     var reviewIds = club.Reviews.Select(r => r.Id).ToList();
             
-            var userVotes = await _reviewVoteRepository.GetVotesByUserForReviewsAsync(userId, reviewIds);
+        //     var userVotes = await _reviewVoteRepository.GetVotesByUserForReviewsAsync(userId, reviewIds);
 
-            // Attach vote to each review DTO
-            foreach (var review in clubDTO.Reviews)
-            {
-                var vote = userVotes.FirstOrDefault(v => v.ReviewId == review.Id);
-                review.CurrentUserVote = vote?.Value ?? 0; // or null if you prefer
-            }
-        }
+        //     // Attach vote to each review DTO
+        //     foreach (var review in clubDTO.Reviews)
+        //     {
+        //         var vote = userVotes.FirstOrDefault(v => v.ReviewId == review.Id);
+        //         review.CurrentUserVote = vote?.Value ?? 0; // or null if you prefer
+        //     }
+        // }
 
         return Ok(clubDTO);
     }
+    [HttpGet("{id}/reviews")]
+    public async Task<ActionResult<PagedResult<GetReviewDTO>>> GetReviewsForClub(int id, int page = 1, int pageSize = 5)
+    {
+        var userId = GetUserId();
+        var result = await _clubsRepository.GetPaginatedReviewsForClub(id, page, pageSize, userId);
+        var reviewDTOs = _mapper.Map<List<GetReviewDTO>>(result.Items);
+        foreach (var dto in reviewDTOs)
+        {
+            var matching = result.UserVotes.FirstOrDefault(v => v.ReviewId == dto.Id);
+            dto.CurrentUserVote = matching?.Value ?? 0;
+        }
+
+        return Ok(new PagedResult<GetReviewDTO>
+        {
+            Items = reviewDTOs,
+            TotalCount = result.TotalCount,
+            PageSize = result.PageSize,
+            Page = result.Page
+        });
+    }
+
 
     [HttpGet]
     [Route("paged")]
