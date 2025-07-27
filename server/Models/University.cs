@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using RateMyCollegeClub.Data;
 
 namespace RateMyCollegeClub.Models;

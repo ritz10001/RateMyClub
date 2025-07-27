@@ -159,7 +159,9 @@ export default function ClubPage({ params }) {
       // Initialize or update user votes for these reviews
       const updatedVotes = { ...userVotes };
       data.items.forEach(review => {
-        updatedVotes[review.id] = review.currentUserVote ?? 0;
+        updatedVotes[review.id] = review.currentUserVote !== null 
+          ? review.currentUserVote 
+          : 0;
       });
       setUserVotes(updatedVotes);
     } else {
@@ -227,14 +229,14 @@ export default function ClubPage({ params }) {
       console.log("INSIDE");
       // Get current vote state
       const currentVote = userVotes[reviewId] || 0;
-      let sendValue = newValue;
+      let sendValue = currentVote === newValue ? 0 : newValue;
 
       // Toggle logic:
       // If clicking same vote again, cancel it (send 0)
       // If clicking opposite vote, switch to that vote
-      if (currentVote === newValue) {
-        sendValue = 0;
-      }
+      // if (currentVote === newValue) {
+      //   sendValue = 0;
+      // }
 
     
       const response = await fetch("http://localhost:5095/api/ReviewVote", {
@@ -585,7 +587,7 @@ export default function ClubPage({ params }) {
                   toast.success(`${deleteMode} deleted successfully!`, {
                     duration: 5000, // 5 seconds
                   });
-                  router.push(`/school/${schoolId}`);
+                  router.push(`/school/${schoolId}/club/${clubId}`);
                 }
                 catch(error){
                   console.error(error);
