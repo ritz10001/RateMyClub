@@ -56,12 +56,14 @@ export default function ClubPage({ params }) {
   const [userVotes, setUserVotes] = useState({});
   const [isVoting, setIsVoting] = useState(false);
   const [deleteMode, setDeleteMode] = useState(null);
+  const [totalReviewCount, setTotalReviewCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const { schoolId, clubId } = use(params);
   console.log("Club ID:", clubId);
   console.log("bookmark status", isBookmarked);
 
   useEffect(() => {}, [reviewToDelete])
-
   
   const fetchClubDetails = async () => {
     try{
@@ -77,24 +79,23 @@ export default function ClubPage({ params }) {
       "Content-Type": "application/json",
       ...(user?.token && { Authorization: `Bearer ${user.token}` }) // Add auth header if user exists
       };
-      const response = await fetch(`http://localhost:5095/api/club/${clubId}`, {
+      const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
         method: "GET",
         headers
       })
       if(response.ok){
         const data = await response.json();
-        console.log("Club details fetched successfully:", data);
+        console.log("FIRST CLUB DETAILS:", data);
         setClub(data);
-        setReviews(data.reviews || []);
         setIsBookmarked(data.isBookmarked || false);
 
         //setup initial votes
-        const initialVotes = {};
-        (data.reviews || []).forEach(review => {
-          initialVotes[review.id] = review.currentUserVote ?? 0
-        });
-        console.log("Initial votes:", initialVotes); 
-        setUserVotes(initialVotes);
+        // const initialVotes = {};
+        // (data.reviews || []).forEach(review => {
+        //   initialVotes[review.id] = review.currentUserVote ?? 0
+        // });
+        // console.log("Initial votes:", initialVotes); 
+        // setUserVotes(initialVotes);
       }
       else{
         console.error("Failed to fetch club details:");
@@ -109,8 +110,70 @@ export default function ClubPage({ params }) {
   }
 
   useEffect(() => {
-    fetchClubDetails();
-  }, [clubId, user?.token, user?.userId]);
+  // Create an async function to fetch all initial data
+  const fetchInitialData = async () => {
+    try {
+      setIsLoading(true);
+      await fetchClubDetails();
+      await fetchReviewsPage(1);
+    } catch (error) {
+      console.error("Error fetching initial data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchInitialData();
+}, [clubId, user?.token, user?.userId]); // Include all dependencies here
+
+  // useEffect(() => {
+  //   fetchClubDetails();
+  //   fetchReviewsPage(1); // initial load
+  // }, [clubId]);
+
+  const fetchReviewsPage = async (page = 1, pageSize = 1) => {
+  try {
+    const headers = {
+      "Content-Type": "application/json",
+      ...(user?.token && { Authorization: `Bearer ${user.token}` })
+    };
+
+    const response = await fetch(
+      `http://localhost:5095/api/club/${clubId}/reviews?page=${page}&pageSize=${pageSize}`,
+      {
+        method: "GET",
+        headers
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Fetched reviews (page ${page}):", data);
+
+      // Replace reviews if it's the first page, append otherwise
+      setReviews(prev => page === 1 ? data.items : [...prev, ...data.items]);
+      setTotalReviewCount(data.totalCount);
+      setPageSize(data.pageSize);
+      setCurrentPage(data.page);
+
+      // Initialize or update user votes for these reviews
+      const updatedVotes = { ...userVotes };
+      data.items.forEach(review => {
+        updatedVotes[review.id] = review.currentUserVote ?? 0;
+      });
+      setUserVotes(updatedVotes);
+    } else {
+      console.error("Failed to fetch paginated reviews");
+    }
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+  }
+};
+
+
+  // useEffect(() => {
+  //   fetchClubDetails();
+  // }, [clubId, user?.token, user?.userId]);
 
   const handleBookmark = async () => {
     if(!user){
@@ -517,12 +580,11 @@ export default function ClubPage({ params }) {
 
           {/* Load More Reviews */}
           <div className="text-center mt-8">
-            <Button
-              variant="outline"
-              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-xl font-semibold bg-transparent"
-            >
-              Load More Reviews
-            </Button>
+            {reviews.length < totalReviewCount && (
+              <button onClick={() => fetchReviewsPage(currentPage + 1)}>
+                Load More Reviews
+              </button>
+            )}
           </div>
         </div>
       </div>
