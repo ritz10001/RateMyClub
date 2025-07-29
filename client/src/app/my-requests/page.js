@@ -41,43 +41,47 @@ export default function MyRequestsPage(){
   const [itemToDelete, setItemToDelete] = useState(null);
   const [requests, setRequests] = useState([]);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
+  console.log("USER INFO");
+  console.log(user);
 
   useEffect(() => {
-    const fetchUniversityRequests = async () => {
-      if (!user?.token) {
-        console.log("User not authenticated yet, skipping fetch");
-        return;
+  const fetchUniversityRequests = async () => {
+    try {
+      const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUniversityRequests(data);
+      } else {
+        toast.error("Failed to fetch university requests.");
       }
-      try {
-        const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
-          method: "GET",
-          headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${user?.token}`
-          }
-          })
-          if(response.ok){
-            const data = await response.json();
-            console.log(data);
-            setUniversityRequests(data);
-          }
-          else{
-            toast.error("Failed to fetch reviews. Please try again later.")
-          }
-        }
-        catch(error){
-          toast.error("An error occured while trying to fetch reviews.");
-        }
-        finally{
-          setIsLoading(false);
-        }
-      }
-      fetchUniversityRequests();
-  }, [user?.token]);
+    } catch (error) {
+      toast.error("An error occurred while fetching university requests.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ Only fetch *after* we're initialized *and* user is available
+  if (isInitialized && user?.token) {
+    fetchUniversityRequests();
+  }
+}, [user, isInitialized]);
+
 
   useEffect(() => {
     const fetchClubRequests = async () => {
+      if (!user?.token || !isInitialized) {
+        console.log("User not authenticated yet, skipping fetch");
+        return;
+      }
       try {
         const response = await fetch("http://localhost:5095/api/ClubRequest/my-club-requests", {
           method: "GET",
@@ -101,10 +105,10 @@ export default function MyRequestsPage(){
         setIsLoading(false);
       }
     }
-    if (user?.token) {
+    if (isInitialized && user?.token) {
       fetchClubRequests();
     }
-  }, [user?.token]);
+  }, [user?.token, isInitialized]);
 
   const WithdrawRequest = async () => {
     if(!itemToDelete){
@@ -168,7 +172,7 @@ export default function MyRequestsPage(){
     setFilterBy(category);
   }
 
-  if (isLoading) { 
+  if (!isInitialized || isLoading) { 
     return (
       <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
         <div className="flex items-center space-x-4">

@@ -64,7 +64,7 @@ export default function SignUpPage() {
           roles: authResponse.roles
         };
         setUser(userData);
-        localStorage.setItem("token", authResponse.token);
+        // localStorage.setItem("token", authResponse.token);
         setTimeout(() => {
           console.log("handleSubmit: Navigating to /");
           router.push("/");

@@ -35,7 +35,7 @@ export default function SchoolPage({ params }) {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   console.log("USER INFO", user);
   const router = useRouter();
 
@@ -70,7 +70,7 @@ export default function SchoolPage({ params }) {
       }
     }
     fetchClubs();
-  }, [schoolId, user?.token, searchQuery, page]);
+  }, [schoolId, user, searchQuery, page]);
 
   useEffect(() => {
     updateDisplayedClubs();

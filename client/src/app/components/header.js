@@ -12,6 +12,7 @@ import { useEffect } from "react"
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, setUser, isInitialized } = useAuth();
+  console.log("user infor", user);
   const router = useRouter();
 
   const handleLogout = () => {
