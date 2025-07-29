@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models.Users;
 
@@ -12,9 +13,11 @@ namespace RateMyCollegeClub.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly IAuthService _authService;
-    public AccountController(IAuthService authService)
+    private readonly UserManager<User> _userManager;
+    public AccountController(IAuthService authService, UserManager<User> userManager)
     {
         _authService = authService;
+        _userManager = userManager;
     }
 
     [HttpPost]
@@ -52,21 +55,34 @@ public class AccountController : ControllerBase
         }
 
         return Ok(authResponse);
-    } 
-    
+    }
+
     [HttpPost]
     [Route("refreshtoken")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> RefreshToken([FromBody] AuthResponseDTO request){
+    public async Task<ActionResult> RefreshToken([FromBody] AuthResponseDTO request)
+    {
         var authResponse = await _authService.VerifyRefreshToken(request);
 
-        if(authResponse == null){
+        if (authResponse == null)
+        {
             return Unauthorized();
         }
 
         return Ok(authResponse);
-    } 
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] AuthResponseDTO authResponseDTO)
+    {
+        var result = await _authService.VerifyRefreshToken(authResponseDTO);
+        if (result == null)
+        {
+            return Unauthorized("Invalid Refresh Token");
+        }
+        return Ok(result);
+    }
 
 }

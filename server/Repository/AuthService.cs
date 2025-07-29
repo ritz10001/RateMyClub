@@ -26,10 +26,12 @@ public class AuthService : IAuthService
     }
 
     public async Task<string> CreateRefreshToken()
-    {
+    {      
         await _userManager.RemoveAuthenticationTokenAsync(_user, _loginProvider, _refreshToken);
         var newRefreshToken = await _userManager.GenerateUserTokenAsync(_user, _loginProvider, _refreshToken);
         var result = await _userManager.SetAuthenticationTokenAsync(_user, _loginProvider, _refreshToken, newRefreshToken);
+        _user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+        await _userManager.UpdateAsync(_user);
         return newRefreshToken;
     }
 
@@ -99,6 +101,10 @@ public class AuthService : IAuthService
         if (_user == null || _user.Id != request.UserId)
         {
             return null;
+        }
+        if (_user.RefreshTokenExpiry == null || _user.RefreshTokenExpiry < DateTime.UtcNow)
+        {
+            return null; // Expired, don't rotate
         }
         var isValidRefreshToken = await _userManager.VerifyUserTokenAsync(_user, _loginProvider, _refreshToken, request.RefreshToken);
 
