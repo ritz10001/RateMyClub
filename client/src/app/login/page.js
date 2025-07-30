@@ -53,7 +53,8 @@ export default function LoginPage() {
         setUser(userData);
         console.log(authResponse);
         setIsLoggedIn(true);
-        localStorage.setItem("token", authResponse.token);
+        // localStorage.setItem("token", authResponse.token);
+        // localStorage.setItem("user", JSON.stringify(userData));
         setTimeout(() => {
           console.log("handleSubmit: Navigating to /");
           router.push("/");

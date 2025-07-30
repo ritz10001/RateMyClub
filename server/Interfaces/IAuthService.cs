@@ -6,7 +6,7 @@ namespace RateMyCollegeClub.Interfaces;
 
 public interface IAuthService
 {
-    Task<(AuthResponseDTO, IEnumerable<IdentityError>)> Register(UserDTO userDTO, string role);
+    Task<(AuthResponseDTO, IEnumerable<IdentityError>, string confirmationUrl)> Register(UserDTO userDTO, string role);
     Task<AuthResponseDTO> Login(LoginDTO loginDTO);
     Task<string> CreateRefreshToken();
     Task<AuthResponseDTO> VerifyRefreshToken(AuthResponseDTO request);

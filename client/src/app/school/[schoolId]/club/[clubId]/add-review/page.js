@@ -14,7 +14,7 @@ import { useAuth } from "@/app/context/AuthContext"
 
 export default function WriteReviewPage({ params }) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   const [reviewData, setReviewData] = useState({
     leadership: 0,
     inclusivity: 0,

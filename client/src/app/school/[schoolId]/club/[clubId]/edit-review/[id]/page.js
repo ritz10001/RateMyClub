@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 
 export default function EditReviewPage({ params }) {
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   const { clubData } = useClub();
   const router = useRouter();
   const [reviewData, setReviewData] = useState({
@@ -49,9 +49,10 @@ export default function EditReviewPage({ params }) {
         setIsLoading(false);
       }
     }
-
-    fetchReviewData();
-  }, [id]);
+    if(isInitialized && user?.token){
+      fetchReviewData();
+    }
+  }, [id, user]);
 
   const isFormValid = () => {
     const { comment, leadershipRating, inclusivityRating, networkingRating, skillsDevelopmentRating, recommendation } = reviewData;

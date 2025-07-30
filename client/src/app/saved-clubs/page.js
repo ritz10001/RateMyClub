@@ -13,7 +13,7 @@ export default function SavedClubsPage() {
   const [savedClubs, setSavedClubs] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true)
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
 
   useEffect(() => {
     const fetchSavedClubs = async () => {
@@ -44,8 +44,10 @@ export default function SavedClubsPage() {
         setIsLoading(false);
       }
     }
-    fetchSavedClubs();
-  });
+    if(isInitialized && user?.token){
+      fetchSavedClubs();
+    }
+  }, [user, isInitialized]);
 
   const handleRemoveClub = async (clubId) => {
     console.log(`Removing club ${clubId} from saved clubs...`);
@@ -99,7 +101,7 @@ export default function SavedClubsPage() {
     ))
   }
 
-  if (isLoading) { 
+  if (!isInitialized || isLoading) { 
     return (
       <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
         <div className="flex items-center space-x-4">

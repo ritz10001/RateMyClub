@@ -6,8 +6,9 @@ import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Star, ArrowLeft, HeartCrack, Users, NotebookPen, Pencil, Trash2, University, Ban } from "lucide-react"
-import { toast } from "sonner"
+import { Star, ArrowLeft, HeartCrack, Users, NotebookPen, Pencil, Trash2, University, Ban, RotateCcw } from "lucide-react"
+import { toast } from "sonner";
+
 import WithdrawRequestModal from "../components/withdraw-request-modal";
 const monthNumbers = {
   1: "January",
@@ -41,43 +42,47 @@ export default function MyRequestsPage(){
   const [itemToDelete, setItemToDelete] = useState(null);
   const [requests, setRequests] = useState([]);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
+  console.log("USER INFO");
+  console.log(user);
 
   useEffect(() => {
-    const fetchUniversityRequests = async () => {
-      if (!user?.token) {
-        console.log("User not authenticated yet, skipping fetch");
-        return;
+  const fetchUniversityRequests = async () => {
+    try {
+      const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUniversityRequests(data);
+      } else {
+        toast.error("Failed to fetch university requests.");
       }
-      try {
-        const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
-          method: "GET",
-          headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${user?.token}`
-          }
-          })
-          if(response.ok){
-            const data = await response.json();
-            console.log(data);
-            setUniversityRequests(data);
-          }
-          else{
-            toast.error("Failed to fetch reviews. Please try again later.")
-          }
-        }
-        catch(error){
-          toast.error("An error occured while trying to fetch reviews.");
-        }
-        finally{
-          setIsLoading(false);
-        }
-      }
-      fetchUniversityRequests();
-  }, [user?.token]);
+    } catch (error) {
+      toast.error("An error occurred while fetching university requests.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ Only fetch *after* we're initialized *and* user is available
+  if (isInitialized && user?.token) {
+    fetchUniversityRequests();
+  }
+}, [user, isInitialized]);
+
 
   useEffect(() => {
     const fetchClubRequests = async () => {
+      if (!user?.token || !isInitialized) {
+        console.log("User not authenticated yet, skipping fetch");
+        return;
+      }
       try {
         const response = await fetch("http://localhost:5095/api/ClubRequest/my-club-requests", {
           method: "GET",
@@ -101,10 +106,10 @@ export default function MyRequestsPage(){
         setIsLoading(false);
       }
     }
-    if (user?.token) {
+    if (isInitialized && user?.token) {
       fetchClubRequests();
     }
-  }, [user?.token]);
+  }, [user?.token, isInitialized]);
 
   const WithdrawRequest = async () => {
     if(!itemToDelete){
@@ -168,7 +173,7 @@ export default function MyRequestsPage(){
     setFilterBy(category);
   }
 
-  if (isLoading) { 
+  if (!isInitialized || isLoading) { 
     return (
       <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
         <div className="flex items-center space-x-4">
@@ -196,7 +201,7 @@ export default function MyRequestsPage(){
               <h1 className="text-4xl font-bold text-gray-900 mb-2">My Requests</h1>
               <p className="text-gray-600">Your requests</p>
             </div>  
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
               {/* Request Type Toggle */}
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-700">Type:</span>
@@ -270,15 +275,15 @@ export default function MyRequestsPage(){
               <div key={request.id} className="border-b border-gray-500 pb-6 last:border-b-0">
                 <div className="flex justify-between">
                   <p className="font-bold text-xl md:text-2xl mb-2 text-gray-700">{requestType === "university" ? request.universityName : request.name}</p>
-                    {request.status === 0 && <button 
-                    className="flex items-center gap-2 p-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
+                    {request.status === 0 && <Button 
+                    className="flex items-center bg-white p-2 gap-2 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200 hover:scale-105"
                     title="Delete Review"
                     onClick={() => {
                         setItemToDelete(request.id);
                         setIsDeleteOpen(true);
-                    }}>Withdraw Request
-                    <Ban className="w-4 h-4" />
-                    </button>}      
+                    }}>Withdraw
+                    <RotateCcw className="w-4 h-4" />
+                    </Button>}      
                 </div>
                 {requestType === "university" && (
                   <p className="text-md mb-2 text-gray-600 font-medium">{request.location}</p>

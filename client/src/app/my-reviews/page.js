@@ -36,12 +36,13 @@ export default function MyReviewsPage() {
   const [reviewToDelete, setReviewToDelete] = useState(null);
   const router = useRouter();
   // const { setClubData } = useClub();
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
 
   useEffect(() => {
     const fetchReviews = async () => {
       if (!user?.token) {
         console.log("User not authenticated yet, skipping fetch");
+        console.log(user);
         return;
       }
       try {
@@ -67,8 +68,10 @@ export default function MyReviewsPage() {
         setIsLoading(false);
       }
     }
-    fetchReviews();
-  }, [user?.token]);
+    if(isInitialized && user?.token){
+      fetchReviews();
+    }
+  }, [user, isInitialized]);
   
   const handleSort = (value) => {
     setSortBy(value)
@@ -82,7 +85,7 @@ export default function MyReviewsPage() {
           return 0
       }
     })
-    setReviews(sorted)  
+    setReviews(sorted);
   }
 
   const renderStars = (rating, size = "w-4 h-4") => {
@@ -91,7 +94,7 @@ export default function MyReviewsPage() {
     ))
   }
 
-  if (isLoading) { 
+  if (!isInitialized || isLoading) { 
     return (
       <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
         <div className="flex items-center space-x-4">
