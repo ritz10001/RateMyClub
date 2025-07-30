@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -52,23 +53,29 @@ export default function SignUpPage() {
         })
       })
       if(response.ok){
-        const authResponse = await response.json();
+        const { confirmationUrl, ...authResponse } = await response.json();
         console.log('Sign up successful:', authResponse);
+        console.log(confirmationUrl);
         const userData = {
           firstName: authResponse.firstName,
           lastName: authResponse.lastName,
           userId: authResponse.userId,
-          token: authResponse.token,
-          refreshToken: authResponse.refreshToken,
+          // token: authResponse.token,
+          // refreshToken: authResponse.refreshToken,
           email: authResponse.email,
           roles: authResponse.roles
         };
         setUser(userData);
-        // localStorage.setItem("token", authResponse.token);
-        setTimeout(() => {
-          console.log("handleSubmit: Navigating to /");
-          router.push("/");
-        }, 100);
+        if(confirmationUrl){
+          router.push(`http://localhost:3000/email-confirmation?email=${formData.email}`);
+        }
+        else{
+          toast.error("No confirmation URL received. Staying on page.")
+        }
+        // setTimeout(() => {
+        //   console.log("handleSubmit: Navigating to /");
+        //   router.push("/");
+        // }, 100);
       }
       else if(response.status === 400){
         const errorData = await response.json();

@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -30,8 +31,8 @@ public class AuthService : IAuthService
         await _userManager.RemoveAuthenticationTokenAsync(_user, _loginProvider, _refreshToken);
         var newRefreshToken = await _userManager.GenerateUserTokenAsync(_user, _loginProvider, _refreshToken);
         var result = await _userManager.SetAuthenticationTokenAsync(_user, _loginProvider, _refreshToken, newRefreshToken);
-        _user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
-        await _userManager.UpdateAsync(_user);
+        // _user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+        // await _userManager.UpdateAsync(_user);
         return newRefreshToken;
     }
 
@@ -39,13 +40,20 @@ public class AuthService : IAuthService
     {
         _user = await _userManager.FindByEmailAsync(loginDTO.Email);
        
-        var isValidUser = await _userManager.CheckPasswordAsync(_user, loginDTO.Password);
+        if(_user == null){
+            return null;
+        }
 
-        if(_user == null || isValidUser == false){
+        var isValidUser = await _userManager.CheckPasswordAsync(_user, loginDTO.Password);
+        
+        if (!isValidUser)
+        {
             return null;
         }
         var token = await GenerateToken();
         var roles = await _userManager.GetRolesAsync(_user);
+        _user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(2);
+        await _userManager.UpdateAsync(_user);
         return new AuthResponseDTO
         {
             Token = token,
@@ -58,10 +66,9 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<(AuthResponseDTO, IEnumerable<IdentityError>)> Register(UserDTO userDTO, string role = "User")
+    public async Task<(AuthResponseDTO, IEnumerable<IdentityError>, string confirmationUrl)> Register(UserDTO userDTO, string role = "User")
     {
         _user = _mapper.Map<User>(userDTO);
-        
         _user.UserName = userDTO.Email;
         _user.Email = userDTO.Email;
 
@@ -70,25 +77,28 @@ public class AuthService : IAuthService
         if (result.Succeeded)
         {
             await _userManager.AddToRoleAsync(_user, role);
-            var token = await GenerateToken();
-            var refreshToken = await CreateRefreshToken();
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(_user); //Generate Email confirmation token
+            var encodedToken = WebUtility.UrlEncode(token);
+            var confirmationUrl = $"https://localhost:3000/verify-email?email={_user.Email}&token={encodedToken}";
+            // var refreshToken = await CreateRefreshToken();
             var roles = await _userManager.GetRolesAsync(_user);
+            // return (null, null, confirmationUrl);
 
             var authResponse = new AuthResponseDTO
             {
-                Token = token,
+                // Token = token,
                 UserId = _user.Id,
-                RefreshToken = refreshToken,
+                // RefreshToken = refreshToken,
                 FirstName = _user.FirstName,
                 LastName = _user.LastName,
                 Email = _user.Email,
                 Roles = roles.ToList()
             };
-            return (authResponse, null);
+            return (authResponse, null, confirmationUrl);
         }
 
 
-        return (null, result.Errors);
+        return (null, result.Errors, null);
     }
 
     public async Task<AuthResponseDTO> VerifyRefreshToken(AuthResponseDTO request)
