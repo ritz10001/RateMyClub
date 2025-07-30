@@ -27,7 +27,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> Register([FromBody] UserDTO userDTO, [FromQuery] string role = "User")
     {
-        var (authResponse, errors) = await _authService.Register(userDTO, role);
+        var (authResponse, errors, confirmationUrl) = await _authService.Register(userDTO, role);
 
         if (errors != null && errors.Any())
         {
@@ -37,8 +37,28 @@ public class AccountController : ControllerBase
             }
             return BadRequest(ModelState);
         }
+        var response = new RegisterResponseDTO
+        {
+            AuthResponse = authResponse,
+            ConfirmationUrl = confirmationUrl
+        };
 
-        return Ok(authResponse);
+        return Ok(response);
+    }
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromBody] EmailVerificationDTO emailVerificationDTO)
+    {
+        var user = await _userManager.FindByEmailAsync(emailVerificationDTO.Email);
+        if (user == null)
+        {
+            return BadRequest("Invalid Email!");
+        }
+        var result = await _userManager.ConfirmEmailAsync(user, emailVerificationDTO.Token);
+        if (result.Succeeded)
+        {
+            return Ok("Email Confirmed!");
+        }
+        return BadRequest("Email Confirmation Failed");
     }
     [HttpPost]
     [Route("login")]
