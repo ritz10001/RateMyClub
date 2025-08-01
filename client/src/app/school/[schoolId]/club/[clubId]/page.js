@@ -15,6 +15,7 @@ import { useClub } from "@/app/context/ClubContext"
 import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
 import { Elsie_Swash_Caps } from "next/font/google"
+import { api } from "@/app/utils/axios"
 
 const monthNumbers = {
   1: "January",
@@ -62,6 +63,14 @@ export default function ClubPage({ params }) {
   const { schoolId, clubId } = use(params);
   console.log("Club ID:", clubId);
   console.log("bookmark status", isBookmarked);
+  const getStoredUser = () => {
+  if (typeof window === 'undefined') {
+    console.log("getStoredUser: Running on server, returning null");
+    return null;
+  }
+  const userStr = localStorage.getItem("user");
+  return userStr ? JSON.parse(userStr) : null;
+};
 
   useEffect(() => {}, [reviewToDelete])
   
@@ -75,31 +84,12 @@ export default function ClubPage({ params }) {
         setUserVotes(initialVotes);
         return;
       }
-      const headers = {
-      "Content-Type": "application/json",
-      ...(user?.token && { Authorization: `Bearer ${user.token}` }) // Add auth header if user exists
-      };
-      const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
-        method: "GET",
-        headers
-      })
-      if(response.ok){
-        const data = await response.json();
-        console.log("FIRST CLUB DETAILS:", data);
-        setClub(data);
-        setIsBookmarked(data.isBookmarked || false);
-
-        //setup initial votes
-        // const initialVotes = {};
-        // (data.reviews || []).forEach(review => {
-        //   initialVotes[review.id] = review.currentUserVote ?? 0
-        // });
-        // console.log("Initial votes:", initialVotes); 
-        // setUserVotes(initialVotes);
-      }
-      else{
-        console.error("Failed to fetch club details:");
-      }
+      // const storedUser = getStoredUser();
+      const response = await api.get(`/Club/${clubId}`);
+      const data = response.data;
+      console.log("FIRST CLUB DETAILS:", data);
+      setClub(data);
+      setIsBookmarked(data.isBookmarked || false);
     }
     catch(error) {
       console.error("Error fetching club information:", error);
@@ -115,10 +105,12 @@ export default function ClubPage({ params }) {
     try {
       setIsLoading(true);
       await fetchClubDetails();
-      await fetchReviewsPage(1);
-    } catch (error) {
+      await fetchReviewsPage();
+    } 
+    catch (error) {
       console.error("Error fetching initial data:", error);
-    } finally {
+    } 
+    finally {
       setIsLoading(false);
     }
   };
@@ -132,22 +124,19 @@ export default function ClubPage({ params }) {
   // }, [clubId]);
 
   const fetchReviewsPage = async (page = 1, pageSize = 1) => {
-  try {
-    const headers = {
-      "Content-Type": "application/json",
-      ...(user?.token && { Authorization: `Bearer ${user.token}` })
-    };
+    try {
+      // const headers = {
+      //   "Content-Type": "application/json",
+      //   ...(user?.token && { Authorization: `Bearer ${user.token}` })
+      // };
+      // const storedUser = getStoredUser();
+      const response = await api.get(`/club/${clubId}/reviews`, {
+        params: { page, pageSize },
+      });
+      console.log("here is response", response.data);
 
-    const response = await fetch(
-      `http://localhost:5095/api/club/${clubId}/reviews?page=${page}&pageSize=${pageSize}`,
-      {
-        method: "GET",
-        headers
-      }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
+      
+      const data = response.data;
       console.log("Fetched reviews (page ${page}):", data);
 
       // Replace reviews if it's the first page, append otherwise
@@ -164,13 +153,13 @@ export default function ClubPage({ params }) {
           : 0;
       });
       setUserVotes(updatedVotes);
-    } else {
-      console.error("Failed to fetch paginated reviews");
-    }
-  } catch (error) {
-    console.error("Error fetching reviews:", error);
-  }
-};
+    } 
+    catch (error) {
+      console.error("Error fetching reviews:", error);
+      const message = error.response?.data?.message || "Failed to fetch reviews";
+      toast.error(message);
+    } 
+  };
 
 
   // useEffect(() => {
@@ -220,69 +209,42 @@ export default function ClubPage({ params }) {
       setIsModalOpen(true);
       return;
     }
-    console.log("BEFORE ISVOTING");
     if (isVoting) return;
-    
     setIsVoting(true);
-    console.log("OUTSIDE TRY BLOCK");
     try {
-      console.log("INSIDE");
-      // Get current vote state
       const currentVote = userVotes[reviewId] || 0;
       let sendValue = currentVote === newValue ? 0 : newValue;
+      // const storedUser = getStoredUser();/
+      const response = await api.post("/ReviewVote", {
+        reviewId: reviewId,
+        value: sendValue
+      }, );
 
-      // Toggle logic:
-      // If clicking same vote again, cancel it (send 0)
-      // If clicking opposite vote, switch to that vote
-      // if (currentVote === newValue) {
-      //   sendValue = 0;
-      // }
+      const result = response.data;
 
-    
-      const response = await fetch("http://localhost:5095/api/ReviewVote", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.token}`
-        },
-        body: JSON.stringify({
-          reviewId: reviewId,
-          value: sendValue
-        })
-      });
+      setUserVotes(prev => ({
+        ...prev,
+        [reviewId]: result.newVoteValue
+      }));
 
-      if (response.ok) {
-        // Calculate the net score change
-        // const scoreChange = sendValue - currentVote;
-        const result = await response.json();
-        
-        setUserVotes(prev => ({
-          ...prev,
-          [reviewId]: result.newVoteValue
-        }));
-        
-        setReviews(prev => 
-          prev.map(r => 
-            r.id === reviewId 
-              ? { ...r, netScore: result.newNetScore } 
-              : r
-          )
-        );
-      } 
-      else {
-        const error = await response.json();
-        toast.error(error.message || "Vote failed");
-        setUserVotes(prev => ({ ...prev }));
-      }
+      setReviews(prev => 
+        prev.map(r => 
+          r.id === reviewId 
+            ? { ...r, netScore: result.newNetScore } 
+            : r
+        )
+      );
+
     } 
     catch (error) {
       console.error("Voting error:", error);
-      toast.error("Failed to submit vote. Please try again.");
+      const message = error.response?.data?.message || "Vote failed";
+      toast.error(message);
     } 
     finally {
       setIsVoting(false);
     }
-  }
+  };
 
   const handleSubmitReview = (e) => {
     e.preventDefault()

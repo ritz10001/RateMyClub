@@ -11,7 +11,7 @@ import { useEffect } from "react"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, setUser, isInitialized } = useAuth();
+  const { user, isInitialized, logout } = useAuth();
   console.log("user infor", user);
   const router = useRouter();
 
@@ -60,7 +60,7 @@ export default function Header() {
           {user ? (
            <div className="hidden md:flex items-center space-x-3">
               <span>Hello, {user.firstName}</span>
-            <Button onClick={handleLogout} className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
+            <Button onClick={logout} className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
               <Link href="/">Log Out</Link>
             </Button>
           </div>
@@ -113,7 +113,7 @@ export default function Header() {
                   <>
                     <Button 
                       onClick={() => {
-                        handleLogout();
+                        logout();
                         setIsMenuOpen(false);
                       }}
                       className="bg-blue-600 hover:bg-blue-700 text-white justify-start"

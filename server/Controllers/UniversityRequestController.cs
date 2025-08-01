@@ -26,6 +26,7 @@ public class UniversityRequestController : ControllerBase
     }
 
     [HttpGet("my-university-requests")]
+    [Authorize(Roles = "User")]
     public async Task<ActionResult<IEnumerable<GetMyUniversityRequestDTO>>> GetRequestsByUserId()
     {
         var userId = GetUserId();

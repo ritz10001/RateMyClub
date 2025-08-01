@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -97,11 +98,17 @@ public class AccountController : ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] AuthResponseDTO authResponseDTO)
     {
+        Console.WriteLine("=== Refresh endpoint called ===");
+        Console.WriteLine($"Received Token: {authResponseDTO.Token}");
+        Console.WriteLine($"Received RefreshToken: {authResponseDTO.RefreshToken}");
+        Console.WriteLine($"Received UserId: {authResponseDTO.UserId}");
         var result = await _authService.VerifyRefreshToken(authResponseDTO);
         if (result == null)
         {
+            Console.WriteLine("INVALID REFRESH TOKEN");
             return Unauthorized("Invalid Refresh Token");
         }
+        Console.WriteLine("THIS WAS SUCCESSFUL");
         return Ok(result);
     }
 

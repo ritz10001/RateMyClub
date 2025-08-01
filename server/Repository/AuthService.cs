@@ -29,10 +29,10 @@ public class AuthService : IAuthService
     public async Task<string> CreateRefreshToken()
     {      
         await _userManager.RemoveAuthenticationTokenAsync(_user, _loginProvider, _refreshToken);
+        _user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(120);
         var newRefreshToken = await _userManager.GenerateUserTokenAsync(_user, _loginProvider, _refreshToken);
-        var result = await _userManager.SetAuthenticationTokenAsync(_user, _loginProvider, _refreshToken, newRefreshToken);
-        // _user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
-        // await _userManager.UpdateAsync(_user);
+        await _userManager.SetAuthenticationTokenAsync(_user, _loginProvider, _refreshToken, newRefreshToken);
+        await _userManager.UpdateAsync(_user);
         return newRefreshToken;
     }
 
@@ -52,8 +52,8 @@ public class AuthService : IAuthService
         }
         var token = await GenerateToken();
         var roles = await _userManager.GetRolesAsync(_user);
-        _user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(2);
-        await _userManager.UpdateAsync(_user);
+        // _user.RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(120);
+        // await _userManager.UpdateAsync(_user);
         return new AuthResponseDTO
         {
             Token = token,
@@ -62,7 +62,8 @@ public class AuthService : IAuthService
             FirstName = _user.FirstName,
             LastName = _user.LastName,
             Email = _user.Email,
-            Roles = roles.ToList()
+            Roles = roles.ToList(),
+            RefreshTokenExpiry = _user.RefreshTokenExpiry
         };
     }
 
@@ -80,15 +81,11 @@ public class AuthService : IAuthService
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(_user); //Generate Email confirmation token
             var encodedToken = WebUtility.UrlEncode(token);
             var confirmationUrl = $"https://localhost:3000/verify-email?email={_user.Email}&token={encodedToken}";
-            // var refreshToken = await CreateRefreshToken();
             var roles = await _userManager.GetRolesAsync(_user);
-            // return (null, null, confirmationUrl);
 
             var authResponse = new AuthResponseDTO
             {
-                // Token = token,
                 UserId = _user.Id,
-                // RefreshToken = refreshToken,
                 FirstName = _user.FirstName,
                 LastName = _user.LastName,
                 Email = _user.Email,
@@ -103,34 +100,42 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDTO> VerifyRefreshToken(AuthResponseDTO request)
     {
-        var jwtSecutityTokenHandler = new JwtSecurityTokenHandler();
-        var tokenContent = jwtSecutityTokenHandler.ReadJwtToken(request.Token);
-        var userName = tokenContent.Claims.ToList().FirstOrDefault(q => q.Type == JwtRegisteredClaimNames.Email)?.Value;
-        _user = await _userManager.FindByNameAsync(userName);
+        // 1. Find user by ID only (more secure than email/username)
+        _user = await _userManager.FindByIdAsync(request.UserId);
+        if (_user == null) return null;
 
-        if (_user == null || _user.Id != request.UserId)
+        // 2. Verify the stored refresh token matches (one-time-use enforcement)
+        var storedToken = await _userManager.GetAuthenticationTokenAsync(
+            _user, 
+            _loginProvider, 
+            _refreshToken
+        );
+        
+        if (storedToken != request.RefreshToken) 
         {
+            await _userManager.UpdateSecurityStampAsync(_user); // Invalidate all tokens
             return null;
         }
-        if (_user.RefreshTokenExpiry == null || _user.RefreshTokenExpiry < DateTime.UtcNow)
-        {
-            return null; // Expired, don't rotate
-        }
-        var isValidRefreshToken = await _userManager.VerifyUserTokenAsync(_user, _loginProvider, _refreshToken, request.RefreshToken);
 
-        if (isValidRefreshToken)
+        if (_user.RefreshTokenExpiry == null || DateTime.UtcNow > _user.RefreshTokenExpiry)
         {
-            var token = await GenerateToken();
-            return new AuthResponseDTO
-            {
-                Token = token,
-                UserId = _user.Id,
-                RefreshToken = await CreateRefreshToken()
-            };
+            await _userManager.RemoveAuthenticationTokenAsync(_user, _loginProvider, _refreshToken);
+            await _userManager.UpdateAsync(_user);
+            return null; // Refresh token expired
         }
 
-        await _userManager.UpdateSecurityStampAsync(_user);
-        return null;
+        // 4. Generate new tokens (automatically invalidates old via CreateRefreshToken)
+        return new AuthResponseDTO
+        {
+            Token = await GenerateToken(),
+            RefreshToken = storedToken, // Rotates and invalidates old
+            UserId = _user.Id,
+            FirstName = _user.FirstName,
+            LastName = _user.LastName,
+            Email = _user.Email,
+            Roles = (await _userManager.GetRolesAsync(_user)).ToList(),
+            RefreshTokenExpiry = _user.RefreshTokenExpiry
+        };
     }
 
     private async Task<string> GenerateToken(){
@@ -159,7 +164,7 @@ public class AuthService : IAuthService
             audience: _configuration["JwtSettings:Audience"],
             claims: claims,
             signingCredentials: credentials,
-            expires: DateTime.Now.AddMinutes(Convert.ToInt32(_configuration["JwtSettings:DurationInMinutes"]))
+            expires: DateTime.Now.AddSeconds(Convert.ToInt32(_configuration["JwtSettings:DurationInSeconds"]))
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
