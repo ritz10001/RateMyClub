@@ -8,8 +8,9 @@ import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, ArrowLeft, HeartCrack, Users, NotebookPen, Pencil, Trash2, University, Ban, RotateCcw } from "lucide-react"
 import { toast } from "sonner";
-
+import { api } from "../utils/axios";
 import WithdrawRequestModal from "../components/withdraw-request-modal";
+// console.log("Component: imported api instance:", api);
 const monthNumbers = {
   1: "January",
   2: "February",
@@ -49,23 +50,14 @@ export default function MyRequestsPage(){
   useEffect(() => {
   const fetchUniversityRequests = async () => {
     try {
-      const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUniversityRequests(data);
-      } else {
-        toast.error("Failed to fetch university requests.");
-      }
-    } catch (error) {
+      const response = await api.get("/UniversityRequest/my-university-requests");
+      setUniversityRequests(response.data);
+      // toast.error("Failed to fetch university requests.");
+    } 
+    catch (error) {
       toast.error("An error occurred while fetching university requests.");
-    } finally {
+    } 
+    finally {
       setIsLoading(false);
     }
   };
@@ -84,20 +76,8 @@ export default function MyRequestsPage(){
         return;
       }
       try {
-        const response = await fetch("http://localhost:5095/api/ClubRequest/my-club-requests", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${user?.token}`
-          }
-        })
-        if(response.ok){
-          const data = await response.json();
-          setClubRequests(data);
-        }
-        else{
-          toast.error("Failed to fetch club requests. Please try again later.")
-        }
+        const response = await api.get("/ClubRequest/my-club-requests")
+        setClubRequests(response.data);
       }
       catch(error){
         toast.error("An error occurred while trying to fetch club requests.");
@@ -115,15 +95,10 @@ export default function MyRequestsPage(){
     if(!itemToDelete){
       return;
     }
-    const endpoint = requestType === "university" ? `http://localhost:5095/api/UniversityRequest/${itemToDelete}`
-    : `http://localhost:5095/api/ClubRequest/${itemToDelete}`;
+    const endpoint = requestType === "university" ? `/UniversityRequest/${itemToDelete}`
+    : `/ClubRequest/${itemToDelete}`;
     try{
-      const response = await fetch(endpoint, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${user.token}`
-        }
-      });
+      const response = await api.get(endpoint);
       if (!response.ok) throw new Error("Delete failed");
 
       if (requestType === "university") {

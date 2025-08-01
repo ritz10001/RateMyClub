@@ -11,7 +11,7 @@ import { AuthProvider, useAuth } from "../context/AuthContext"
 export default function LoginPage() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const { user, setUser } = useAuth();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -48,11 +48,13 @@ export default function LoginPage() {
           userId: authResponse.userId,
           token: authResponse.token,
           refreshToken: authResponse.refreshToken,
-          roles: authResponse.roles
+          roles: authResponse.roles,
+          refreshTokenExpiry: authResponse.refreshTokenExpiry
         };
-        setUser(userData);
-        console.log(authResponse);
-        setIsLoggedIn(true);
+        // setUser(userData);
+        // console.log(authResponse);
+        // setIsLoggedIn(true);
+        login(userData);
         // localStorage.setItem("token", authResponse.token);
         // localStorage.setItem("user", JSON.stringify(userData));
         setTimeout(() => {

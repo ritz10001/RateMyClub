@@ -1,76 +1,87 @@
+// /app/context/AuthContext.js
+
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import { setUpdateUserCallback } from "@/app/utils/axios";
 
-const AuthContext = createContext();    
+const AuthContext = createContext();    
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [isInitialized, setIsInitialized] = useState(false); // New state
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const validateToken = (token) => {
-        console.log("token information", token);
         if (!token) return false;
         try {
             const decoded = jwtDecode(token);
-            return decoded.exp * 1000 > Date.now(); // Check if expired
+            return decoded.exp * 1000 > Date.now();
         } 
         catch {
             return false;
         }
     };
-
-    const clearAuth = () => {
+    
+    // This is the centralized logout function
+    const logout = (type) => {
+        console.log("AuthContext: Performing logout");
         setUser(null);
         localStorage.removeItem("user");
+        // Optional: Redirect the user after logout
+        if(type === "exp"){
+            window.location.href = "/login"; 
+        }
     };
 
+    // The login function
+    const login = (userData) => {
+        localStorage.setItem("user", JSON.stringify(userData));
+        setUser(userData);
+    };
+
+    // This useEffect handles initialization and connects to the axios interceptor
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
-        console.log("stored user");
-        console.log(storedUser);
         if (storedUser) {
             try {
                 const parsedUser = JSON.parse(storedUser);
-                if (validateToken(parsedUser.token)) {
-                    setUser(parsedUser);
-                } 
-                else {
-                    console.log("PROBLEM 1");
-                    clearAuth();
-                }
-            } 
-            catch {
-                clearAuth();
+                setUser(parsedUser);
+            } catch {
+                logout(); // Use the logout function to clear invalid data
             }
-        } else {
-            clearAuth();
         }
         setIsInitialized(true);
-    }, []);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const storedUser = localStorage.getItem("user");
-            const token = JSON.parse(storedUser)?.token;
-            if (token && !validateToken(token)) {
-                console.log("PROBLEM 2");
-                clearAuth();
+        // --- THIS IS THE CRITICAL MISSING LINK ---
+        // Connect the Axios interceptor to the AuthContext state
+        setUpdateUserCallback((updatedUser) => {
+            if (updatedUser) {
+                localStorage.setItem("user", JSON.stringify(updatedUser));
+            } else {
+                localStorage.removeItem("user");
             }
-        }, 60000); // Check every minute
-        
-        return () => clearInterval(interval);
+            setUser(updatedUser);
+        });
+
+        // Cleanup the callback when the component unmounts
+        return () => {
+            setUpdateUserCallback(() => {});
+        };
     }, []);
 
+    // This useEffect synchronizes state with localStorage
     useEffect(() => {
         if (user) {
             localStorage.setItem("user", JSON.stringify(user));
-        } 
-    }, [user]);
+        } else if (isInitialized) {
+             // This ensures localStorage is cleared on logout
+            localStorage.removeItem("user");
+        }
+    }, [user, isInitialized]);
 
     return (
-        <AuthContext.Provider value={{ user, setUser, isInitialized }}>
+        <AuthContext.Provider value={{ user, login, logout, isInitialized }}>
             {children}
         </AuthContext.Provider>
     );
