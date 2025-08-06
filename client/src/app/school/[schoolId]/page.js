@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation"
 import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
 import PageNav from "@/app/components/PageNav"
+import { api } from "@/app/utils/axios"
 // Mock data for school details
 
 export default function SchoolPage({ params }) {
@@ -40,37 +41,28 @@ export default function SchoolPage({ params }) {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchClubs = async () => {
-      try{
-          const response = await fetch(`http://localhost:5095/api/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${user?.token}`
-          }
-        })
-        if(response.ok){
-          const data = await response.json();
-          console.log("Fetched clubs:", data);
-          setUniversity(data.university);
-          setClubs(data.clubs.items || []);
-          setFilteredClubs(data.clubs.items || []);
-          setTotalPages(Math.ceil(data.clubs.totalCount / pageSize));
-        }
-        else{
-          console.log("Failed to fetch clubs");
-        }
+  const fetchClubs = async () => {
+    try {
+      const response = await api.get(`/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`);
+      
+      if (response.status === 200) {
+        const data = response.data;
+        console.log("Fetched clubs:", data);
+        setUniversity(data.university);
+        setClubs(data.clubs.items || []);
+        setFilteredClubs(data.clubs.items || []);
+        setTotalPages(Math.ceil(data.clubs.totalCount / pageSize));
       }
-
-      catch (error) {
-        console.error("Error fetching clubs:", error);
-      }
-      finally {
-        setIsLoading(false);
-      }
+    } 
+    catch (error) {
+      console.error("Error fetching clubs:", error);
+    } 
+    finally {
+      setIsLoading(false);
     }
-    fetchClubs();
-  }, [schoolId, user, searchQuery, page]);
+  } 
+  fetchClubs();
+}, [schoolId, searchQuery, page]); // Remove 'user' from dependencies since we're not using it
 
   useEffect(() => {
     updateDisplayedClubs();
@@ -178,7 +170,7 @@ export default function SchoolPage({ params }) {
               </div>
             </div>            
             {/* Action Button */}
-            {user && user.roles.includes("Administrator") &&
+            {user && user.roles.includes("Administrator") && 
               <div className="flex items-center gap-2">
                 <Button 
                   className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"

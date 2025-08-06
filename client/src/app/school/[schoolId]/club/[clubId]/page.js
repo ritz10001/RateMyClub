@@ -33,7 +33,7 @@ const monthNumbers = {
 }
 
 export default function ClubPage({ params }) {
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   const { setClubData } = useClub();
   const router = useRouter();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -63,17 +63,12 @@ export default function ClubPage({ params }) {
   const { schoolId, clubId } = use(params);
   console.log("Club ID:", clubId);
   console.log("bookmark status", isBookmarked);
-  const getStoredUser = () => {
-  if (typeof window === 'undefined') {
-    console.log("getStoredUser: Running on server, returning null");
-    return null;
-  }
-  const userStr = localStorage.getItem("user");
-  return userStr ? JSON.parse(userStr) : null;
-};
 
   useEffect(() => {}, [reviewToDelete])
   
+  // useEffect(() => {
+
+  // }, []);
   const fetchClubDetails = async () => {
     try{
       if (!user && !isLoading) {
@@ -84,7 +79,6 @@ export default function ClubPage({ params }) {
         setUserVotes(initialVotes);
         return;
       }
-      // const storedUser = getStoredUser();
       const response = await api.get(`/Club/${clubId}`);
       const data = response.data;
       console.log("FIRST CLUB DETAILS:", data);
@@ -114,28 +108,17 @@ export default function ClubPage({ params }) {
       setIsLoading(false);
     }
   };
-
-  fetchInitialData();
-}, [clubId, user?.token, user?.userId]); // Include all dependencies here
-
-  // useEffect(() => {
-  //   fetchClubDetails();
-  //   fetchReviewsPage(1); // initial load
-  // }, [clubId]);
+  if (isInitialized && user) {
+    fetchInitialData();
+  }
+}, [clubId, user, isInitialized]); // Include all dependencies here
 
   const fetchReviewsPage = async (page = 1, pageSize = 1) => {
     try {
-      // const headers = {
-      //   "Content-Type": "application/json",
-      //   ...(user?.token && { Authorization: `Bearer ${user.token}` })
-      // };
-      // const storedUser = getStoredUser();
       const response = await api.get(`/club/${clubId}/reviews`, {
         params: { page, pageSize },
       });
       console.log("here is response", response.data);
-
-      
       const data = response.data;
       console.log("Fetched reviews (page ${page}):", data);
 
@@ -178,30 +161,18 @@ export default function ClubPage({ params }) {
       console.log("inside bookmark now");
       const message = isBookmarked ? "Bookmark Removed" : "Club Bookmarked!";
       toastId.current = toast.success(message, { duration: 1000 });
-    // 4. Debounced API call
-      const response = await fetch(`http://localhost:5095/api/SavedClub`, {
-        method: isBookmarked ? "DELETE" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user?.token}`
-        },
-        body: JSON.stringify({ clubId })
-      });
 
-      if (!response.ok) {
-        // 5. Revert on failure
-        // setIsBookmarked(!newBookmarkState);
+      // 4. Debounced API call using axios
+      const response = isBookmarked 
+        ? await api.delete(`/SavedClub`, { data: { clubId } })  // DELETE with body
+        : await api.post(`/SavedClub`, { clubId });             // POST with body
 
-        throw new Error("Bookmark update failed");
-      }
+      // No need to check response.ok with axios - it throws on error status codes
       await fetchClubDetails();
     } 
     catch (error) {
-      toast.error(error.message);
-    } 
-    // finally {
-    //   setIsProcessing(false);
-    // }
+      toast.error(error.response?.data?.message || error.message || "Bookmark update failed");
+    }
   };
 
   const handleVoteClick = async (newValue, reviewId) => {
@@ -214,7 +185,6 @@ export default function ClubPage({ params }) {
     try {
       const currentVote = userVotes[reviewId] || 0;
       let sendValue = currentVote === newValue ? 0 : newValue;
-      // const storedUser = getStoredUser();/
       const response = await api.post("/ReviewVote", {
         reviewId: reviewId,
         value: sendValue
@@ -248,7 +218,6 @@ export default function ClubPage({ params }) {
 
   const handleSubmitReview = (e) => {
     e.preventDefault()
-    // TODO: Implement review submission
     console.log("New review:", newReview)
     setShowReviewForm(false)
     setNewReview({ rating: 5, reviewText: "" })
@@ -530,22 +499,21 @@ export default function ClubPage({ params }) {
                 if((deleteMode === "Review" && !reviewToDelete) || (deleteMode === "Club" && !clubToDelete)){
                   return;
                 }
-                try{
+                try {
                   console.log("club id is", clubToDelete);
-                  const url = deleteMode === "Review" ? `http://localhost:5095/api/Review/${reviewToDelete}` : `http://localhost:5095/api/AdminClub/${clubToDelete}`;
+                  const url = deleteMode === "Review" 
+                    ? `/Review/${reviewToDelete}` 
+                    : `/AdminClub/${clubToDelete}`;
                   console.log(url);
-                  const response = await fetch(url, {
-                    method: "DELETE",
-                    headers: {
-                      "Authorization": `Bearer ${user.token}`
-                    }
-                  });
-                  if (!response.ok) throw new Error("Delete failed");
+                  
+                  const response = await api.delete(url);
+                  
                   if (deleteMode === "Review") {
                     setReviews((prevReviews) =>
                       prevReviews.filter((r) => r.id !== reviewToDelete)
                     );
-                  };
+                  }
+                  
                   toast.success(`${deleteMode} deleted successfully!`, {
                     duration: 5000, // 5 seconds
                   });
@@ -553,7 +521,7 @@ export default function ClubPage({ params }) {
                 }
                 catch(error){
                   console.error(error);
-                  toast.error("Deletion failed. Please try again.");
+                  toast.error(error.response?.data?.message || "Deletion failed. Please try again.");
                 }
                 finally {
                   setIsDeleteOpen(false);

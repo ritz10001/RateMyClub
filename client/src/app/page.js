@@ -8,6 +8,7 @@ import { useState, useEffect } from "react"
 import { Users, Star, TrendingUp } from "lucide-react"
 import { useAuth } from "./context/AuthContext"
 import Image from 'next/image';
+import TestModalButton from "./components/test-modal-button"
 
 export default function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");

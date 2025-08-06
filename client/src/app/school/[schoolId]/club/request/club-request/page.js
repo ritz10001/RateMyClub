@@ -12,6 +12,7 @@ import { use } from "react";
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
 import { useRouter } from "next/navigation"
+import { api } from "@/app/utils/axios"
 
 export default function RequestClubPage({ params }) {
   const { schoolId } = use(params);
@@ -43,43 +44,33 @@ export default function RequestClubPage({ params }) {
   }
 
   useEffect(() => {
-    console.log(clubData)
-  }, [clubData]);
-  useEffect(() => {
-  fetch('http://localhost:5095/api/Categories')
-    .then(res => res.json())
-    .then(data => {
-      console.log(data);
-      setCategories(data);
-      setIsLoading(false);
-    });
+    const fetchCategories = async () => {
+      try{
+        const response = await api.get('/Categories');
+        console.log("CATEGORIES", response.data);
+        setCategories(response.data);
+        setIsLoading(false);
+      }
+      catch(error){
+        console.error("fetching categories failed");
+      }
+    }
+    fetchCategories();
 }, []);
 
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch("http://localhost:5095/api/Tag", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        })
-        if(response.ok){
-          const data = await response.json();
-          console.log(data);
-          setTags(data);
-          setIsLoadingTag(false);
-        }
-        else{
-          console.log("failed to fetch clubs");
-        }
+        const response = await api.get("/Tag");
+        setTags(response.data);
+        setIsLoadingTag(false);
       }
       catch(error){
         console.error("fetching tags failed");
       }
     }
     fetchTags();
-  }, [])
+  }, []);
 
   const handleTagClick = (tagId) => {
     console.log("SELECTED TAG", tagId);
@@ -110,41 +101,33 @@ export default function RequestClubPage({ params }) {
     try {
       console.log("TRYING NOW");
       console.log(clubData);
-      const response = await fetch("http://localhost:5095/api/ClubRequest", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
-        },
-        body: JSON.stringify({
-          fullName: clubData.fullName,
-          name: clubData.name,
-          description: clubData.description,
-          categoryId: clubData.categoryId,
-          meetingLocation: clubData.meetingLocation,
-          universityId: schoolId,
-          tagIds: selectedTags
-        })
-      })
-      if(response.ok){
-        const requestResponse = await response.json();
-        console.log("successful");
-        console.log(requestResponse);
-        toast.success("Club request submitted! We'll review it shortly.", {
-          duration: 5000, // 5 seconds
-        });
-        router.push(`/school/${schoolId}`);
-      }
-      else{
-        const errorData = await response.json();
-        toast.error(errorData.message || "Submission failed. Please try again.");
-      }
+      
+      // Fixed: Use api.post() with proper axios syntax
+      const response = await api.post("/ClubRequest", {
+        fullName: clubData.fullName,
+        name: clubData.name,
+        description: clubData.description,
+        categoryId: clubData.categoryId,
+        meetingLocation: clubData.meetingLocation,
+        universityId: schoolId,
+        tagIds: selectedTags
+      });
+      
+      // Axios automatically parses JSON and puts data in response.data
+      console.log("successful");
+      console.log(response.data);
+      toast.success("Club request submitted! We'll review it shortly.", {
+        duration: 5000,
+      });
+      router.push(`/school/${schoolId}`);
+      
+    } 
+    catch(error) {
+      // Axios error handling
+      const errorMessage = error.response?.data?.message || "Submission failed. Please try again.";
+      toast.error(errorMessage);
+      console.error("Club request submission failed:", error);
     }
-    catch(error){
-      toast.error("Network error. Please check your connection.");
-      console.error("Club request submission failed");
-    }
-    // console.log("Club request submitted:", clubData)
   }
 
   if (isLoading) {

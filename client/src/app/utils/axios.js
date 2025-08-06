@@ -1,118 +1,101 @@
-"use client";
 
-import axios from "axios";
-import { toast } from "sonner";
 
-export const api = axios.create({
-  baseURL: "http://localhost:5095/api",
-});
 
-let showSessionExpiredModal = () => {};
-export const setSessionExpiredModalCallback = (callback) => {
-  showSessionExpiredModal = callback;
-};
+// "use client";
+// import axios from "axios";
+// import { toast } from "sonner";
 
-// Callback to update the user state in AuthContext
-let updateUserState = () => {};
-export const setUpdateUserCallback = (callback) => {
-  updateUserState = callback;
-};
 
-// Helper to get the stored user
-const getStoredUser = () => {
-  if (typeof window === 'undefined') return null;
-  const userStr = localStorage.getItem("user");
-  return userStr ? JSON.parse(userStr) : null;
-};
+// // This will hold the current JWT. It's a simple, module-level variable.
+// let currentToken = null; 
 
-// This variable will hold a promise for the refresh token call.
-// This prevents multiple requests from trying to refresh at the same time.
-let isRefreshing = false;
-let refreshPromise = null;
+// // This callback function is how we will tell the AuthContext to update its state.
+// let onUpdateUserCallback = () => {};
 
-// Add the token to every request, but only if it exists
-api.interceptors.request.use(async (config) => {
-  const user = getStoredUser();
+// // Function to set the token. AuthContext will call this.
+// export const setAuthToken = (token) => {
+//     currentToken = token;
+// };
 
-  if (user?.token) {
-    // Decode the JWT to get the expiry time (exp claim)
-    const decodedToken = JSON.parse(atob(user.token.split('.')[1]));
-    const tokenExpiry = decodedToken.exp * 1000; // Convert to milliseconds
+// // Function for the AuthContext to register its callback.
+// export const setUpdateUserCallback = (callback) => {
+//     onUpdateUserCallback = callback;
+// };
 
-    // Check if the access token is about to expire or already expired
-    const isAccessTokenExpired = tokenExpiry < Date.now();
+// export const api = axios.create({
+//   baseURL: "http://localhost:5095/api",
+//   withCredentials: true,
+//   headers: {
+//     'Content-Type': 'application/json'
+//   }
+// });
 
-    // Check if the refresh token is still valid
-    const isRefreshTokenExpired = new Date(user.refreshTokenExpiry) <= new Date();
+// api.interceptors.request.use((config) => {
+//     // This is the CRUCIAL part. It uses the `currentToken` variable,
+//     // which is updated by the AuthContext, not a stale closure.
+//     if (currentToken) {
+//         config.headers.Authorization = `Bearer ${currentToken}`;
+//     }
+//     // Add logs to verify what's being sent
+//     console.log("➡️ Request Interceptor - Authorization Header:", config.headers.Authorization);
+//     console.log("🚀 Making request to:", config.url, "at", new Date().toISOString());
+//     return config;
+// }, (error) => {
+//     return Promise.reject(error);
+// });
 
-    if (isAccessTokenExpired && !isRefreshTokenExpired) {
-      console.log("Access token expired. Refreshing token proactively.");
+// api.interceptors.response.use(
+//   (response) => {
+//     console.log("⬇️ Received response:", response.config.url);
+//     return response;
+//   },
+//   async (error) => {
+//     console.log("❌ Request failed:", error.config?.url, error.response?.status);
+//     console.log("🔍 Request headers:", error.config?.headers);
+//     console.log("🔍 Was logged in ref should be available here");
+//     const originalRequest = error.config;
 
-      // If a refresh is already in progress, wait for it to finish
-      if (!refreshPromise) {
-        // Start the refresh process and store the promise
-        refreshPromise = (async () => {
-          try {
-            console.log("Attempting token refresh...");
-            const refreshResponse = await axios.post(
-              `http://localhost:5095/api/Account/refresh`,
-              {
-                userId: user.userId,
-                token: user.token,
-                refreshToken: user.refreshToken,
-                ...(user.firstName && { firstName: user.firstName }),
-                ...(user.lastName && { lastName: user.lastName }),
-                ...(user.email && { email: user.email }),
-                ...(user.roles && { roles: user.roles }),
-              },
-              { headers: { 'Content-Type': 'application/json' } }
-            );
-            
-            const newUserData = refreshResponse.data;
-            updateUserState(newUserData);
-            refreshPromise = null; // Reset the promise after completion
-            return newUserData.token;
+//     // Handle refresh endpoint failures
+//     if (originalRequest.url.includes('/Account/refresh')) {
+//       console.log("🔄 Refresh endpoint failed");
+//       // Always call updateUserState(null) for refresh failures
+//       // Let AuthContext decide whether to show modal based on context
+//       console.log("🛑 Refresh failed - calling updateUserState(null)");
+//       updateUserState(null);
+//       return Promise.reject(error);
+//     }
 
-          } catch (refreshError) {
-            console.log("Refresh failed, logging out user");
-            updateUserState(null);
-            toast.error("Session expired. Please log in again.");
-            refreshPromise = null; // Reset promise on failure
-            return Promise.reject(refreshError);
-          }
-        })();
-      }
+//     // Skip refresh for login/logout endpoints
+//     const skipEndpoints = [
+//       '/Account/login',
+//       '/Account/logout'
+//     ];
+    
+//     if (skipEndpoints.some(path => originalRequest.url.includes(path))) {
+//       console.log("⏭️ Skipping refresh for", originalRequest.url);
+//       return Promise.reject(error);
+//     }
 
-      const newToken = await refreshPromise;
-      config.headers.Authorization = `Bearer ${newToken}`;
+//     // Handle 401 errors for other endpoints
+//     if (error.response?.status === 401 && !originalRequest._retry) {
+//       console.log("🔑 Attempting token refresh");
+//       originalRequest._retry = true;
 
-    } else if (isRefreshTokenExpired) {
-      console.log("Refresh token expired, logging out");
-      updateUserState(null);
-      showSessionExpiredModal();
-      return Promise.reject(new Error("Session expired"));
-    } else {
-      // Token is still valid, attach it to the header
-      config.headers.Authorization = `Bearer ${user.token}`;
-    }
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+//       try {
+//         const { data } = await api.post('/Account/refresh');
+//         console.log("🔄 Refresh successful");
+//         updateUserState(data);
+//         return api(originalReqauest);
+//       } 
+//       catch (refreshError) {
+//         console.log("🛑 Refresh failed - session expired");
+//         console.log("🛑 About to call updateUserState(null)");
+//         updateUserState(null);
+//         console.log("🛑 Called updateUserState(null)");
+//         return Promise.reject(error);
+//       }
+//     }
 
-// The response interceptor is now much simpler, just for handling true 401s
-// that might occur for other reasons (e.g., token revoked, user disabled)
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    // We already handle expired tokens proactively in the request interceptor.
-    // This part of the code is now just for other authentication errors.
-    if (error.response?.status === 401) {
-        console.log("Received a 401 response, but not from an expired token.");
-        updateUserState(null);
-        toast.error("You are not authorized. Please log in.");
-    }
-    return Promise.reject(error);
-  }
-);
+//     return Promise.reject(error);
+//   }
+// );

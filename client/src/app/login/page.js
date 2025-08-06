@@ -1,21 +1,26 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { useState, useEffect } from "react"
-import { useRouter } from 'next/navigation'
-import { AuthProvider, useAuth } from "../context/AuthContext"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
+import { api } from "../utils/axios";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { app } from "../utils/firebase";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const auth = getAuth(app);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  })
+  });
   const [error, setError] = useState(false);
 
   const handleInputChange = (field, value) => {
@@ -24,54 +29,36 @@ export default function LoginPage() {
       [field]: value,
     }))
   }
-
-
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setIsLoading(true);
+    setError(false);
     try{
-      const response = await fetch("http://localhost:5095/api/Account/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      })
-      if(response.ok){
-        const authResponse = await response.json();
-        const userData = {
-          firstName: authResponse.firstName,
-          lastName: authResponse.lastName,
-          email: authResponse.email,
-          userId: authResponse.userId,
-          token: authResponse.token,
-          refreshToken: authResponse.refreshToken,
-          roles: authResponse.roles,
-          refreshTokenExpiry: authResponse.refreshTokenExpiry
-        };
-        // setUser(userData);
-        // console.log(authResponse);
-        // setIsLoggedIn(true);
-        login(userData);
-        // localStorage.setItem("token", authResponse.token);
-        // localStorage.setItem("user", JSON.stringify(userData));
-        setTimeout(() => {
-          console.log("handleSubmit: Navigating to /");
-          router.push("/");
-        }, 100);
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      // console.log("✅ Login successful:", response.data);
+      // console.log("📋 Response headers:", response.headers);
+      const user = userCredential.user;
+      console.log("✅ Firebase login successful:", user);
+      if(login){
+        login(user);
       }
-      else if(response.status === 401){
-        setError(true);
-      }
-      else{
-        alert("Login Failed. Please try again.");
-      }
+      setTimeout(() => {
+        console.log("handleSubmit: Navigating to /");
+        router.push("/");
+      }, 100);
+      
     }
-    catch(error){
-      console.error('Login error:', error);
-      alert('Network error. Please try again.');
+    catch (err) {
+      console.error("❌ Firebase login error:", err);
+      if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
+        setError("Invalid email or password.");
+      } 
+      else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } 
+    finally {
+      setIsLoading(false);
     }
   } 
 
@@ -137,9 +124,20 @@ export default function LoginPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center"
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAuth } from "../context/AuthContext"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -23,12 +23,41 @@ export default function SignUpPage() {
   })
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [universities, setUniversities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }))
   }
+
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        const response = await fetch("http://localhost:5095/api/University/all-colleges", {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if(response.ok){
+          const data = await response.json();
+          setUniversities(data);
+          console.log(data);
+        }
+        else{
+          console.error("Error fetching univerisities");
+        }
+      }
+      catch(err){
+        console.error(err || "Error fetching universities");
+      }
+      finally {
+        setIsLoading(false);
+      }
+    }
+    fetchUniversities();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -60,8 +89,6 @@ export default function SignUpPage() {
           firstName: authResponse.firstName,
           lastName: authResponse.lastName,
           userId: authResponse.userId,
-          // token: authResponse.token,
-          // refreshToken: authResponse.refreshToken,
           email: authResponse.email,
           roles: authResponse.roles
         };
@@ -95,6 +122,15 @@ export default function SignUpPage() {
       console.error('Sign up error:', error);
       setErrorMessage("Network error. Please try again.");
     }
+  }
+
+  if (isLoading) {
+    return <>
+      <div className="col-span-full flex justify-center py-12 space-x-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="font-bold text-xl">Now Loading..</p>
+      </div>
+    </>;
   }
 
   return (
@@ -169,11 +205,12 @@ export default function SignUpPage() {
                 <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
                   <SelectValue placeholder="Choose your school..." />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Texas Tech University">Texas Tech University</SelectItem>
-                  <SelectItem value="Massachusetts Institute of Technology">Massachusetts Institute of Technology</SelectItem>
-                  <SelectItem value="Stanford University">Stanford University</SelectItem>
-                  <SelectItem value="UC Berkeley">UC Berkeley</SelectItem>
+                <SelectContent className="max-h-56 overflow-y-auto">
+                  {universities.map(university => (
+                    <SelectItem key={university.id} value={university.id.toString()}>
+                      {university.name}
+                    </SelectItem>
+                  ))}
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>

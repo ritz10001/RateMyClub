@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, ArrowLeft, HeartCrack, Users, NotebookPen, Pencil, Trash2, University, Ban, RotateCcw } from "lucide-react"
@@ -44,6 +44,7 @@ export default function MyRequestsPage(){
   const [requests, setRequests] = useState([]);
   const router = useRouter();
   const { user, isInitialized } = useAuth();
+  const toastId = useRef(null);
   console.log("USER INFO");
   console.log(user);
 
@@ -52,10 +53,15 @@ export default function MyRequestsPage(){
     try {
       const response = await api.get("/UniversityRequest/my-university-requests");
       setUniversityRequests(response.data);
-      // toast.error("Failed to fetch university requests.");
     } 
     catch (error) {
-      toast.error("An error occurred while fetching university requests.");
+      if (error.response?.status === 401) {
+      // Don't show additional toast - the interceptor will handle it
+        console.log("Session expired - skipping duplicate toast");
+      }
+      else{
+        toast.error("An error occurred while fetching university requests.");
+      }
     } 
     finally {
       setIsLoading(false);
@@ -63,7 +69,7 @@ export default function MyRequestsPage(){
   };
 
   // ✅ Only fetch *after* we're initialized *and* user is available
-  if (isInitialized && user?.token) {
+  if (isInitialized && user) {
     fetchUniversityRequests();
   }
 }, [user, isInitialized]);
@@ -71,25 +77,27 @@ export default function MyRequestsPage(){
 
   useEffect(() => {
     const fetchClubRequests = async () => {
-      if (!user?.token || !isInitialized) {
-        console.log("User not authenticated yet, skipping fetch");
-        return;
-      }
       try {
         const response = await api.get("/ClubRequest/my-club-requests")
         setClubRequests(response.data);
       }
       catch(error){
-        toast.error("An error occurred while trying to fetch club requests.");
+        if (error.response?.status === 401) {
+        // Don't show additional toast - the interceptor will handle it
+          console.log("Session expired - skipping duplicate toast");
+        }
+        else{
+          toast.error("An error occurred while trying to fetch club requests.");
+        }
       }
       finally{
         setIsLoading(false);
       }
     }
-    if (isInitialized && user?.token) {
+    if (isInitialized && user) {
       fetchClubRequests();
     }
-  }, [user?.token, isInitialized]);
+  }, [user, isInitialized]);
 
   const WithdrawRequest = async () => {
     if(!itemToDelete){
@@ -98,9 +106,9 @@ export default function MyRequestsPage(){
     const endpoint = requestType === "university" ? `/UniversityRequest/${itemToDelete}`
     : `/ClubRequest/${itemToDelete}`;
     try{
-      const response = await api.get(endpoint);
-      if (!response.ok) throw new Error("Delete failed");
-
+      // if (toastId.current) toast.dismiss(toastId.current);
+      // toastId.current = toast.success(message, { duration: 1000 });
+      const response = await api.delete(endpoint);
       if (requestType === "university") {
         setUniversityRequests((prevRequests) =>
           prevRequests.filter((r) => r.id !== itemToDelete)
@@ -116,8 +124,15 @@ export default function MyRequestsPage(){
       });
     }
     catch(error){
-      console.error(error);
-      toast.error(errorData.message || "Deletion failed. Please try again.");
+      if (error.response?.status === 401) {
+        // Don't show additional toast - the interceptor will handle it
+        console.log("Session expired - skipping duplicate toast");
+      }
+      else{
+        console.error(error);
+        const errorMessage = error.response?.data?.message || "Deletion failed. Please try again.";
+        toast.error(errorMessage);
+      }
     }
     finally {
       setIsDeleteOpen(false);

@@ -9,7 +9,9 @@ public interface IAuthService
     Task<(AuthResponseDTO, IEnumerable<IdentityError>, string confirmationUrl)> Register(UserDTO userDTO, string role);
     Task<AuthResponseDTO> Login(LoginDTO loginDTO);
     Task<string> CreateRefreshToken();
-    Task<AuthResponseDTO> VerifyRefreshToken(AuthResponseDTO request);
+    Task<AuthResponseDTO> VerifyRefreshToken(string refreshToken);
+    Task<AuthResponseDTO> FirebaseRegister(FirebaseRegisterDTO firebaseRegisterDTO, string role = "User");
+    Task<AuthResponseDTO> FirebaseLogin(string firebaseIdToken);
     
 }
 

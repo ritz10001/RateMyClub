@@ -53,6 +53,7 @@ public class ClubRequestController : ControllerBase
         return Ok(result);
     }
     [HttpGet("my-club-requests")]
+    [Authorize(Roles = "User")]
     public async Task<ActionResult<IEnumerable<GetMyClubRequestsDTO>>> GetRequestsByUserId()
     {
         var userId = GetUserId();
@@ -76,6 +77,7 @@ public class ClubRequestController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "User")]
     public async Task<IActionResult> WithdrawRequest(int id)
     {
         var request = await _clubRequestsRepository.GetAsync(id);

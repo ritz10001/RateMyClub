@@ -31,8 +31,19 @@ builder.Services.AddIdentityCore<User>()
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowAll", b => b.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
+// builder.Services.AddCors(options => {
+//     options.AddPolicy("AllowAll", b => b.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
+// });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        });
 });
 
 builder.Services.AddAutoMapper(typeof(MapperConfig));
@@ -48,13 +59,16 @@ builder.Services.AddScoped<ISavedClubsRepository, SavedClubsRepository>();
 builder.Services.AddScoped<ITagsRepository, TagsRepository>();
 builder.Services.AddScoped<IUniversityRequestsRepository, UniversityRequestsRepository>();
 builder.Services.AddScoped<IReviewVoteRepository, ReviewVoteRepository>();
+builder.Services.AddSingleton<FirebaseAuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUserVoteResolver>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options => {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options => {
+}).AddJwtBearer(options =>
+{
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
@@ -66,6 +80,24 @@ builder.Services.AddAuthentication(options => {
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
         RoleClaimType = ClaimTypes.Role
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // First check for token in cookies
+            var token = context.Request.Cookies["authToken"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+                Console.WriteLine("Token found in cookies");
+            }
+            else
+            {
+                Console.WriteLine("No token found in cookies");
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -140,7 +172,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowSpecificOrigin");
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"=== INCOMING REQUEST ===");
+    Console.WriteLine($"Method: {context.Request.Method}");
+    Console.WriteLine($"Path: {context.Request.Path}");
+    Console.WriteLine($"Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"))}");
+    await next();
+});
 
 app.UseAuthentication();
 

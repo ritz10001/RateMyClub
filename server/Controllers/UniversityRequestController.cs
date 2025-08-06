@@ -43,6 +43,7 @@ public class UniversityRequestController : ControllerBase
         return Ok(request);
     }
     [HttpDelete("{id}")]
+    [Authorize(Roles = "User")]
     public async Task<IActionResult> WithdrawRequest(int id)
     {
         var request = await _universityRequestsRepository.GetAsync(id);
