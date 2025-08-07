@@ -2,8 +2,7 @@
 **/firebase-key.json
 **/secrets*.json
 *.env
-*.env.local
-*.env.*.local
+.env.local
 
 # .NET artifacts
 server/bin/
@@ -34,3 +33,23 @@ client/pnpm-debug.log*
 Thumbs.db
 ehthumbs.db
 desktop.ini
+
+# Server build artifacts
+server/bin/
+server/obj/
+
+# Firebase secret key (MUST be excluded)
+server/Configurations/firebase-key.json
+
+# Client stuff
+client/node_modules/
+client/.next/
+client/out/
+client/.env*
+
+# General patterns
+*.tsbuildinfo
+*.log
+*.pem
+.DS_Store
+
