@@ -1,3 +1,36 @@
-server/obj/
-server/bin/
+# Firebase or sensitive config
+**/firebase-key.json
+**/secrets*.json
+*.env
+*.env.local
+*.env.*.local
 
+# .NET artifacts
+server/bin/
+server/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Node + Next.js
+client/node_modules/
+client/.next/
+client/out/
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/pnpm-debug.log*
+
+# Logs
+*.log
+
+# VSCode
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
