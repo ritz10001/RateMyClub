@@ -228,28 +228,30 @@ export default function RequestClubPage({ params }) {
                   className="min-h-24 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
-              {!isLoadingTag && <div className="flex flex-wrap gap-2">
-                <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Select upto 3 tags <span className="text-red-400">*</span>
-                </Label>
-                <div className="space-y-2 space-x-2">
-                  {tags.map((tag) => (
-                  <Button
-                    key={tag.id}
-                    type="button"
-                    variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                    onClick={() => handleTagClick(tag.id)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                      selectedTags.includes(tag.id)
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "border-blue-200 text-blue-600 hover:bg-blue-50"
-                    }`}
-                  >
-                    {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
-                  </Button>
-                ))}
+              
+              {!isLoadingTag && 
+                <div className="flex flex-wrap gap-2">
+                  <Label htmlFor="tags" className="text-sm font-medium text-gray-700 mb-2 block">
+                    Select upto 3 tags <span className="text-red-400">*</span>
+                  </Label>
+                  <div className="space-y-2 space-x-2">
+                    {tags.map((tag) => (
+                    <Button
+                      key={tag.id}
+                      type="button"
+                      variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                      onClick={() => handleTagClick(tag.id)}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                        selectedTags.includes(tag.id)
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "border-blue-200 text-blue-600 hover:bg-blue-50"
+                      }`}
+                    >
+                      {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                    </Button>
+                  ))}
+                  </div>
                 </div>
-              </div>
               }
             </div>
           </div>

@@ -35,8 +35,6 @@ export default function LoginPage() {
     setError(false);
     try{
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      // console.log("✅ Login successful:", response.data);
-      // console.log("📋 Response headers:", response.headers);
       const user = userCredential.user;
       console.log("✅ Firebase login successful:", user);
       if(login){

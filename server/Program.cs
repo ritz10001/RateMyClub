@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +13,7 @@ using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Repository;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,11 +24,19 @@ builder.Services.AddDbContext<CollegeClubsDbContext>(options => {
     options.UseSqlServer(connectionString);
 });
 
-builder.Services.AddIdentityCore<User>()
-                .AddRoles<IdentityRole>()
-                .AddTokenProvider<DataProtectorTokenProvider<User>>("RateMyCollegeClub")
-                .AddEntityFrameworkStores<CollegeClubsDbContext>()
-                .AddDefaultTokenProviders();
+builder.Services.AddIdentityCore<User>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 0;
+})
+.AddRoles<IdentityRole>()
+.AddTokenProvider<DataProtectorTokenProvider<User>>("RateMyCollegeClub")
+.AddEntityFrameworkStores<CollegeClubsDbContext>()
+.AddDefaultTokenProviders();
                 
 
 builder.Services.AddControllers();

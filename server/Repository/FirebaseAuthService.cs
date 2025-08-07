@@ -12,7 +12,7 @@ public class FirebaseAuthService
         {
             FirebaseApp.Create(new AppOptions()
             {
-                Credential = GoogleCredential.FromFile("firebase-key.json")
+                Credential = GoogleCredential.FromFile("Configurations/firebase-key.json")
             });
         }
         _auth = FirebaseAuth.DefaultInstance;

@@ -24,13 +24,17 @@ public class AuthService : IAuthService
     private const string _refreshToken = "RefreshToken";
     private User _user;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    public AuthService(IMapper mapper, UserManager<User> userManager, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, FirebaseAuthService firebaseAuthService)
+    private readonly ITagsRepository _tagsRepository;
+    private readonly IUniversityRepository _universityRepository;
+    public AuthService(IMapper mapper, UserManager<User> userManager, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, FirebaseAuthService firebaseAuthService, ITagsRepository tagsRepository, IUniversityRepository universityRepository)
     {
         _mapper = mapper;
         _userManager = userManager;
         _configuration = configuration;
         _httpContextAccessor = httpContextAccessor;
         _firebaseAuthService = firebaseAuthService;
+        _tagsRepository = tagsRepository;
+        _universityRepository = universityRepository;
     }
 
     public async Task<string> CreateRefreshToken()
@@ -127,11 +131,10 @@ public class AuthService : IAuthService
             return (authResponse, null, confirmationUrl);
         }
 
-
         return (null, result.Errors, null);
     }
 
-    public async Task<AuthResponseDTO> FirebaseRegister(FirebaseRegisterDTO firebaseRegisterDTO, string role = "User")
+    public async Task<(AuthResponseDTO, IEnumerable<IdentityError>, string confirmationUrl)> FirebaseRegister(FirebaseRegisterDTO firebaseRegisterDTO, string role = "User")
     {
         FirebaseToken decodedToken;
         try
@@ -140,10 +143,7 @@ public class AuthService : IAuthService
         }
         catch
         {
-            return new AuthResponseDTO
-            {
-                Message = "Invalid Firebase ID Token"
-            };
+            return (null, new List<IdentityError> { new IdentityError { Code = "InvalidToken", Description = "Invalid Firebase ID Token" } }, null);
         }
         var firebaseUid = decodedToken.Uid;
         var emailFromToken = decodedToken.Claims.TryGetValue("email", out var emailObj) ? emailObj?.ToString() : null;
@@ -152,39 +152,47 @@ public class AuthService : IAuthService
         var existingUser = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
         if (existingUser != null)
         {
-            return new AuthResponseDTO
-            {
-                Message = "User already Exists!"
-            };
+            return (null, new List<IdentityError> { new IdentityError { Code = "UserExists", Description = "User already exists." } }, null);
         }
+
+        var tags = await _tagsRepository.GetTagsByIdsAsync(firebaseRegisterDTO.TagIds);
+        var universityName = await _universityRepository.GetUniversityNameByIdAsync(firebaseRegisterDTO.UniversityId ?? 0);
+        
         var newUser = new User
         {
+            UserName = firebaseRegisterDTO.Email,
             FirstName = firebaseRegisterDTO.FirstName,
             LastName = firebaseRegisterDTO.LastName,
             Email = firebaseRegisterDTO.Email,
             FireBaseUid = firebaseUid,
             UniversityId = firebaseRegisterDTO.UniversityId ?? 0,
-            SchoolName = firebaseRegisterDTO.SchoolName ?? ""
+            Tags = tags,
+            SchoolName = universityName
         };
         var result = await _userManager.CreateAsync(newUser);
         if (!result.Succeeded)
         {
-            return new AuthResponseDTO
-            {
-                Message = "User creation failed: " + string.Join(", ", result.Errors.Select(e => e.Description))
-            };
+            return (null, result.Errors, null);
         }
         await _userManager.AddToRoleAsync(newUser, role);
         var roles = await _userManager.GetRolesAsync(newUser);
-        return new AuthResponseDTO
+        // ✅ Generate Email Confirmation Token
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+        var encodedToken = WebUtility.UrlEncode(token);
+
+        // 🔗 Construct your confirmation URL
+        var confirmationUrl = $"https://your-frontend-domain.com/confirm-email?userId={newUser.Id}&token={encodedToken}";
+        var authResponse = new AuthResponseDTO
         {
             UserId = newUser.Id,
             Email = newUser.Email,
             FirstName = newUser.FirstName,
             LastName = newUser.LastName,
             Roles = roles.ToList(),
-            Message = "Registration Successful"
+            Message = "Registration Successful",
+            Tags = tags.Select(t => t.Name).ToList()
         };
+        return (authResponse, null, confirmationUrl);
     }
 
     public async Task<AuthResponseDTO?> FirebaseLogin(string firebaseIdToken)
@@ -296,4 +304,6 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
 
     }
+
+    
 }

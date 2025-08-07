@@ -32,6 +32,10 @@ public class CollegeClubsDbContext : IdentityDbContext<User> {
         .HasMany(cr => cr.Tags)
         .WithMany(t => t.Clubs)
         .UsingEntity(j => j.ToTable("ClubTag"));
+        modelBuilder.Entity<User>()
+        .HasMany(u => u.Tags)
+        .WithMany(t => t.Users)
+        .UsingEntity(j => j.ToTable("UserTag"));
         modelBuilder.Entity<SavedClub>()
         .HasOne(sc => sc.Club)
         .WithMany()

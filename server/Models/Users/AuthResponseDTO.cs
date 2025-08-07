@@ -7,6 +7,7 @@ public class AuthResponseDTO
     public string LastName { get; set; }
     public string Email { get; set; }
     public List<string> Roles { get; set; } 
-    public string ConfirmationUrl { get; set; } = "";  // ← just empty in login
+    public List<string> Tags { get; set; }
+    // public string ConfirmationUrl { get; set; } = "";  // ← just empty in login
     public string Message { get; set; } = "";
 }

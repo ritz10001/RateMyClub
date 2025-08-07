@@ -1,30 +1,45 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { useAuth } from "../context/AuthContext"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { app } from "../utils/firebase";
+import axios from "axios";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const auth = getAuth(app);
   const { user, setUser } = useAuth();
+  const [isLoadingTag, setIsLoadingTag] = useState(true);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [tags, setTags] = useState(null);
+  const [schoolSearchTerm, setSchoolSearchTerm] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    school: "",
+    // school: "",
+    universityId: null,
+    tagIds: [],
+    idToken: null
   })
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [universities, setUniversities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    console.log(formData);
+  }, [formData]);
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -59,68 +74,144 @@ export default function SignUpPage() {
     fetchUniversities();
   }, []);
 
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch("http://localhost:5095/api/Tag");
+        if(response.ok){
+          const data = await response.json();
+          setTags(data);
+          setIsLoadingTag(false);
+          console.log("HERE ARE THE TAGS", data);
+        }
+        else{
+          console.error("Error fetching tags");
+        }
+      }
+      catch(error){
+        console.error("fetching tags failed");
+      }
+    }
+    fetchTags();
+  }, []);
+  
+  const handleTagClick = (tagId) => {
+    console.log("SELECTED TAG", tagId);
+    console.log(selectedTags);
+    if(selectedTags.includes(tagId)){
+      setSelectedTags(selectedTags.filter((id) => id !== tagId));
+    }
+    else{
+      if (selectedTags.length < 5) {
+        setSelectedTags([...selectedTags, tagId]);
+      } 
+      else {
+        toast.error("You can select up to 5 tags only.");
+      }
+    }
+  }
+
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(false);
+    await new Promise(resolve => setTimeout(resolve, 200));
     if (formData.password !== formData.confirmPassword) {
       setError(true);
-      setErrorMessage(""); // Clear any previous specific message
+      setErrorMessage("Passwords do not match!");
+      setIsSubmitting(false);  // Clear any previous specific message
       return;
     }
-    try{
-      const response = await fetch("http://localhost:5095/api/Account/register", {
+    let idToken;
+    // 1. Register in Firebase
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+      idToken = await user.getIdToken();
+    } 
+    catch (firebaseError) {
+      console.error("Firebase registration error:", firebaseError);
+      setError(true);
+      switch (firebaseError.code) {
+        case "auth/weak-password":
+          setErrorMessage("Password must be at least 6 characters.");
+          break;
+        case "auth/email-already-in-use":
+          setErrorMessage("This email is already registered.");
+          break;
+        case "auth/invalid-email":
+          setErrorMessage("Invalid email address.");
+          break;
+        default:
+          setErrorMessage("Firebase error: " + firebaseError.message);
+      }
+      setIsSubmitting(false);
+      return;
+    }
+    // 2. Sync with backend (SQL)
+    try {
+      const response = await fetch("http://localhost:5095/api/Account/firebase-register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
         body: JSON.stringify({
+          firebaseIdToken: idToken,
+          email: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-          schoolName: formData.school || null,
+          universityId: formData.universityId,
+          tagIds: selectedTags
         })
-      })
-      if(response.ok){
+      });
+
+      if (response.ok) {
         const { confirmationUrl, ...authResponse } = await response.json();
-        console.log('Sign up successful:', authResponse);
-        console.log(confirmationUrl);
+        console.log("Sign up successful:", authResponse);
+        console.log("confirmationurl", confirmationUrl);
+
         const userData = {
           firstName: authResponse.firstName,
           lastName: authResponse.lastName,
           userId: authResponse.userId,
           email: authResponse.email,
-          roles: authResponse.roles
+          roles: authResponse.roles,
+          tagIds: authResponse.tags,
+          idToken: authResponse.firebaseIdToken
         };
+
         setUser(userData);
-        if(confirmationUrl){
+
+        if (confirmationUrl) {
           router.push(`http://localhost:3000/email-confirmation?email=${formData.email}`);
+        } 
+        else {
+          toast.error("No confirmation URL received. Staying on page.");
         }
-        else{
-          toast.error("No confirmation URL received. Staying on page.")
-        }
-        // setTimeout(() => {
-        //   console.log("handleSubmit: Navigating to /");
-        //   router.push("/");
-        // }, 100);
-      }
-      else if(response.status === 400){
+      } 
+      else if (response.status === 400) {
         const errorData = await response.json();
-        
-        console.log('Sign up failed: Invalid data');
-        if("type" in errorData){
-          setErrorMessage(errorData.errors["Password"][0])
-        }
-        else{
+        console.log("Sign up failed: Invalid data");
+        setError(true);
+        if ("type" in errorData) {
+          setErrorMessage(errorData.errors?.Password?.[0] ?? "Invalid input.");
+        } 
+        else {
           setErrorMessage(Object.values(errorData).map(arr => arr[0]).join('\n'));
         }
-        setError(true);
+      } 
+      else {
+        throw new Error(`Unexpected error from backend. Status: ${response.status}`);
       }
-    }
-    catch(error){
+    } 
+    catch (networkError) {
+      console.error("Network/backend error:", networkError);
       setError(true);
-      console.error('Sign up error:', error);
-      setErrorMessage("Network error. Please try again.");
+      setErrorMessage("A network error occurred. Please try again.");
+    }
+    finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -201,20 +292,64 @@ export default function SignUpPage() {
               <Label htmlFor="school" className="text-sm font-medium text-gray-700 mb-2 block">
                 Select your school <span className="text-gray-400"></span>
               </Label>
-              <Select onValueChange={(value) => handleInputChange("school", value)}>
+              <Select onValueChange={(value) => handleInputChange("universityId", parseInt(value))}>
                 <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
                   <SelectValue placeholder="Choose your school..." />
                 </SelectTrigger>
                 <SelectContent className="max-h-56 overflow-y-auto">
-                  {universities.map(university => (
-                    <SelectItem key={university.id} value={university.id.toString()}>
-                      {university.name}
-                    </SelectItem>
-                  ))}
+                  <div className="px-1 mb-1 sticky top-0 bg-white z-10">
+                    <Input 
+                      placeholder="Search schools..."
+                      value={schoolSearchTerm}
+                      onChange={(e) => {
+                        e.stopPropagation()
+                        setSchoolSearchTerm(e.target.value.toLowerCase())
+                      }}
+                      className="w-full"
+                      onKeyDown={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
+                      autoFocus
+                    />
+                  </div>
+                  {universities
+                    .filter(university => 
+                      !schoolSearchTerm || 
+                      university.name.toLowerCase().includes(schoolSearchTerm)
+                      // (university.location && university.location.toLowerCase().includes(schoolSearchTerm))
+                    )
+                    .map(university => (
+                      <SelectItem key={university.id} value={university.id.toString()}>
+                        {university.name}
+                      </SelectItem>
+                    ))}
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            {!isLoadingTag && 
+                <div className="flex flex-wrap gap-2">
+                  <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 mb-2 block">
+                    Which of these categories interest you? (Select upto 5) <span className="text-red-400">*</span>
+                  </Label>
+                  <div className="space-y-2 space-x-2">
+                    {tags.map((tag) => (
+                    <Button
+                      key={tag.id}
+                      type="button"
+                      variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                      onClick={() => handleTagClick(tag.id)}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                        selectedTags.includes(tag.id)
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "border-blue-200 text-blue-600 hover:bg-blue-50"
+                      }`}
+                    >
+                      {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                    </Button>
+                  ))}
+                  </div>
+                </div>
+              }
 
             {/* Password */}
             <div>
@@ -249,9 +384,20 @@ export default function SignUpPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center"
+              disabled={isSubmitting}
             >
-              Sign Up
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing in...
+                </>
+              ) : (
+                "Sign Up"
+              )}
             </Button>
           </form>
 

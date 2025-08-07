@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Newtonsoft.Json;
 using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models.Users;
@@ -68,15 +69,30 @@ public class AccountController : ControllerBase
         return BadRequest("Email Confirmation Failed");
     }
     [HttpPost("firebase-register")]
-    public async Task<IActionResult> FirebaseRegister([FromBody] FirebaseRegisterDTO firebaseRegisterDTO)
+    public async Task<IActionResult> FirebaseRegister([FromBody] FirebaseRegisterDTO firebaseRegisterDTO, [FromQuery] string role = "User")
     {
-        var result = await _authService.FirebaseRegister(firebaseRegisterDTO);
-        if (string.IsNullOrWhiteSpace(result.UserId))
+        var (authResponse, errors, confirmationUrl) = await _authService.FirebaseRegister(firebaseRegisterDTO, role);
+        Console.WriteLine("THIS IS THE DTO==============================");
+        Console.WriteLine($"DTO: {JsonConvert.SerializeObject(authResponse)}");
+
+        if (errors != null && errors.Any())
         {
-            return BadRequest(new { result.Message });
+            foreach (var error in errors)
+            {
+                ModelState.AddModelError(error.Code, error.Description);
+            }
+            return BadRequest(ModelState);
         }
-        return Ok(result);
+
+        var response = new RegisterResponseDTO
+        {
+            AuthResponse = authResponse,
+            ConfirmationUrl = confirmationUrl
+        };
+
+        return Ok(response);
     }
+
     [HttpPost("firebase-login")]
     public async Task<IActionResult> FirebaseLogin([FromBody] string firebaseIdToken)
     {

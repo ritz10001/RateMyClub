@@ -10,7 +10,6 @@ public class FirebaseRegisterDTO
     public string FirstName { get; set; }
     [Required]
     public string LastName { get; set; }
-    public string? SchoolName { get; set; }
     public int? UniversityId { get; set; }  // For DB linkage if used
-    public List<string>? Interests { get; set; }  // For recommendation system
+    public List<int> TagIds { get; set; } = [];
 }

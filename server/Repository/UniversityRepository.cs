@@ -67,4 +67,13 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
         return await query.CountAsync();
     }
 
+    public async Task<string> GetUniversityNameByIdAsync(int id)
+    {
+        var res = await _context.Universities
+        .Where(u => id == u.Id)
+        .Select(u => u.Name)
+        .FirstOrDefaultAsync();
+
+        return res ?? "Other";
+    }
 }
