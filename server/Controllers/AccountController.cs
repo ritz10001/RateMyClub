@@ -27,31 +27,20 @@ public class AccountController : ControllerBase
         _userManager = userManager;
         _firebaseAuthService = firebaseAuthService;
     }
-
-    [HttpPost]
-    [Route("register")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> Register([FromBody] UserDTO userDTO, [FromQuery] string role = "User")
+    [HttpPost("resend-verification")]
+    public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequestDTO request)
     {
-        var (authResponse, errors, confirmationUrl) = await _authService.Register(userDTO, role);
-
-        if (errors != null && errors.Any())
+        if (string.IsNullOrWhiteSpace(request.Email))
         {
-            foreach (var error in errors)
-            {
-                ModelState.AddModelError(error.Code, error.Description);
-            }
-            return BadRequest(ModelState);
+            return BadRequest("Email is required.");
         }
-        var response = new RegisterResponseDTO
+        var (Success, ErrorMessage) = await _authService.ResendVerification(request.Email);
+        if (!Success)
         {
-            AuthResponse = authResponse,
-            ConfirmationUrl = confirmationUrl
-        };
+            return BadRequest(ErrorMessage);
+        }
 
-        return Ok(response);
+        return Ok(new { Message = "Verification email resent successfully." });
     }
     [HttpPost("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromBody] EmailVerificationDTO emailVerificationDTO)
@@ -96,12 +85,21 @@ public class AccountController : ControllerBase
     [HttpPost("firebase-login")]
     public async Task<IActionResult> FirebaseLogin([FromBody] string firebaseIdToken)
     {
-        var authResponse = await _authService.FirebaseLogin(firebaseIdToken);
-        if (authResponse == null)
+        try
         {
-            return Unauthorized(new { Message =  "Invalid token or user not registered."});
+            var authResponse = await _authService.FirebaseLogin(firebaseIdToken);
+            if (authResponse == null)
+            {
+                // Could mean invalid token, user not found, or email not verified
+                return Unauthorized(new { Message = "Invalid token, user not registered, or email not verified." });
+            }
+            return Ok(authResponse);
         }
-        return Ok(authResponse);
+        catch (Exception)
+        {
+            // Log exception if needed
+            return StatusCode(500, new { Message = "An unexpected error occurred." });
+        }
     }
     [HttpPost]
     [Route("login")]

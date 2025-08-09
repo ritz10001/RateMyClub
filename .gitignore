@@ -37,6 +37,7 @@ desktop.ini
 # Server build artifacts
 server/bin/
 server/obj/
+server/appsettings.json
 
 # Firebase secret key (MUST be excluded)
 server/Configurations/firebase-key.json

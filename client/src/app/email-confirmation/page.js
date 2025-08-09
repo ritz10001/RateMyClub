@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Mail, CheckCircle, RefreshCw, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -12,8 +12,26 @@ export default function EmailConfirmationPage() {
   const email = searchParams.get("email") || "your email";
   const [isResending, setIsResending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown === 0) return;
+
+    const timerId = setInterval(() => {
+      setCooldown(prev => {
+        if (prev <= 1) {
+          clearInterval(timerId);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [cooldown]);
 
   const handleResendEmail = async () => {
+    if(cooldown > 0) return;
     setIsResending(true);
     try {
       const response = await fetch("http://localhost:5095/api/Account/resend-verification", {
@@ -25,13 +43,16 @@ export default function EmailConfirmationPage() {
       if (response.ok) {
         setEmailSent(true);
         toast.success("Verification email sent successfully!");
+        setCooldown(60);
       } 
       else {
-        toast.error("Failed to resend email. Please try again.");
+        toast.error("Please wait before requesting another verification email!");
       }
-    } catch (error) {
+    } 
+    catch (error) {
       toast.error("Something went wrong. Please try again.");
-    } finally {
+    } 
+    finally {
       setIsResending(false);
     }
   }
@@ -114,7 +135,7 @@ export default function EmailConfirmationPage() {
               <div className="space-y-3">
                 <Button
                   onClick={handleResendEmail}
-                  disabled={isResending}
+                  disabled={isResending || cooldown > 0}
                   variant="outline"
                   className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
                 >

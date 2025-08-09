@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification} from "firebase/auth";
 import { app } from "../utils/firebase";
 import axios from "axios";
 
@@ -116,6 +116,7 @@ export default function SignUpPage() {
     setIsSubmitting(true);
     setError(false);
     await new Promise(resolve => setTimeout(resolve, 200));
+    // 1. Password match check
     if (formData.password !== formData.confirmPassword) {
       setError(true);
       setErrorMessage("Passwords do not match!");
@@ -123,11 +124,17 @@ export default function SignUpPage() {
       return;
     }
     let idToken;
-    // 1. Register in Firebase
+    // 2. Register in Firebase
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
-      idToken = await user.getIdToken();
+      const fbUser = userCredential.user;
+      // Get the Firebase ID token to send to backend
+      idToken = await fbUser.getIdToken();
+      // Send verification email before signing out
+      // await sendEmailVerification(fbUser);
+      // Sign out immediately to prevent auto-login
+      await auth.signOut();
+      setUser(null);
     } 
     catch (firebaseError) {
       console.error("Firebase registration error:", firebaseError);
@@ -148,7 +155,7 @@ export default function SignUpPage() {
       setIsSubmitting(false);
       return;
     }
-    // 2. Sync with backend (SQL)
+    // 3. Sync with backend (SQL)
     try {
       const response = await fetch("http://localhost:5095/api/Account/firebase-register", {
         method: "POST",
@@ -181,10 +188,8 @@ export default function SignUpPage() {
           idToken: authResponse.firebaseIdToken
         };
 
-        setUser(userData);
-
         if (confirmationUrl) {
-          router.push(`http://localhost:3000/email-confirmation?email=${formData.email}`);
+          router.push(`http://localhost:3000/email-confirmation?email=${encodeURIComponent(formData.email)}`);
         } 
         else {
           toast.error("No confirmation URL received. Staying on page.");
@@ -193,16 +198,20 @@ export default function SignUpPage() {
       else if (response.status === 400) {
         const errorData = await response.json();
         console.log("Sign up failed: Invalid data");
-        setError(true);
-        if ("type" in errorData) {
+        // Backend validation message handling
+        if (errorData?.type) {
           setErrorMessage(errorData.errors?.Password?.[0] ?? "Invalid input.");
         } 
         else {
-          setErrorMessage(Object.values(errorData).map(arr => arr[0]).join('\n'));
+          setErrorMessage(
+            Object.values(errorData)
+              .map(arr => arr[0])
+              .join("\n")
+          );
         }
       } 
       else {
-        throw new Error(`Unexpected error from backend. Status: ${response.status}`);
+        throw new Error(`Unexpected backend response: ${response.status}`);
       }
     } 
     catch (networkError) {

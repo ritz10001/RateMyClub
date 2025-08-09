@@ -70,6 +70,7 @@ builder.Services.AddScoped<ISavedClubsRepository, SavedClubsRepository>();
 builder.Services.AddScoped<ITagsRepository, TagsRepository>();
 builder.Services.AddScoped<IUniversityRequestsRepository, UniversityRequestsRepository>();
 builder.Services.AddScoped<IReviewVoteRepository, ReviewVoteRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<FirebaseAuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUserVoteResolver>();

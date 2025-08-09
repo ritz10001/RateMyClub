@@ -37,8 +37,32 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
       console.log("✅ Firebase login successful:", user);
+      const idToken = await user.getIdToken();
+
+      // Call backend login to verify user and get roles, etc.
+      const response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(idToken)
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError("Email not verified or user not registered.");
+        } 
+        else {
+          setError("Backend login failed. Please try again.");
+        }
+        await auth.signOut(); // Sign out on backend login failure
+        setIsLoading(false);
+        return;
+      }
+      const authResponse = await response.json();
       if(login){
-        login(user);
+        login(authResponse);
       }
       setTimeout(() => {
         console.log("handleSubmit: Navigating to /");

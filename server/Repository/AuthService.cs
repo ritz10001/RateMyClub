@@ -11,6 +11,9 @@ using RateMyCollegeClub.Models.Users;
 using Azure;
 using FirebaseAdmin.Auth;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Routing;
+using System.Net.Mail;
+using Microsoft.AspNetCore.Mvc;
 
 namespace RateMyCollegeClub.Repository;
 
@@ -26,7 +29,11 @@ public class AuthService : IAuthService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ITagsRepository _tagsRepository;
     private readonly IUniversityRepository _universityRepository;
-    public AuthService(IMapper mapper, UserManager<User> userManager, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, FirebaseAuthService firebaseAuthService, ITagsRepository tagsRepository, IUniversityRepository universityRepository)
+    private readonly IEmailService _emailService;
+    public AuthService(IMapper mapper, UserManager<User> userManager,
+    IConfiguration configuration, IHttpContextAccessor httpContextAccessor,
+    FirebaseAuthService firebaseAuthService, ITagsRepository tagsRepository,
+    IUniversityRepository universityRepository, IEmailService emailService)
     {
         _mapper = mapper;
         _userManager = userManager;
@@ -35,6 +42,7 @@ public class AuthService : IAuthService
         _firebaseAuthService = firebaseAuthService;
         _tagsRepository = tagsRepository;
         _universityRepository = universityRepository;
+        _emailService = emailService;
     }
 
     public async Task<string> CreateRefreshToken()
@@ -104,38 +112,42 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<(AuthResponseDTO, IEnumerable<IdentityError>, string confirmationUrl)> Register(UserDTO userDTO, string role = "User")
+    public async Task<(bool Success, string ErrorMessage)> ResendVerification(string email)
     {
-        _user = _mapper.Map<User>(userDTO);
-        _user.UserName = userDTO.Email;
-        _user.Email = userDTO.Email;
-
-        var result = await _userManager.CreateAsync(_user, userDTO.Password);
-
-        if (result.Succeeded)
+        Console.WriteLine("In the resend verification");
+        var user = await _userManager.FindByEmailAsync(email);
+        
+        if (user == null)
         {
-            await _userManager.AddToRoleAsync(_user, role);
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(_user); //Generate Email confirmation token
-            var encodedToken = WebUtility.UrlEncode(token);
-            var confirmationUrl = $"https://localhost:3000/verify-email?email={_user.Email}&token={encodedToken}";
-            var roles = await _userManager.GetRolesAsync(_user);
-
-            var authResponse = new AuthResponseDTO
-            {
-                UserId = _user.Id,
-                FirstName = _user.FirstName,
-                LastName = _user.LastName,
-                Email = _user.Email,
-                Roles = roles.ToList()
-            };
-            return (authResponse, null, confirmationUrl);
+            Console.WriteLine("User does not exist");
+            return (false, "User not found.");
         }
 
-        return (null, result.Errors, null);
-    }
+        var fbUser = await FirebaseAuth.DefaultInstance.GetUserByEmailAsync(email);
+        if (fbUser.EmailVerified)
+        {
+            Console.WriteLine("User email is not verified");
+            return (false, "Email already verified.");
+        }
 
+        var verificationLink = await FirebaseAuth.DefaultInstance.GenerateEmailVerificationLinkAsync(email);
+        Console.WriteLine("Failed to create Verification Link");
+        string firstName = user.FirstName ?? "User";
+
+        var emailSent = await _emailService.SendVerificationEmailAsync(email, firstName, verificationLink);
+
+        if (!emailSent)
+        {
+            Console.WriteLine("Failed to send email");
+            return (false, "Failed to send verification email.");
+        }
+
+        return (true, null);
+    }
     public async Task<(AuthResponseDTO, IEnumerable<IdentityError>, string confirmationUrl)> FirebaseRegister(FirebaseRegisterDTO firebaseRegisterDTO, string role = "User")
     {
+        // 1) Verify the Firebase ID token from client
+        Console.WriteLine("IN STEP 1, VERIFYING FB ID");
         FirebaseToken decodedToken;
         try
         {
@@ -143,21 +155,43 @@ public class AuthService : IAuthService
         }
         catch
         {
-            return (null, new List<IdentityError> { new IdentityError { Code = "InvalidToken", Description = "Invalid Firebase ID Token" } }, null);
+            return (null, new List<IdentityError>
+            {
+                new IdentityError { Code = "InvalidToken", Description = "Invalid Firebase ID Token" }
+            }, null);
         }
+
         var firebaseUid = decodedToken.Uid;
         var emailFromToken = decodedToken.Claims.TryGetValue("email", out var emailObj) ? emailObj?.ToString() : null;
         var email = emailFromToken ?? firebaseRegisterDTO.Email;
 
-        var existingUser = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
-        if (existingUser != null)
+        // 2) Prevent duplicate registrations
+        Console.WriteLine("IN STEP 2, PREVENTING DUPLICATIONS");
+        var userByUidExists = await _userManager.Users.AnyAsync(u => u.FireBaseUid == firebaseUid);
+        Console.WriteLine($"User exists by Firebase UID: {userByUidExists}");
+        if (userByUidExists)
         {
-            return (null, new List<IdentityError> { new IdentityError { Code = "UserExists", Description = "User already exists." } }, null);
+            return (null, new List<IdentityError>
+            {
+                new IdentityError { Code = "UserExists", Description = "User already exists." }
+            }, null);
+        }
+        var userByEmail = await _userManager.FindByEmailAsync(email);
+        Console.WriteLine($"User exists by Email: {userByEmail != null}");
+        if (userByEmail != null)
+        {
+            return (null, new List<IdentityError>
+            {
+                new IdentityError { Code = "EmailExists", Description = "An account with this email already exists." }
+            }, null);
         }
 
+        // 3) Resolve tags & university
+        Console.WriteLine("IN STEP 3, RESOLVING TAGS");
         var tags = await _tagsRepository.GetTagsByIdsAsync(firebaseRegisterDTO.TagIds);
         var universityName = await _universityRepository.GetUniversityNameByIdAsync(firebaseRegisterDTO.UniversityId ?? 0);
-        
+        // 4) Create SQL user record
+        Console.WriteLine("IN STEP 4, CREATING SQL RECORDS");
         var newUser = new User
         {
             UserName = firebaseRegisterDTO.Email,
@@ -169,19 +203,33 @@ public class AuthService : IAuthService
             Tags = tags,
             SchoolName = universityName
         };
+
         var result = await _userManager.CreateAsync(newUser);
         if (!result.Succeeded)
         {
             return (null, result.Errors, null);
         }
+
         await _userManager.AddToRoleAsync(newUser, role);
         var roles = await _userManager.GetRolesAsync(newUser);
-        // ✅ Generate Email Confirmation Token
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-        var encodedToken = WebUtility.UrlEncode(token);
 
-        // 🔗 Construct your confirmation URL
-        var confirmationUrl = $"https://your-frontend-domain.com/confirm-email?userId={newUser.Id}&token={encodedToken}";
+        var verificationLink = await FirebaseAuth.DefaultInstance.GenerateEmailVerificationLinkAsync(email);
+
+        // 4.6) Send via your custom service
+        var emailSent = await _emailService.SendVerificationEmailAsync(email, newUser.FirstName, verificationLink);
+        if (!emailSent)
+        {
+            // Consider removing the user if email fails
+            await _userManager.DeleteAsync(newUser);
+            return (null, new List<IdentityError>
+            {
+                new IdentityError { Code = "EmailFailed", Description = "Failed to send verification email." }
+            }, null);
+        }
+
+        // 5) Return auth response & link
+        string confirmationUrl = $"http://localhost:3000/email-confirmation?uid={WebUtility.UrlEncode(firebaseUid)}";
+        Console.WriteLine("IN STEP 5, RETURNING AUTH RESPONSE");
         var authResponse = new AuthResponseDTO
         {
             UserId = newUser.Id,
@@ -189,9 +237,10 @@ public class AuthService : IAuthService
             FirstName = newUser.FirstName,
             LastName = newUser.LastName,
             Roles = roles.ToList(),
-            Message = "Registration Successful",
+            Message = "Registration Successful - Please verify your email.",
             Tags = tags.Select(t => t.Name).ToList()
         };
+
         return (authResponse, null, confirmationUrl);
     }
 
@@ -204,18 +253,24 @@ public class AuthService : IAuthService
         }
         catch
         {
-            return null; // invalid token
+            return null; // Invalid token
         }
 
         var firebaseUid = decodedToken.Uid;
 
+        // Check SQL user exists
         var user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
-        if (user == null)
+        if (user == null) return null;
+
+        // Verify with Firebase that email is confirmed
+        var fbUser = await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(firebaseUid);
+        if (!fbUser.EmailVerified)
         {
-            return null; // user doesn't exist yet
+            Console.WriteLine("Email not verified");
+            return null;
         }
 
-        var roles = await _userManager.GetRolesAsync(user);;
+        var roles = await _userManager.GetRolesAsync(user);
 
         return new AuthResponseDTO
         {
@@ -227,6 +282,41 @@ public class AuthService : IAuthService
             Message = "Login successful"
         };
     }
+
+
+
+    // public async Task<AuthResponseDTO?> FirebaseLogin(string firebaseIdToken)
+    // {
+    //     FirebaseToken decodedToken;
+    //     try
+    //     {
+    //         decodedToken = await _firebaseAuthService.VerifyIdTokenAsync(firebaseIdToken);
+    //     }
+    //     catch
+    //     {
+    //         return null; // invalid token
+    //     }
+
+    //     var firebaseUid = decodedToken.Uid;
+
+    //     var user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+    //     if (user == null)
+    //     {
+    //         return null; // user doesn't exist yet
+    //     }
+
+    //     var roles = await _userManager.GetRolesAsync(user);;
+
+    //     return new AuthResponseDTO
+    //     {
+    //         UserId = user.Id,
+    //         Email = user.Email ?? "",
+    //         FirstName = user.FirstName,
+    //         LastName = user.LastName,
+    //         Roles = roles.ToList(),
+    //         Message = "Login successful"
+    //     };
+    // }
 
     public async Task<AuthResponseDTO> VerifyRefreshToken(string userId)
     {
