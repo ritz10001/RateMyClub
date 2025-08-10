@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Data;
@@ -21,11 +22,13 @@ public class UniversityController : ControllerBase
     private readonly IMapper _mapper;
     private readonly IUniversityRepository _universityRepository;
     private readonly IClubsRepository _clubsRepository;
-    public UniversityController(IMapper mapper, IUniversityRepository universityRepository, IClubsRepository clubsRepository)
+    private readonly UserManager<User> _userManager;
+    public UniversityController(IMapper mapper, IUniversityRepository universityRepository, IClubsRepository clubsRepository, UserManager<User> userManager)
     {
         _mapper = mapper;
         _universityRepository = universityRepository;
         _clubsRepository = clubsRepository;
+        _userManager = userManager;
     }
 
     [HttpGet]
@@ -54,32 +57,6 @@ public class UniversityController : ControllerBase
         };
         return Ok(result);
     }
-
-    // [HttpGet("{id}")]
-    // public async Task<ActionResult<GetUniversityDTO>> GetUniversity(int id)
-    // {
-    //     var university = await _universityRepository.GetIndividualUniversityDetails(id);
-    //     var userId = GetUserId();
-
-    //     if (university is null)
-    //     {
-    //         return NotFound();
-    //     }
-
-    //     var universityDTO = _mapper.Map<GetUniversityDTO>(university);
-    //     HashSet<int> bookmarkedIds = new();
-    //     if (!string.IsNullOrEmpty(userId))
-    //     {
-    //         bookmarkedIds = await _clubsRepository.GetBookmarkedClubIds(userId);
-    //     }
-
-    //     foreach (var clubDTO in universityDTO.Clubs)
-    //     {
-    //         clubDTO.IsBookmarked = bookmarkedIds.Contains(clubDTO.Id);
-    //     }
-
-    //     return Ok(universityDTO);
-    // }
     [HttpGet("{id}/clubs")]
     public async Task<ActionResult<GetUniversityWithPagedClubsDTO>> GetPagedUniversityClubs(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 6, [FromQuery] string? search = null)
     {
@@ -87,14 +64,19 @@ public class UniversityController : ControllerBase
         if (university is null) return NotFound();
 
         var pagedClubs = await _clubsRepository.GetPagedClubsForUniversity(id, page, pageSize, search);
-        var userId = GetUserId();
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
 
         var mappedClubs = _mapper.Map<List<GetClubsDTO>>(pagedClubs.Items);
 
         // Add bookmark flags
-        if (!string.IsNullOrEmpty(userId))
+        if (!string.IsNullOrEmpty(user?.Id))
         {
-            var bookmarkedIds = await _clubsRepository.GetBookmarkedClubIds(userId);
+            var bookmarkedIds = await _clubsRepository.GetBookmarkedClubIds(user.Id);
             foreach (var clubDTO in mappedClubs)
             {
                 clubDTO.IsBookmarked = bookmarkedIds.Contains(clubDTO.Id);

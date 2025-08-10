@@ -8,6 +8,8 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useAuth } from "../context/AuthContext"
 import { toast } from "sonner"
+import { getAuth } from "firebase/auth"
+import { app } from "../utils/firebase"
 
 export default function SavedClubsPage() {
   const [savedClubs, setSavedClubs] = useState([]);
@@ -15,66 +17,134 @@ export default function SavedClubsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const { user, isInitialized } = useAuth();
 
-  useEffect(() => {
-    const fetchSavedClubs = async () => {
-      if (!user?.token) {
-        console.log("User not authenticated yet, skipping fetch");
-        return;
-      }
-      try{
-        const response = await fetch("http://localhost:5095/api/SavedClub", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${user?.token}`,
-          }
-        })
-        if(response.ok){
-          const data = await response.json();
-          setSavedClubs(data);
-        }
-        else{
-          toast.error("Failed to fetch saved clubs. Please try again later.");
-        }
-      }
-      catch(error){
-        toast.error("An error occurred while fetching saved clubs.");
-      }
-      finally {
-        setIsLoading(false);
-      }
-    }
-    if(isInitialized && user?.token){
-      fetchSavedClubs();
-    }
-  }, [user, isInitialized]);
+  // useEffect(() => {
+  //   const fetchSavedClubs = async () => {
+  //     if (!user?.token) {
+  //       console.log("User not authenticated yet, skipping fetch");
+  //       return;
+  //     }
+  //     try{
+  //       const response = await fetch("http://localhost:5095/api/SavedClub", {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Authorization": `Bearer ${user?.token}`,
+  //         }
+  //       })
+  //       if(response.ok){
+  //         const data = await response.json();
+  //         setSavedClubs(data);
+  //       }
+  //       else{
+  //         toast.error("Failed to fetch saved clubs. Please try again later.");
+  //       }
+  //     }
+  //     catch(error){
+  //       toast.error("An error occurred while fetching saved clubs.");
+  //     }
+  //     finally {
+  //       setIsLoading(false);
+  //     }
+  //   }
+  //   if(isInitialized && user?.token){
+  //     fetchSavedClubs();
+  //   }
+  // }, [user, isInitialized]);
 
-  const handleRemoveClub = async (clubId) => {
-    console.log(`Removing club ${clubId} from saved clubs...`);
-    try{
-      const response = await fetch(`http://localhost:5095/api/SavedClub/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
-        },
-        body: JSON.stringify({ clubId })
-      })
-      if(response.ok){
-        setSavedClubs((prev) => prev.filter((club) => club.id !== clubId));
-        toast.success("Club removed from saved clubs successfully.");
-      }
-      else{
-        const errorData = await response.json();
-        toast.error(`Failed to remove club: ${errorData.message || "Unknown error"}`);
-      }
-    }
-    catch(error){
-      toast.error("An error occured while removing the club, please try again later.");
+  // const handleRemoveClub = async (clubId) => {
+  //   console.log(`Removing club ${clubId} from saved clubs...`);
+  //   try{
+  //     const response = await fetch(`http://localhost:5095/api/SavedClub/`, {
+  //       method: "DELETE",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": `Bearer ${user?.token}`
+  //       },
+  //       body: JSON.stringify({ clubId })
+  //     })
+  //     if(response.ok){
+  //       setSavedClubs((prev) => prev.filter((club) => club.id !== clubId));
+  //       toast.success("Club removed from saved clubs successfully.");
+  //     }
+  //     else{
+  //       const errorData = await response.json();
+  //       toast.error(`Failed to remove club: ${errorData.message || "Unknown error"}`);
+  //     }
+  //   }
+  //   catch(error){
+  //     toast.error("An error occured while removing the club, please try again later.");
+  //     return;
+  //   }
+  //   // console.log(`Removed club ${clubId} from saved clubs`)
+  // }
+useEffect(() => {
+  const fetchSavedClubs = async () => {
+    if (!user) {
+      console.log("User not authenticated yet, skipping fetch");
       return;
     }
-    // console.log(`Removed club ${clubId} from saved clubs`)
+    try {
+      // Get fresh Firebase ID token for auth header
+      const idToken = await user.getIdToken();
+
+      const response = await fetch("http://localhost:5095/api/SavedClub", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSavedClubs(data);
+      } else {
+        toast.error("Failed to fetch saved clubs. Please try again later.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while fetching saved clubs.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isInitialized && user) {
+    fetchSavedClubs();
   }
+}, [user, isInitialized]);
+
+
+const handleRemoveClub = async (clubId) => {
+  if (!user) {
+    toast.error("You must be logged in to remove a saved club.");
+    return;
+  }
+
+  try {
+    // Get fresh Firebase ID token for auth header
+    const idToken = await user.getIdToken();
+
+    const response = await fetch(`http://localhost:5095/api/SavedClub/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ clubId }),
+    });
+
+    if (response.ok) {
+      setSavedClubs((prev) => prev.filter((club) => club.id !== clubId));
+      toast.success("Club removed from saved clubs successfully.");
+    } else {
+      const errorData = await response.json();
+      toast.error(`Failed to remove club: ${errorData.message || "Unknown error"}`);
+    }
+  } catch (error) {
+    toast.error("An error occurred while removing the club, please try again later.");
+  }
+};
+
 
   const handleSort = (value) => {
     setSortBy(value)

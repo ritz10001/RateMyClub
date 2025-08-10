@@ -16,6 +16,8 @@ import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
 import { Elsie_Swash_Caps } from "next/font/google"
 import { api } from "@/app/utils/axios"
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 
 const monthNumbers = {
   1: "January",
@@ -61,42 +63,68 @@ export default function ClubPage({ params }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const { schoolId, clubId } = use(params);
+  const auth = getAuth(app);
   console.log("Club ID:", clubId);
   console.log("bookmark status", isBookmarked);
+  console.log("USER INFORMATION", user);
 
   useEffect(() => {}, [reviewToDelete])
-  
-  // useEffect(() => {
 
-  // }, []);
   const fetchClubDetails = async () => {
-    try{
-      if (!user && !isLoading) {
-        const initialVotes = {};
-        reviews.forEach(review => {
-          initialVotes[review.id] = 0;
-        });
-        setUserVotes(initialVotes);
-        return;
+  try {
+    if (!isInitialized) {
+      console.log("Auth not initialized yet, skipping fetch");
+      return;
+    }
+    // Always use Firebase auth directly for token operations
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      console.log("No user logged in, fetching public data only");
+      // Fetch public club data without auth
+      const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setClub(data);
+        setIsBookmarked(false);
       }
-      const response = await api.get(`/Club/${clubId}`);
-      const data = response.data;
-      console.log("FIRST CLUB DETAILS:", data);
+      return;
+    }
+
+    // User is logged in, get token from Firebase directly
+    console.log("User logged in, fetching with auth");
+    const idToken = await currentUser.getIdToken(); // Use currentUser, not user from context
+    
+    const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
       setClub(data);
       setIsBookmarked(data.isBookmarked || false);
     }
-    catch(error) {
-      console.error("Error fetching club information:", error);
-    }
-    finally {
-      setIsLoading(false);
-    }
+  } catch (error) {
+    console.error("Error fetching club information:", error);
+  } finally {
+    setIsLoading(false);
   }
+};
 
   useEffect(() => {
-  // Create an async function to fetch all initial data
   const fetchInitialData = async () => {
     try {
+      console.log("TRYING TO FETCH DATA");
       setIsLoading(true);
       await fetchClubDetails();
       await fetchReviewsPage();
@@ -108,113 +136,159 @@ export default function ClubPage({ params }) {
       setIsLoading(false);
     }
   };
-  if (isInitialized && user) {
+
+  // Only fetch when auth is initialized
+  if (isInitialized) {
     fetchInitialData();
   }
 }, [clubId, user, isInitialized]); // Include all dependencies here
 
-  const fetchReviewsPage = async (page = 1, pageSize = 1) => {
+  const fetchReviewsPage = async (page = 1, pageSize = 5) => {
     try {
-      const response = await api.get(`/club/${clubId}/reviews`, {
-        params: { page, pageSize },
-      });
-      console.log("here is response", response.data);
-      const data = response.data;
-      console.log("Fetched reviews (page ${page}):", data);
+      const headers = { "Content-Type": "application/json" };
 
-      // Replace reviews if it's the first page, append otherwise
+      // Get token from Firebase if logged in
+      if (auth.currentUser) {
+        const idToken = await auth.currentUser.getIdToken();
+        headers["Authorization"] = `Bearer ${idToken}`;
+      }
+
+      const response = await fetch(
+        `http://localhost:5095/api/Club/${clubId}/reviews?page=${page}&pageSize=${pageSize}`,
+        { method: "GET", headers }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Review details", data);
+
       setReviews(prev => page === 1 ? data.items : [...prev, ...data.items]);
       setTotalReviewCount(data.totalCount);
       setPageSize(data.pageSize);
       setCurrentPage(data.page);
 
-      // Initialize or update user votes for these reviews
       const updatedVotes = { ...userVotes };
       data.items.forEach(review => {
-        updatedVotes[review.id] = review.currentUserVote !== null 
-          ? review.currentUserVote 
-          : 0;
+        updatedVotes[review.id] = review.currentUserVote || 0;
       });
       setUserVotes(updatedVotes);
-    } 
-    catch (error) {
+
+    } catch (error) {
       console.error("Error fetching reviews:", error);
-      const message = error.response?.data?.message || "Failed to fetch reviews";
-      toast.error(message);
-    } 
+      toast.error(error.message || "Failed to fetch reviews");
+    }
   };
 
-
-  // useEffect(() => {
-  //   fetchClubDetails();
-  // }, [clubId, user?.token, user?.userId]);
 
   const handleBookmark = async () => {
-    if(!user){
-      setIsModalOpen(true);
-      return;
-    }
-    console.log("BOOKMARK STATE", isBookmarked);
-    try {
-      // 3. Manage toast
-      if (toastId.current) toast.dismiss(toastId.current);
-      console.log("inside bookmark now");
-      const message = isBookmarked ? "Bookmark Removed" : "Club Bookmarked!";
-      toastId.current = toast.success(message, { duration: 1000 });
-
-      // 4. Debounced API call using axios
-      const response = isBookmarked 
-        ? await api.delete(`/SavedClub`, { data: { clubId } })  // DELETE with body
-        : await api.post(`/SavedClub`, { clubId });             // POST with body
-
-      // No need to check response.ok with axios - it throws on error status codes
-      await fetchClubDetails();
-    } 
-    catch (error) {
-      toast.error(error.response?.data?.message || error.message || "Bookmark update failed");
-    }
-  };
-
-  const handleVoteClick = async (newValue, reviewId) => {
     if (!user) {
       setIsModalOpen(true);
       return;
     }
-    if (isVoting) return;
-    setIsVoting(true);
+
     try {
-      const currentVote = userVotes[reviewId] || 0;
-      let sendValue = currentVote === newValue ? 0 : newValue;
-      const response = await api.post("/ReviewVote", {
-        reviewId: reviewId,
-        value: sendValue
-      }, );
+      const message = !isBookmarked ? "Club Bookmarked!" : "Bookmark Removed";
+      toast.success(message, { duration: 1000 });
 
-      const result = response.data;
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        toast.error("Please log in to bookmark clubs");
+        return;
+      }
 
-      setUserVotes(prev => ({
-        ...prev,
-        [reviewId]: result.newVoteValue
-      }));
+      const idToken = await currentUser.getIdToken();
 
-      setReviews(prev => 
-        prev.map(r => 
-          r.id === reviewId 
-            ? { ...r, netScore: result.newNetScore } 
-            : r
-        )
-      );
+      const url = `http://localhost:5095/api/SavedClub`;
+      const options = !isBookmarked
+        ? {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+            body: JSON.stringify({ clubId }),
+          }
+        : {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+            body: JSON.stringify({ clubId }),
+          };
 
-    } 
-    catch (error) {
-      console.error("Voting error:", error);
-      const message = error.response?.data?.message || "Vote failed";
-      toast.error(message);
-    } 
-    finally {
-      setIsVoting(false);
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        throw new Error("Bookmark update failed");
+      }
+
+      // Re-fetch to sync with backend truth
+      await fetchClubDetails();
+    } catch (error) {
+      toast.error(error.message || "Bookmark update failed");
     }
   };
+
+  const handleVoteClick = async (newValue, reviewId) => {
+  if (!user) {
+    setIsModalOpen(true);
+    return;
+  }
+  if (isVoting) return;
+
+  setIsVoting(true);
+
+  try {
+    // Get token from the current Firebase auth user
+    const idToken = await auth.currentUser.getIdToken();
+
+    const currentVote = userVotes[reviewId] || 0;
+    const sendValue = currentVote === newValue ? 0 : newValue;
+
+    const response = await fetch("http://localhost:5095/api/ReviewVote", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`
+      },
+      body: JSON.stringify({ reviewId, value: sendValue })
+    });
+
+    if (!response.ok) {
+      // try to extract an error message from the response body
+      let errMsg = "Vote failed";
+      try {
+        const errBody = await response.json();
+        if (errBody && errBody.message) errMsg = errBody.message;
+        else if (typeof errBody === "string") errMsg = errBody;
+      } catch (e) { /* ignore parse errors */ }
+      throw new Error(errMsg);
+    }
+
+    const result = await response.json();
+
+    setUserVotes(prev => ({
+      ...prev,
+      [reviewId]: result.newVoteValue
+    }));
+
+    setReviews(prev =>
+      prev.map(r =>
+        r.id === reviewId
+          ? { ...r, netScore: result.newNetScore }
+          : r
+      )
+    );
+
+  } catch (error) {
+    console.error("Voting error:", error);
+    const message = error?.message || "Vote failed";
+    toast.error(message);
+  } finally {
+    setIsVoting(false);
+  }
+};
+
+
+
 
   const handleSubmitReview = (e) => {
     e.preventDefault()
@@ -258,7 +332,7 @@ export default function ClubPage({ params }) {
     )
   }
 
-  if (isLoading) { 
+  if (isLoading || !isInitialized) { 
     return (
       <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
         <div className="flex items-center space-x-4">
@@ -296,7 +370,7 @@ export default function ClubPage({ params }) {
                 </button>
               </div>
               <div className="mb-4">
-              {user && user.roles.includes("Administrator") &&
+              {user &&
                 <div className="flex items-center gap-2">
                   <Button 
                     className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
@@ -436,7 +510,7 @@ export default function ClubPage({ params }) {
                         {user && (
                           <div className="flex items-center gap-2">
                             {/* Only allows editing if the user is the owner */}
-                            {review.userId === user.userId && (
+                            {review.userId === user.sqlUserId && (
                               <Button 
                                 className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                                 title="Edit Review"
@@ -451,7 +525,7 @@ export default function ClubPage({ params }) {
                             )}
 
                             {/* Allow deletion if the user is the owner OR an admin */}
-                            {(review.userId === user.userId || user.roles.includes("Administrator")) && (
+                            {(review.userId === user.sqlUserId) && (
                               <Button 
                                 className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                                 title="Delete Review"

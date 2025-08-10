@@ -1,53 +1,144 @@
-"use client";
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { app } from "../utils/firebase";
+"use client"
+import { createContext, useContext, useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/app/utils/firebase'; // adjust import path as needed
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const router = useRouter();
-  const auth = getAuth(app);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Login just stores the Firebase user
-  const login = useCallback((firebaseUser) => {
-    setUser(firebaseUser);
-  }, []);
-
-  // Logout from Firebase
-  const logout = useCallback(async () => {
+  // Function to fetch SQL user data (only called when needed)
+  const fetchSqlUserData = async (firebaseUser) => {
     try {
-      await signOut(auth);
-      setUser(null);
-      router.push("/login");
-      console.log("Logout successful");
-    } 
-    catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Failed to log out.");
-    }
-  }, [auth, router]);
+      const idToken = await firebaseUser.getIdToken();
+      const response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(idToken)
+      });
 
-  // Listen to Firebase auth state changes
+      if (response.ok) {
+        const authResponse = await response.json();
+        const combinedUser = {
+          ...firebaseUser,
+          firstName: authResponse.firstName,
+          lastName: authResponse.lastName,
+          sqlUserId: authResponse.userId,
+          roles: authResponse.roles,
+        };
+        
+        // Store in sessionStorage for persistence across refreshes
+        sessionStorage.setItem('combinedUserData', JSON.stringify({
+          uid: firebaseUser.uid,
+          firstName: authResponse.firstName,
+          lastName: authResponse.lastName,
+          sqlUserId: authResponse.userId,
+          roles: authResponse.roles,
+          timestamp: Date.now()
+        }));
+        
+        return combinedUser;
+      }
+    } catch (error) {
+      console.error("Error fetching SQL user data:", error);
+    }
+    
+    // Return just Firebase user if SQL fetch fails
+    return firebaseUser;
+  };
+
+  // Function to get stored SQL data from sessionStorage
+  const getStoredSqlData = (firebaseUid) => {
+    try {
+      const stored = sessionStorage.getItem('combinedUserData');
+      if (stored) {
+        const data = JSON.parse(stored);
+        // Check if the stored data is for the same user
+        if (data.uid === firebaseUid) {
+          return data;
+        }
+      }
+    } catch (error) {
+      console.error("Error reading from sessionStorage:", error);
+    }
+    return null;
+  };
+
+  // Custom login function that combines data and stores it
+  const login = (combinedUserData) => {
+    setUser(combinedUserData);
+    
+    // Store SQL data in sessionStorage
+    sessionStorage.setItem('combinedUserData', JSON.stringify({
+      uid: combinedUserData.uid,
+      firstName: combinedUserData.firstName,
+      lastName: combinedUserData.lastName,
+      sqlUserId: combinedUserData.sqlUserId,
+      roles: combinedUserData.roles,
+      timestamp: Date.now()
+    }));
+  };
+
+  // Custom logout function
+  const logout = async () => {
+    try {
+      await auth.signOut();
+      setUser(null);
+      sessionStorage.removeItem('combinedUserData'); // Clear stored data
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser || null);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setIsLoading(true);
+      
+      if (firebaseUser) {
+        // Try to get stored SQL data first
+        const storedSqlData = getStoredSqlData(firebaseUser.uid);
+        
+        if (storedSqlData) {
+          // We have stored data, combine it with fresh Firebase data
+          console.log("Using sessionStorage SQL data, no API call needed");
+          setUser({
+            ...firebaseUser,
+            firstName: storedSqlData.firstName,
+            lastName: storedSqlData.lastName,
+            sqlUserId: storedSqlData.sqlUserId,
+            roles: storedSqlData.roles,
+          });
+        } else {
+          // No stored data, fetch from SQL (only happens on first login or new session)
+          console.log("Fetching fresh SQL data");
+          const combinedUser = await fetchSqlUserData(firebaseUser);
+          setUser(combinedUser);
+        }
+      } else {
+        // User is signed out
+        setUser(null);
+        sessionStorage.removeItem('combinedUserData');
+      }
+      
       setIsInitialized(true);
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, [auth]);
+  }, []);
 
   const value = {
     user,
-    setUser,
-    login,
-    logout,
     isInitialized,
+    isLoading,
+    login,
+    logout
   };
 
   return (
@@ -57,6 +148,10 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

@@ -93,24 +93,6 @@ builder.Services.AddAuthentication(options => {
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
         RoleClaimType = ClaimTypes.Role
     };
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            // First check for token in cookies
-            var token = context.Request.Cookies["authToken"];
-            if (!string.IsNullOrEmpty(token))
-            {
-                context.Token = token;
-                Console.WriteLine("Token found in cookies");
-            }
-            else
-            {
-                Console.WriteLine("No token found in cookies");
-            }
-            return Task.CompletedTask;
-        }
-    };
 });
 
 builder.Services.AddSwaggerGen(options =>
@@ -195,6 +177,8 @@ app.Use(async (context, next) =>
 });
 
 app.UseAuthentication();
+
+app.UseMiddleware<FirebaseAuthMiddleware>();
 
 app.UseAuthorization();
 

@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
@@ -21,12 +22,13 @@ public class ClubRequestController : ControllerBase
     private readonly IMapper _mapper;
     private readonly IClubRequestsRepository _clubRequestsRepository;
     private readonly ITagsRepository _tagsRepository;
-
-    public ClubRequestController(IMapper mapper, IClubRequestsRepository clubRequestsRepository, ITagsRepository tagsRepository)
+    private readonly UserManager<User> _userManager;
+    public ClubRequestController(IMapper mapper, IClubRequestsRepository clubRequestsRepository, ITagsRepository tagsRepository, UserManager<User> userManager)
     {
         _mapper = mapper;
         _clubRequestsRepository = clubRequestsRepository;
         _tagsRepository = tagsRepository;
+        _userManager = userManager;
     }
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GetClubRequestsDTO>>> GetAllRequests()
@@ -53,31 +55,51 @@ public class ClubRequestController : ControllerBase
         return Ok(result);
     }
     [HttpGet("my-club-requests")]
-    [Authorize(Roles = "User")]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<GetMyClubRequestsDTO>>> GetRequestsByUserId()
     {
-        var userId = GetUserId();
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        var userId = user?.Id;
         var requests = await _clubRequestsRepository.GetClubRequestByUser(userId);
         var results = _mapper.Map<List<GetMyClubRequestsDTO>>(requests);
         return Ok(results);
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreateRequest([FromBody] ClubRequestDTO clubRequestDTO)
     {
         // var tags = await _tagsRepository.GetTagsByIdsAsync(clubRequestDTO.TagIds);
+        Console.WriteLine("ENTERED THE METHOD");
         var request = _mapper.Map<ClubRequest>(clubRequestDTO);
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        else
+        {
+            Console.WriteLine("NO FIREBASE ID WAS DECODED");
+        }
         // request.Tags = tags;
-        request.UserId = GetUserId();
+        Console.WriteLine("THIS IS THE USER ID");
+        Console.WriteLine(user.Id);
+        request.UserId = user?.Id;
         request.TagIdsJson = JsonSerializer.Serialize(clubRequestDTO.TagIds);
 
-        var responseDTO = await _clubRequestsRepository.AddAsync(request);
+        await _clubRequestsRepository.AddAsync(request);
 
-        return Ok(responseDTO);
+        return Ok(new { message = "Club request submitted successfully." });
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "User")]
+    [Authorize]
     public async Task<IActionResult> WithdrawRequest(int id)
     {
         var request = await _clubRequestsRepository.GetAsync(id);

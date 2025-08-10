@@ -1,18 +1,20 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Star, ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Star, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
 import { use } from "react"; 
-import { useRouter } from 'next/navigation'
-import { useAuth } from "@/app/context/AuthContext"
-import { useClub } from "@/app/context/ClubContext"
-import { useParams } from "next/navigation"
+import { useRouter } from 'next/navigation';
+import { useAuth } from "@/app/context/AuthContext";
+import { useClub } from "@/app/context/ClubContext";
+import { useParams } from "next/navigation";
 import { toast } from 'sonner';
+import { getAuth } from "firebase/auth";
+import { app } from "@/app/utils/firebase";
 
 export default function EditReviewPage({ params }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +31,7 @@ export default function EditReviewPage({ params }) {
   })
   const [error, setError] = useState(false);
   const { schoolId, clubId, id } = useParams();
+  const auth = getAuth(app);
   console.log("THIS IS REVIEW ID", id);
   // console.log("THIS IS THE REVIEW ID", reviewId);
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function EditReviewPage({ params }) {
         setIsLoading(false);
       }
     }
-    if(isInitialized && user?.token){
+    if(isInitialized){
       fetchReviewData();
     }
   }, [id, user]);

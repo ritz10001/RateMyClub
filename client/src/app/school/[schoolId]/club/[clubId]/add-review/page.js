@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { use } from "react"; 
 import { useRouter } from 'next/navigation'
 import { useAuth } from "@/app/context/AuthContext"
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 
 export default function WriteReviewPage({ params }) {
   const router = useRouter();
@@ -25,6 +27,7 @@ export default function WriteReviewPage({ params }) {
   })
   const [error, setError] = useState(false);
   const { schoolId, clubId } = use(params);
+  const auth = getAuth(app);
   console.log("THIS IS CLUB ID", clubId);
   useEffect(() => {
     console.log("HERE IS LATEST REVIEW DATA", reviewData)
@@ -66,17 +69,13 @@ export default function WriteReviewPage({ params }) {
     try{
       console.log("TRYING NOW");
       console.log(reviewData);
-      // const headers = {
-      //   "Content-Type": "application/json"
-      // };
-      // if(user?.token){
-      //   headers["Authorization"] = `Bearer ${user.token}`
-      // }
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       const response = await fetch("http://localhost:5095/api/Review", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
+          "Authorization": `Bearer ${idToken}`
         },
         body: JSON.stringify({
           leadershipRating: reviewData.leadership,
@@ -90,16 +89,6 @@ export default function WriteReviewPage({ params }) {
       })
       if(response.ok){
         const authResponse = await response.json();
-        const userData = {
-          leadershipRating: authResponse.leadership,
-          inclusivityRating: authResponse.inclusivity,
-          networkingRating: authResponse.networking,
-          skillsDevelopmentRating: authResponse.skillsDevelopment,
-          comment: authResponse.comment,
-          recommendation: authResponse.recommendation
-        };
-        // console.log("Review details fetched successfully:", data);
-        setReviewData(userData);
         toast.success("Review submitted successfully!", {
             duration: 5000, // 5 seconds
         });
@@ -109,15 +98,13 @@ export default function WriteReviewPage({ params }) {
       else{
         console.log("failed");
         setError(true);
-        toast.error(errorData.message || "Submission failed. Please try again.");
+        toast.error(error.message || "Submission failed. Please try again.");
       }
     }
     catch(error){
       console.error('Login error:', error);
-      toast.error(errorData.message || "Submission failed. Please try again.");
+      toast.error(error.message || "Submission failed. Please try again.");
     }
-    
-    // console.log("Review submitted:", reviewData)
   }
 
   const renderStarRating = (category, currentRating) => {

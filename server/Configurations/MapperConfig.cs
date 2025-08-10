@@ -97,7 +97,6 @@ public class MapperConfig : Profile {
         .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
         .ForMember(dest => dest.RequestedBy, opt => opt.MapFrom(src => src.User!.UserName))
         .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.RequestStatus.ToString()))
-        .ForMember(dest => dest.UniversityType, opt => opt.MapFrom(src => src.UniversityType.ToString()))//
         .ReverseMap();
         CreateMap<UniversityRequest, GetMyUniversityRequestDTO>()
         .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.RequestStatus))

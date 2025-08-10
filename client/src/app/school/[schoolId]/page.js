@@ -16,6 +16,8 @@ import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
 import PageNav from "@/app/components/PageNav"
 import { api } from "@/app/utils/axios"
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 // Mock data for school details
 
 export default function SchoolPage({ params }) {
@@ -37,16 +39,52 @@ export default function SchoolPage({ params }) {
   const [pageSize] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
   const { user, isInitialized } = useAuth();
-  console.log("USER INFO", user);
+  const auth = getAuth(app);
+  console.log("USER INFORMATION", user);
   const router = useRouter();
 
   useEffect(() => {
   const fetchClubs = async () => {
     try {
-      const response = await api.get(`/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`);
+      if (!isInitialized) {
+        console.log("Auth not initialized yet, skipping fetch");
+        return;
+      }
+
+      const currentUser = auth.currentUser;
+    
+      if (!currentUser) {
+        console.log("No user logged in, fetching public data only");
+        // Fetch public club data without auth
+        const response = await fetch(`http://localhost:5095/api/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Fetched clubs:", data);
+          setUniversity(data.university);
+          setClubs(data.clubs.items || []);
+          setFilteredClubs(data.clubs.items || []);
+          setTotalPages(Math.ceil(data.clubs.totalCount / pageSize));
+        }
+        return;
+      }
+      console.log("User logged in, fetching with auth");
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch(`http://localhost:5095/api/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        }
+      });
       
-      if (response.status === 200) {
-        const data = response.data;
+      if (response.ok) {
+        const data = await response.json();
         console.log("Fetched clubs:", data);
         setUniversity(data.university);
         setClubs(data.clubs.items || []);
@@ -62,7 +100,7 @@ export default function SchoolPage({ params }) {
     }
   } 
   fetchClubs();
-}, [schoolId, searchQuery, page]); // Remove 'user' from dependencies since we're not using it
+}, [schoolId, searchQuery, page, isInitialized]); // Remove 'user' from dependencies since we're not using it
 
   useEffect(() => {
     updateDisplayedClubs();
@@ -116,7 +154,7 @@ export default function SchoolPage({ params }) {
     setFilterBy(category);
   }
 
-  if (isLoading) { 
+  if (isLoading || !isInitialized || !university) { 
     return (
       <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
         <div className="flex items-center space-x-4">
@@ -127,9 +165,9 @@ export default function SchoolPage({ params }) {
     ); 
   }
 
-  if (!university) {
-    return <div className="text-center py-8">University not found</div>;
-  }
+  // if (!university) {
+  //   return <div className="text-center py-8">University not found</div>;
+  // }
 
   const categories = ["all", ...new Set(clubs.map(club => club.categoryName.toLowerCase()))];
 
@@ -170,7 +208,7 @@ export default function SchoolPage({ params }) {
               </div>
             </div>            
             {/* Action Button */}
-            {user && user.roles.includes("Administrator") && 
+            {user  && 
               <div className="flex items-center gap-2">
                 <Button 
                   className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
@@ -205,7 +243,8 @@ export default function SchoolPage({ params }) {
               e.preventDefault();
               if (user) {
                 router.push(`/school/${schoolId}/club/request/club-request`);
-              } else {
+              } 
+              else {
                 setIsModalOpen(true);
               }
             }}

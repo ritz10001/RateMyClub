@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isInitialized, logout } = useAuth();
-  console.log("user info", user);
+  console.log("user info from the header file", user);
   const router = useRouter();
 
   // Fixed logout handler

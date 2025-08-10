@@ -8,7 +8,6 @@ public class UniversityRequest
     public string UniversityName { get; set; } = string.Empty;
     public string SchoolType { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
-    public UniversityType UniversityType { get; set; } = UniversityType.Public;// Enum for university type
     public string? OfficialWebsite { get; set; } = string.Empty;
     public string? AdditionalInfo { get; set; } = string.Empty;
     public string? UserId { get; set; }

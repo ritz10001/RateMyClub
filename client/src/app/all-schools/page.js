@@ -1,12 +1,15 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Plus, Users, Building } from "lucide-react"
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import PageNav from "../components/PageNav"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Plus, Users, Building } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import PageNav from "../components/PageNav";
+import LoginModal from "../components/login-modal";
+import { useAuth } from "../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function DirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,7 +20,9 @@ export default function DirectoryPage() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user, isInitialized } = useAuth();
+  const router = useRouter();
   useEffect(() => {
   const fetchSchools = async () => {
     try{
@@ -122,12 +127,24 @@ export default function DirectoryPage() {
             </div>
 
             {/* Add School Button */}
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold whitespace-nowrap w-full lg:w-auto">
-              <Link href="/school/request/university-request" className="flex items-center justify-center">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold whitespace-nowrap w-full lg:w-auto"
+              onClick={(e) => {
+                e.preventDefault();
+                if (user) {
+                  router.push(`/school/request/university-request`);
+                } 
+                else {
+                  setIsModalOpen(true);
+                }
+              }}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add School
-              </Link>
             </Button>
+            <LoginModal 
+              isOpen={isModalOpen} 
+              onClose={() => setIsModalOpen(false)} 
+            />
           </div>
         </div>
 

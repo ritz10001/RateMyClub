@@ -26,10 +26,11 @@ public class ReviewController : ControllerBase
     private readonly IReviewsRepository _reviewsRepository;
     private readonly UserManager<User> _userManager;
 
-    public ReviewController(IMapper mapper, IReviewsRepository reviewsRepository)
+    public ReviewController(IMapper mapper, IReviewsRepository reviewsRepository, UserManager<User> userManager)
     {
         _mapper = mapper;
         _reviewsRepository = reviewsRepository;
+        _userManager = userManager;
     }
 
     [HttpGet("{id}")]
@@ -62,13 +63,19 @@ public class ReviewController : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "User, Administrator")]
+    [Authorize]
     public async Task<ActionResult<CreateReviewDTO>> CreateReview(CreateReviewDTO createReviewDTO)
     {
-        var userId = GetUserId();
-
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        Console.WriteLine(firebaseUid);
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        Console.WriteLine("DONE WITH FIREBASE CHECK");
         var review = _mapper.Map<Review>(createReviewDTO);
-        review.UserId = userId;
+        review.UserId = user?.Id;
 
         review.OverallRating = Math.Round(
             (review.LeadershipRating + review.InclusivityRating + review.NetworkingRating + review.SkillsDevelopmentRating) / 4.0m, 
@@ -76,11 +83,11 @@ public class ReviewController : ControllerBase
         );
 
         await _reviewsRepository.AddAsync(review);
-        return CreatedAtAction("GetReview", new { id = review.Id }, review);
+        return Ok(new { message = "Review added successfully!" });
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "User, Administrator")]
+    [Authorize]
     public async Task<IActionResult> DeleteReview(int id)
     {
         var review = await _reviewsRepository.GetAsync(id);
@@ -90,15 +97,20 @@ public class ReviewController : ControllerBase
             return NotFound();
         }
 
-        var userId = GetUserId();
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
 
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(user?.Id))
         {
             return Unauthorized();
         }
         var isAdmin = GetUserRoles().Contains("Administrator");
 
-        if (review.UserId != userId && !isAdmin)
+        if (review.UserId != user?.Id && !isAdmin)
         {
             return Forbid();
         }
@@ -109,7 +121,7 @@ public class ReviewController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "User, Administrator")]
+    [Authorize]
     public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO updateReviewDTO)
     {
         Console.WriteLine("--------------------------------------");
@@ -122,11 +134,11 @@ public class ReviewController : ControllerBase
             return NotFound();
         }
 
-        var userId = GetUserId();
-
-        foreach (var claim in User.Claims)
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
         {
-            Console.WriteLine($"Claim type: {claim.Type}, value: {claim.Value}");
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
         }
 
         var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value);
@@ -136,14 +148,14 @@ public class ReviewController : ControllerBase
             Console.WriteLine(r);
         }
 
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(user?.Id))
             {
                 return Unauthorized();
             }
 
         var isAdmin = GetUserRoles().Contains("Administrator");
 
-        if (review.UserId != userId && !isAdmin)
+        if (review.UserId != user?.Id && !isAdmin)
         {
             return Forbid();
         }

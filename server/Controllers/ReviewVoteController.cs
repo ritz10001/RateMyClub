@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Data;
@@ -18,23 +19,30 @@ public class ReviewVoteController : ControllerBase
 {
     private readonly IReviewVoteRepository _reviewVoteRepository;
     private readonly IReviewsRepository _reviewsRepository;
-    public ReviewVoteController(IReviewVoteRepository reviewVoteRepository, IReviewsRepository reviewsRepository)
+    private readonly UserManager<User> _userManager;
+    public ReviewVoteController(IReviewVoteRepository reviewVoteRepository, IReviewsRepository reviewsRepository, UserManager<User> userManager)
     {
         _reviewVoteRepository = reviewVoteRepository;
         _reviewsRepository = reviewsRepository;
+        _userManager = userManager;
     }
 
     [HttpPost]
-    [Authorize(Roles = "User, Administrator")]
+    [Authorize]
     public async Task<IActionResult> Vote([FromBody] ReviewVoteDTO reviewVoteDTO)
     {
-        var userId = GetUserId();
-        if (string.IsNullOrEmpty(userId))
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        if (user == null)
         {
             return Unauthorized();
         }
 
-        var existingVote = await _reviewVoteRepository.GetVoteByUserAndReviewAsync(userId, reviewVoteDTO.ReviewId);
+        var existingVote = await _reviewVoteRepository.GetVoteByUserAndReviewAsync(user.Id, reviewVoteDTO.ReviewId);
         var review = await _reviewsRepository.GetAsync(reviewVoteDTO.ReviewId);
         
         if (review == null)
@@ -52,7 +60,7 @@ public class ReviewVoteController : ControllerBase
                 var vote = new ReviewVote
                 {
                     ReviewId = reviewVoteDTO.ReviewId,
-                    UserId = userId,
+                    UserId = user.Id,
                     Value = newVoteValue
                 };
                 await _reviewVoteRepository.AddAsync(vote);
@@ -82,10 +90,5 @@ public class ReviewVoteController : ControllerBase
             newVoteValue = newVoteValue, // The vote value we stored
             newNetScore = review.NetScore // The new total score
         });
-    }
-        
-    private string? GetUserId()
-    {
-        return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value;
     }
 }

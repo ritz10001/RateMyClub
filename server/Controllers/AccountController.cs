@@ -90,13 +90,16 @@ public class AccountController : ControllerBase
             var authResponse = await _authService.FirebaseLogin(firebaseIdToken);
             if (authResponse == null)
             {
+                Console.WriteLine("the token is not valid");
                 // Could mean invalid token, user not found, or email not verified
                 return Unauthorized(new { Message = "Invalid token, user not registered, or email not verified." });
             }
             return Ok(authResponse);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Console.WriteLine("Some exception was caught");
+            Console.WriteLine(ex);
             // Log exception if needed
             return StatusCode(500, new { Message = "An unexpected error occurred." });
         }

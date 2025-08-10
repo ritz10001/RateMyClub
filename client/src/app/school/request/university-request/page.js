@@ -1,26 +1,27 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Plus, Info, GraduationCap } from "lucide-react"
-import Link from "next/link"
-import { useState } from "react"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Plus, Info, GraduationCap } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
-import { useRouter } from "next/navigation"
-
+import { useRouter } from "next/navigation";
+import { getAuth } from "firebase/auth";
+import { app } from "@/app/utils/firebase";
 export default function RequestUniversityPage() {
   const { user } = useAuth();
+  const auth = getAuth(app);
   console.log("User data:", user);
   const router = useRouter();
   const [universityData, setUniversityData] = useState({
     fullName: user?.firstName ? `${user.firstName} ${user.lastName}` : "",
     requestedBy: user?.email || "",
     universityName: "",
-    universityType: 1,
     location: "",
     officialWebsite: "",
     additionalInfo: "",
@@ -38,17 +39,18 @@ export default function RequestUniversityPage() {
     try {
       console.log("UNIVERSITY DATA");
       console.log(universityData);
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       const response = await fetch("http://localhost:5095/api/UniversityRequest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
+          "Authorization": `Bearer ${idToken}`
         },
         body: JSON.stringify({
           fullName: universityData.fullName,
           requestedBy: universityData.requestedBy,
           universityName: universityData.universityName,
-          universityType: universityData.universityType,
           location: universityData.location,
           officialWebsite: universityData.officialWebsite,
           additionalInfo: universityData.additionalInfo,
@@ -72,17 +74,6 @@ export default function RequestUniversityPage() {
       console.error("Club request submission failed");
     }
   }
-
-  const schoolTypes = [
-    {value: 1, label: "Public University"},
-    {value: 2, label: "Private University"},
-    {value: 3, label: "Land-Grant University"},
-    {value: 4, label: "Community College"},
-    {value: 5, label: "Technical College"},
-    {value: 6, label: "Liberal Arts College"},
-    {value: 7, label: "Research University"},
-    {value: 8, label: "Other"},
-  ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
@@ -144,7 +135,7 @@ export default function RequestUniversityPage() {
               </div>
 
               {/* School Type */}
-              <div>
+              {/* <div>
                 <Label htmlFor="schoolType" className="text-sm font-medium text-gray-700 mb-2 block">
                   School Type <span className="text-red-500">*</span>
                 </Label>
@@ -163,7 +154,7 @@ export default function RequestUniversityPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
 
               {/* Location */}
               <div>
@@ -248,9 +239,7 @@ export default function RequestUniversityPage() {
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold"
                   disabled={
-                    !universityData.universityName ||
-                    !universityData.universityType ||
-                    !universityData.location
+                    !universityData.universityName || !universityData.location
                   }
                 >
                   <Plus className="w-4 h-4 mr-2" />

@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Validations;
@@ -22,7 +23,8 @@ public class ClubController : ControllerBase {
     private readonly IReviewVoteRepository _reviewVoteRepository;
     private readonly ISavedClubsRepository _savedClubsRepository;
     private readonly IReviewsRepository _reviewsRepository;
-    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository, ISavedClubsRepository savedClubsRepository, IReviewsRepository reviewsRepository)
+    private readonly UserManager<User> _userManager;
+    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository, ISavedClubsRepository savedClubsRepository, IReviewsRepository reviewsRepository, UserManager<User> userManager)
     {
         _mapper = mapper;
         _clubsRepository = clubsRepository;
@@ -30,19 +32,25 @@ public class ClubController : ControllerBase {
         _reviewVoteRepository = reviewVoteRepository;
         _savedClubsRepository = savedClubsRepository;
         _reviewsRepository = reviewsRepository;
+        _userManager = userManager;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GetClubsDTO>>> GetAllClubs()
     {
-        var userId = GetUserId();
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
         var clubs = await _clubsRepository.GetClubDetails();
         var clubsDTO = _mapper.Map<List<GetClubsDTO>>(clubs);
 
         HashSet<int> bookmarkedIds = new();
-        if (!string.IsNullOrEmpty(userId))
+        if (!string.IsNullOrEmpty(user?.Id))
         {
-            bookmarkedIds = await _clubsRepository.GetBookmarkedClubIds(userId);
+            bookmarkedIds = await _clubsRepository.GetBookmarkedClubIds(user.Id);
             Console.WriteLine("Bookmarked IDs: " + string.Join(", ", bookmarkedIds));
         }
         
@@ -68,49 +76,58 @@ public class ClubController : ControllerBase {
     [HttpGet("{id}")]
     public async Task<ActionResult<GetClubDTO>> GetClub(int id){
         var club = await _clubsRepository.GetIndividualClubDetails(id);
-        Console.WriteLine($"Fetched club with {club.Reviews?.Count} reviews");
-        var userId = GetUserId();
-        
-        if (club is null) {
+
+        if (club is null)
             return NotFound();
-        }
+
         var averages = await _clubsRepository.GetCategoryAveragesForClubAsync(id);
         var clubDTO = _mapper.Map<GetClubDTO>(club);
-        clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(id, userId ?? string.Empty);
+
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        Console.WriteLine("THIS IS THE FIREBASE ID");
+        Console.WriteLine(firebaseUid);
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            Console.WriteLine("in null or empty block");
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+            Console.WriteLine("this is the user");
+            Console.WriteLine(user.Id);
+        }
+        
+        if (user != null)
+        {
+            clubDTO.IsBookmarked =  await _savedClubsRepository.IsBookmarked(id, user.Id);
+        }
+        Console.WriteLine("THE CLUB BOOKMARK STATUS");
+        Console.WriteLine(clubDTO.IsBookmarked);
+
         if (club.Tags != null && club.Tags.Any())
         {
             clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
         }
+        
         clubDTO.ReviewCount = await _reviewsRepository.GetReviewCountAsync(id);
         clubDTO.RatingDistribution = await _clubsRepository.GetRatingDistributionForClub(id);
-
         clubDTO.AverageRating = await _clubsRepository.GetAverageRatingForClub(id);
         clubDTO.LeadershipRating = averages.LeadershipRating;
         clubDTO.InclusivityRating = averages.InclusivityRating;
         clubDTO.NetworkingRating = averages.NetworkingRating;
         clubDTO.SkillsDevelopmentRating = averages.SkillsDevelopmentRating;
 
-        // if (!string.IsNullOrEmpty(userId) && club.Reviews.Any())
-        // {
-        //     var reviewIds = club.Reviews.Select(r => r.Id).ToList();
-
-        //     var userVotes = await _reviewVoteRepository.GetVotesByUserForReviewsAsync(userId, reviewIds);
-
-        //     // Attach vote to each review DTO
-        //     foreach (var review in clubDTO.Reviews)
-        //     {
-        //         var vote = userVotes.FirstOrDefault(v => v.ReviewId == review.Id);
-        //         review.CurrentUserVote = vote?.Value ?? 0; // or null if you prefer
-        //     }
-        // }
-
         return Ok(clubDTO);
     }
+
     [HttpGet("{id}/reviews")]
     public async Task<ActionResult<PagedResult<GetReviewDTO>>> GetReviewsForClub(int id, int page = 1, int pageSize = 5)
     {
-        var userId = GetUserId();
-        var result = await _clubsRepository.GetPaginatedReviewsForClub(id, page, pageSize, userId);
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string; 
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        var result = await _clubsRepository.GetPaginatedReviewsForClub(id, page, pageSize, user?.Id);
         var reviewDTOs = _mapper.Map<List<GetReviewDTO>>(result.Items);
         foreach (var dto in reviewDTOs)
         {

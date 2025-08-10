@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification} from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 import { app } from "../utils/firebase";
 import axios from "axios";
 
@@ -128,6 +128,7 @@ export default function SignUpPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const fbUser = userCredential.user;
+      await updateProfile(user, { displayName: formData.firstName });
       // Get the Firebase ID token to send to backend
       idToken = await fbUser.getIdToken();
       // Send verification email before signing out

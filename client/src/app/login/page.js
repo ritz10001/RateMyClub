@@ -61,8 +61,19 @@ export default function LoginPage() {
         return;
       }
       const authResponse = await response.json();
+      console.log("THIS IS THE AUTHRESPONSE", authResponse);
+
+      // Merge Firebase + SQL info
+      const combinedUser = {
+        ...user, // keeps Firebase properties (uid, email, etc.)
+        firstName: authResponse.firstName,
+        lastName: authResponse.lastName,
+        sqlUserId: authResponse.userId,
+        roles: authResponse.roles,
+      };
+
       if(login){
-        login(authResponse);
+        login(combinedUser);
       }
       setTimeout(() => {
         console.log("handleSubmit: Navigating to /");

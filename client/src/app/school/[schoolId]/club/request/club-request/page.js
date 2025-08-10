@@ -13,6 +13,8 @@ import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
 import { useRouter } from "next/navigation"
 import { api } from "@/app/utils/axios"
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 
 export default function RequestClubPage({ params }) {
   const { schoolId } = use(params);
@@ -25,13 +27,13 @@ export default function RequestClubPage({ params }) {
   const [isLoadingTag, setIsLoadingTag] = useState(true);
   const [selectedTags, setSelectedTags] = useState([]);
   const [tags, setTags] = useState(null);
+  const auth = getAuth(app);
   const [clubData, setClubData] = useState({
     fullName: user?.firstName ? `${user.firstName} ${user.lastName}` : "",
     requestedBy: user?.email || "",
     name: "",
     description: "",
     categoryId: null,
-    // meetingLocation: "",
     universityId: schoolId,
     tagIds: []
   })
@@ -46,10 +48,19 @@ export default function RequestClubPage({ params }) {
   useEffect(() => {
     const fetchCategories = async () => {
       try{
-        const response = await api.get('/Categories');
-        console.log("CATEGORIES", response.data);
-        setCategories(response.data);
-        setIsLoading(false);
+        const response = await fetch("http://localhost:5095/api/Categories", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        console.log("FETCHING CATEGORIES");
+        if(response.ok){
+          const data = await response.json();
+          console.log(data);
+          setCategories(data);
+          setIsLoading(false);
+        }
       }
       catch(error){
         console.error("fetching categories failed");
@@ -61,9 +72,17 @@ export default function RequestClubPage({ params }) {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await api.get("/Tag");
-        setTags(response.data);
-        setIsLoadingTag(false);
+        const response = await fetch("http://localhost:5095/api/Tag", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if(response.ok){
+          const data = await response.json();
+          setTags(data);
+          setIsLoadingTag(false);
+        }
       }
       catch(error){
         console.error("fetching tags failed");
@@ -101,25 +120,37 @@ export default function RequestClubPage({ params }) {
     try {
       console.log("TRYING NOW");
       console.log(clubData);
-      
-      // Fixed: Use api.post() with proper axios syntax
-      const response = await api.post("/ClubRequest", {
-        fullName: clubData.fullName,
-        name: clubData.name,
-        description: clubData.description,
-        categoryId: clubData.categoryId,
-        meetingLocation: clubData.meetingLocation,
-        universityId: schoolId,
-        tagIds: selectedTags
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+
+      const response = await fetch("http://localhost:5095/api/ClubRequest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          fullName: clubData.fullName,
+          name: clubData.name,
+          description: clubData.description,
+          categoryId: clubData.categoryId,
+          universityId: schoolId,
+          tagIds: selectedTags
+        })
       });
-      
-      // Axios automatically parses JSON and puts data in response.data
-      console.log("successful");
-      console.log(response.data);
-      toast.success("Club request submitted! We'll review it shortly.", {
-        duration: 5000,
-      });
-      router.push(`/school/${schoolId}`);
+
+      if(response.ok){
+        const requestResponse = await response.json();
+        console.log(requestResponse);
+        toast.success("Club request submitted! We'll review it shortly.", {
+          duration: 5000,
+        });
+        router.push(`/school/${schoolId}`);
+      }
+      else{
+        const errorData = await response.json();
+        toast.error(errorData.message || "Submission failed. Please try again.");
+      }
       
     } 
     catch(error) {

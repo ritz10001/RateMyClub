@@ -10,6 +10,8 @@ import { Star, ArrowLeft, HeartCrack, Users, NotebookPen, Pencil, Trash2, Univer
 import { toast } from "sonner";
 import { api } from "../utils/axios";
 import WithdrawRequestModal from "../components/withdraw-request-modal";
+import { getAuth } from "firebase/auth";
+import { app } from "../utils/firebase";
 // console.log("Component: imported api instance:", api);
 const monthNumbers = {
   1: "January",
@@ -45,50 +47,87 @@ export default function MyRequestsPage(){
   const router = useRouter();
   const { user, isInitialized } = useAuth();
   const toastId = useRef(null);
+  const auth = getAuth(app);
   console.log("USER INFO");
   console.log(user);
 
   useEffect(() => {
-  const fetchUniversityRequests = async () => {
-    try {
-      const response = await api.get("/UniversityRequest/my-university-requests");
-      setUniversityRequests(response.data);
-    } 
-    catch (error) {
-      if (error.response?.status === 401) {
-      // Don't show additional toast - the interceptor will handle it
-        console.log("Session expired - skipping duplicate toast");
-      }
-      else{
-        toast.error("An error occurred while fetching university requests.");
-      }
-    } 
-    finally {
-      setIsLoading(false);
-    }
-  };
+    const fetchUniversityRequests = async () => {
+      try {
+        if (!user) {
+          throw new Error("User not logged in");
+        }
+        const currentUser = auth.currentUser;
+        console.log("user is logged in", currentUser);
+        const idToken = await currentUser.getIdToken();
+        console.log("here is the idtoken");
+        console.log(idToken);
 
-  // ✅ Only fetch *after* we're initialized *and* user is available
-  if (isInitialized && user) {
-    fetchUniversityRequests();
-  }
-}, [user, isInitialized]);
+        const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          }
+        });
+        console.log("COMPLETED RESPONSE");
+        if (response.ok) {
+          const data = await response.json();
+          console.log("HERE IS THE DATA", data);
+          setUniversityRequests(data);
+        } 
+        else if (response.status === 401) {
+          console.log("Unauthorized - token might be expired or invalid");
+        } 
+        else {
+          toast.error("Failed to fetch university requests.");
+        }
+      } 
+      catch (error) {
+        toast.error("An error occurred while fetching university requests.");
+        console.error(error);
+      } 
+      finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isInitialized && user) {
+      fetchUniversityRequests();
+    }
+  }, [user, isInitialized]);
+
 
 
   useEffect(() => {
     const fetchClubRequests = async () => {
       try {
-        const response = await api.get("/ClubRequest/my-club-requests")
-        setClubRequests(response.data);
+        // Get the current user and their Firebase ID token
+        if (!user) {
+          throw new Error("User not logged in");
+        }
+        const currentUser = auth.currentUser; // or wherever you get your Firebase user
+        const idToken = await currentUser.getIdToken();
+        const response = await fetch("http://localhost:5095/api/ClubRequest/my-club-requests", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          }
+        });
+        if(response.ok){
+          const data = await response.json();
+          setClubRequests(data);
+        }
+        else if (response.status === 401) {
+          console.log("Unauthorized - token might be expired or invalid");
+        } 
+        else {
+          toast.error("Failed to fetch club requests.");
+        }
       }
       catch(error){
-        if (error.response?.status === 401) {
-        // Don't show additional toast - the interceptor will handle it
-          console.log("Session expired - skipping duplicate toast");
-        }
-        else{
-          toast.error("An error occurred while trying to fetch club requests.");
-        }
+        toast.error("An error occurred while trying to fetch club requests.");
       }
       finally{
         setIsLoading(false);
@@ -108,7 +147,15 @@ export default function MyRequestsPage(){
     try{
       // if (toastId.current) toast.dismiss(toastId.current);
       // toastId.current = toast.success(message, { duration: 1000 });
-      const response = await api.delete(endpoint);
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch(`http://localhost:5095/api${endpoint}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        }
+      });
       if (requestType === "university") {
         setUniversityRequests((prevRequests) =>
           prevRequests.filter((r) => r.id !== itemToDelete)
@@ -124,15 +171,9 @@ export default function MyRequestsPage(){
       });
     }
     catch(error){
-      if (error.response?.status === 401) {
-        // Don't show additional toast - the interceptor will handle it
-        console.log("Session expired - skipping duplicate toast");
-      }
-      else{
-        console.error(error);
-        const errorMessage = error.response?.data?.message || "Deletion failed. Please try again.";
-        toast.error(errorMessage);
-      }
+      console.error(error);
+      const errorMessage = error.message || "Deletion failed. Please try again.";
+      toast.error(errorMessage);
     }
     finally {
       setIsDeleteOpen(false);
