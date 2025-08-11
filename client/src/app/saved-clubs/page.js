@@ -16,102 +16,47 @@ export default function SavedClubsPage() {
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true)
   const { user, isInitialized } = useAuth();
+  const auth = getAuth(app);
 
-  // useEffect(() => {
-  //   const fetchSavedClubs = async () => {
-  //     if (!user?.token) {
-  //       console.log("User not authenticated yet, skipping fetch");
-  //       return;
-  //     }
-  //     try{
-  //       const response = await fetch("http://localhost:5095/api/SavedClub", {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Authorization": `Bearer ${user?.token}`,
-  //         }
-  //       })
-  //       if(response.ok){
-  //         const data = await response.json();
-  //         setSavedClubs(data);
-  //       }
-  //       else{
-  //         toast.error("Failed to fetch saved clubs. Please try again later.");
-  //       }
-  //     }
-  //     catch(error){
-  //       toast.error("An error occurred while fetching saved clubs.");
-  //     }
-  //     finally {
-  //       setIsLoading(false);
-  //     }
-  //   }
-  //   if(isInitialized && user?.token){
-  //     fetchSavedClubs();
-  //   }
-  // }, [user, isInitialized]);
-
-  // const handleRemoveClub = async (clubId) => {
-  //   console.log(`Removing club ${clubId} from saved clubs...`);
-  //   try{
-  //     const response = await fetch(`http://localhost:5095/api/SavedClub/`, {
-  //       method: "DELETE",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "Authorization": `Bearer ${user?.token}`
-  //       },
-  //       body: JSON.stringify({ clubId })
-  //     })
-  //     if(response.ok){
-  //       setSavedClubs((prev) => prev.filter((club) => club.id !== clubId));
-  //       toast.success("Club removed from saved clubs successfully.");
-  //     }
-  //     else{
-  //       const errorData = await response.json();
-  //       toast.error(`Failed to remove club: ${errorData.message || "Unknown error"}`);
-  //     }
-  //   }
-  //   catch(error){
-  //     toast.error("An error occured while removing the club, please try again later.");
-  //     return;
-  //   }
-  //   // console.log(`Removed club ${clubId} from saved clubs`)
-  // }
-useEffect(() => {
-  const fetchSavedClubs = async () => {
-    if (!user) {
-      console.log("User not authenticated yet, skipping fetch");
-      return;
-    }
-    try {
-      // Get fresh Firebase ID token for auth header
-      const idToken = await user.getIdToken();
-
-      const response = await fetch("http://localhost:5095/api/SavedClub", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSavedClubs(data);
-      } else {
-        toast.error("Failed to fetch saved clubs. Please try again later.");
+  useEffect(() => {
+    const fetchSavedClubs = async () => {
+      if (!user) {
+        console.log("User not authenticated yet, skipping fetch");
+        return;
       }
-    } catch (error) {
-      toast.error("An error occurred while fetching saved clubs.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        // Get fresh Firebase ID token for auth header
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
 
-  if (isInitialized && user) {
-    fetchSavedClubs();
-  }
-}, [user, isInitialized]);
+        const response = await fetch("http://localhost:5095/api/SavedClub", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setSavedClubs(data);
+        } 
+        else {
+          toast.error("Failed to fetch saved clubs. Please try again later.");
+        }
+      } 
+      catch (error) {
+        toast.error("An error occurred while fetching saved clubs.");
+      } 
+      finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isInitialized) {
+      fetchSavedClubs();
+    }
+  }, [user, isInitialized]);
 
 
 const handleRemoveClub = async (clubId) => {
@@ -122,7 +67,8 @@ const handleRemoveClub = async (clubId) => {
 
   try {
     // Get fresh Firebase ID token for auth header
-    const idToken = await user.getIdToken();
+    const currentUser = auth.currentUser;
+    const idToken = await currentUser.getIdToken();
 
     const response = await fetch(`http://localhost:5095/api/SavedClub/`, {
       method: "DELETE",
@@ -134,13 +80,17 @@ const handleRemoveClub = async (clubId) => {
     });
 
     if (response.ok) {
-      setSavedClubs((prev) => prev.filter((club) => club.id !== clubId));
+      const data = await response.json();
+      console.log(data);
+      setSavedClubs((prev) => prev.filter((club) => club.clubId !== clubId));
       toast.success("Club removed from saved clubs successfully.");
-    } else {
+    } 
+    else {
       const errorData = await response.json();
       toast.error(`Failed to remove club: ${errorData.message || "Unknown error"}`);
     }
-  } catch (error) {
+  } 
+  catch (error) {
     toast.error("An error occurred while removing the club, please try again later.");
   }
 };

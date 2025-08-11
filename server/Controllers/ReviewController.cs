@@ -47,10 +47,25 @@ public class ReviewController : ControllerBase
     }
 
     [HttpGet("mine")]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<GetMyReviewsDTO>>> GetMyReviews()
     {
-        var userId = GetUserId();
-        var reviews = await _reviewsRepository.GetReviewsByUserId(userId);
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        Console.WriteLine("Here is firebase uid");
+        Console.WriteLine(firebaseUid);
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            Console.WriteLine("In the null or empty block");
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        Console.WriteLine("Here");
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+        Console.WriteLine("checking reviews");
+        var reviews = await _reviewsRepository.GetReviewsByUserId(user.Id);
         var reviewDTOs = _mapper.Map<List<GetMyReviewsDTO>>(reviews);
         var json = JsonSerializer.Serialize(reviewDTOs, new JsonSerializerOptions
         {
@@ -140,14 +155,6 @@ public class ReviewController : ControllerBase
         {
             user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
         }
-
-        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value);
-        Console.WriteLine("Roles found:");
-        foreach (var r in roles)
-        {
-            Console.WriteLine(r);
-        }
-
         if (string.IsNullOrEmpty(user?.Id))
             {
                 return Unauthorized();

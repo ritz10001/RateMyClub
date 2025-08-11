@@ -71,7 +71,7 @@ export default function Header() {
           </nav>
 
           {/* Desktop Auth Buttons */}
-          {user ? (
+          {user && user.firstName ? (
             <div className="hidden md:flex items-center space-x-3">
               <span className="text-gray-700">Hello, {user.firstName}</span>
               <Button 

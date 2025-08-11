@@ -63,7 +63,7 @@ export default function DirectoryPage() {
       results = results.filter(school =>
         school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         school.location.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+      )
     }
     
     // Sort

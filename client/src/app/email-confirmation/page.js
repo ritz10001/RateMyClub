@@ -6,6 +6,7 @@ import { Mail, CheckCircle, RefreshCw, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import Link from "next/link"
+import {user} from "../context/AuthContext"
 
 export default function EmailConfirmationPage() {
   const searchParams = useSearchParams();
@@ -13,6 +14,7 @@ export default function EmailConfirmationPage() {
   const [isResending, setIsResending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  console.log("user informatioon", user);
 
   useEffect(() => {
     if (cooldown === 0) return;

@@ -208,11 +208,11 @@ export default function SchoolPage({ params }) {
               </div>
             </div>            
             {/* Action Button */}
-            {user  && 
+            {user && user.roles.includes("Administrator") &&
               <div className="flex items-center gap-2">
                 <Button 
                   className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
-                  title="Edit University"
+                  title="Edit University" 
                   onClick = {() => {
                     router.push(`http://localhost:3000/admin/school/${schoolId}/edit`);
                   }}

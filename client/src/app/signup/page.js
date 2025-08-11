@@ -28,7 +28,6 @@ export default function SignUpPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    // school: "",
     universityId: null,
     tagIds: [],
     idToken: null
@@ -128,7 +127,7 @@ export default function SignUpPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const fbUser = userCredential.user;
-      await updateProfile(user, { displayName: formData.firstName });
+      // await updateProfile(user, { displayName: formData.firstName });
       // Get the Firebase ID token to send to backend
       idToken = await fbUser.getIdToken();
       // Send verification email before signing out
@@ -225,6 +224,19 @@ export default function SignUpPage() {
     }
   }
 
+  const isEmailValid = (email) => /\S+@\S+\.\S+/.test(email);
+
+  const isFormValid = () => {
+    const { firstName, lastName, email, universityId, password, confirmPassword } = formData;
+    return firstName.trim() && 
+           lastName.trim() &&
+           isEmailValid(email) &&
+           universityId != null && 
+           password.trim() != "" && 
+           confirmPassword.trim() != "" &&
+           password === confirmPassword
+  };
+
   if (isLoading) {
     return <>
       <div className="col-span-full flex justify-center py-12 space-x-4">
@@ -300,7 +312,7 @@ export default function SignUpPage() {
             {/* School Selection */}
             <div>
               <Label htmlFor="school" className="text-sm font-medium text-gray-700 mb-2 block">
-                Select your school <span className="text-gray-400"></span>
+                Select your school <span className="text-red-400">*</span>
               </Label>
               <Select onValueChange={(value) => handleInputChange("universityId", parseInt(value))}>
                 <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
@@ -332,14 +344,13 @@ export default function SignUpPage() {
                         {university.name}
                       </SelectItem>
                     ))}
-                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {!isLoadingTag && 
                 <div className="flex flex-wrap gap-2">
                   <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 mb-2 block">
-                    Which of these categories interest you? (Select upto 5) <span className="text-red-400">*</span>
+                    Select a few interests (tags) to help us recommend clubs you'll love!
                   </Label>
                   <div className="space-y-2 space-x-2">
                     {tags.map((tag) => (
@@ -395,7 +406,7 @@ export default function SignUpPage() {
             <Button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isFormValid()}
             >
               {isSubmitting ? (
                 <>

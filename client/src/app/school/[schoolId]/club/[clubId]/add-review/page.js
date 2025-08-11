@@ -93,7 +93,6 @@ export default function WriteReviewPage({ params }) {
             duration: 5000, // 5 seconds
         });
         router.push(`/school/${schoolId}/club/${clubId}`);
-        
       }
       else{
         console.log("failed");

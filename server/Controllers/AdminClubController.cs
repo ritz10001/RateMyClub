@@ -1,7 +1,9 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Models.Clubs;
@@ -20,20 +22,31 @@ public class AdminClubController : ControllerBase
     private readonly IClubsRepository _clubsRepository;
     private readonly ITagsRepository _tagsRepository;
     private readonly IClubRequestsRepository _clubRequestsRepository;
+    private readonly UserManager<User> _userManager;
 
-    public AdminClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IClubRequestsRepository clubRequestsRepository)
+    public AdminClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IClubRequestsRepository clubRequestsRepository, UserManager<User> userManager)
     {
         _mapper = mapper;
         _clubsRepository = clubsRepository;
         _tagsRepository = tagsRepository;
         _clubRequestsRepository = clubRequestsRepository;
+        _userManager = userManager;
     }
 
     [HttpPost]
-    [Authorize(Roles = "Administrator")]
+    [Authorize]
     public async Task<ActionResult<CreateClubDTO>> CreateClub(CreateClubDTO createClubDTO)
     {
-
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        if (user == null || !await IsAdmin(user))
+        {
+            return Unauthorized();
+        }
         var club = _mapper.Map<Club>(createClubDTO);
         if (createClubDTO.TagIds != null && createClubDTO.TagIds.Any())
         {
@@ -44,9 +57,19 @@ public class AdminClubController : ControllerBase
         return Ok();
     }
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize]
     public async Task<IActionResult> DeleteClub(int id)
     {
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        if (user == null || !await IsAdmin(user))
+        {
+            return Unauthorized();
+        }
         var club = await _clubsRepository.GetAsync(id);
 
         if (club is null)
@@ -60,9 +83,19 @@ public class AdminClubController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize]
     public async Task<IActionResult> UpdateClub(int id, UpdateClubDTO updateClubDTO)
     {
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        if (user == null || !await IsAdmin(user))
+        {
+            return Unauthorized();
+        }
 
         var club = await _clubsRepository.GetIndividualClubDetails(id);
 
@@ -70,9 +103,9 @@ public class AdminClubController : ControllerBase
         {
             return NotFound();
         }
-        
+
         club.Tags.Clear();
-        
+
         if (updateClubDTO.TagIds != null && updateClubDTO.TagIds.Any())
         {
             var tags = await _tagsRepository.GetTagsByIdsAsync(updateClubDTO.TagIds);
@@ -104,9 +137,19 @@ public class AdminClubController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize]
     public async Task<IActionResult> PatchClub(int id, [FromBody] PatchClubDTO patchClubDTO)
     {
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        if (user == null || !await IsAdmin(user))
+        {
+            return Unauthorized();
+        }
         var club = await _clubsRepository.GetAsync(id);
         if (club is null) return NotFound();
         if (patchClubDTO.Name != null) club.Name = patchClubDTO.Name;
@@ -132,25 +175,14 @@ public class AdminClubController : ControllerBase
         await _clubsRepository.SaveChangesAsync();
         return NoContent();
     }
-
-    [HttpPut("edit-request/{id}")]
-    [Authorize(Roles = "Administrator")]
-    public async Task<IActionResult> EditClubRequest(int id, [FromBody] EditClubRequestDTO dto)
-    {
-        var request = await _clubRequestsRepository.GetAsync(id);
-        if (request == null)
-            return NotFound("Club request not found.");
-
-        request.Name = dto.Name;
-        request.Description = dto.Description;
-
-        await _clubRequestsRepository.UpdateAsync(request);
-        return NoContent();
-    }
     private async Task<bool> ClubExists(int id)
     {
-
         return await _clubsRepository.Exists(id);
+    }
+    private async Task<bool> IsAdmin(User? user)
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        return roles.Contains("Administrator");
     }
 
 }

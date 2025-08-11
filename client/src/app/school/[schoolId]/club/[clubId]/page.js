@@ -370,7 +370,7 @@ export default function ClubPage({ params }) {
                 </button>
               </div>
               <div className="mb-4">
-              {user &&
+              {user && user.roles.includes("Administrator") && 
                 <div className="flex items-center gap-2">
                   <Button 
                     className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
@@ -499,7 +499,7 @@ export default function ClubPage({ params }) {
               {reviews.map((review) => (
                 <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
                   <p>{console.log("REVIEW USER ID", review.userId)}</p>
-                  {user && review.userId === user.userId && <p className="font-bold">(MY REVIEW)</p>}
+                  {user && review.userId === user.sqlUserId && <p className="font-bold">(MY REVIEW)</p>}
                   <div className="flex justify-between mb-3">
                     <div>
                       <div className="flex items-center justify-center gap-2 mt-1 w-full">

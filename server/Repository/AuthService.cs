@@ -210,7 +210,7 @@ public class AuthService : IAuthService
             return (null, result.Errors, null);
         }
 
-        await _userManager.AddToRoleAsync(newUser, role);
+        await _userManager.AddToRoleAsync(newUser, "User");
         var roles = await _userManager.GetRolesAsync(newUser);
 
         var verificationLink = await FirebaseAuth.DefaultInstance.GenerateEmailVerificationLinkAsync(email);
@@ -282,41 +282,6 @@ public class AuthService : IAuthService
             Message = "Login successful"
         };
     }
-
-
-
-    // public async Task<AuthResponseDTO?> FirebaseLogin(string firebaseIdToken)
-    // {
-    //     FirebaseToken decodedToken;
-    //     try
-    //     {
-    //         decodedToken = await _firebaseAuthService.VerifyIdTokenAsync(firebaseIdToken);
-    //     }
-    //     catch
-    //     {
-    //         return null; // invalid token
-    //     }
-
-    //     var firebaseUid = decodedToken.Uid;
-
-    //     var user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
-    //     if (user == null)
-    //     {
-    //         return null; // user doesn't exist yet
-    //     }
-
-    //     var roles = await _userManager.GetRolesAsync(user);;
-
-    //     return new AuthResponseDTO
-    //     {
-    //         UserId = user.Id,
-    //         Email = user.Email ?? "",
-    //         FirstName = user.FirstName,
-    //         LastName = user.LastName,
-    //         Roles = roles.ToList(),
-    //         Message = "Login successful"
-    //     };
-    // }
 
     public async Task<AuthResponseDTO> VerifyRefreshToken(string userId)
     {

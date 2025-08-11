@@ -12,6 +12,8 @@ import DeleteReviewModal from "@/app/components/delete-modal"
 import LoginModal from "@/app/components/login-modal"
 import { useClub } from "../context/ClubContext"
 import { useRouter } from "next/navigation"
+import { getAuth } from "firebase/auth"
+import { app } from "../utils/firebase"
 
 const monthNumbers = {
   1: "January",
@@ -37,22 +39,24 @@ export default function MyReviewsPage() {
   const router = useRouter();
   // const { setClubData } = useClub();
   const { user, isInitialized } = useAuth();
+  const auth = getAuth(app);
 
   useEffect(() => {
     const fetchReviews = async () => {
-      if (!user?.token) {
+      if (!user) {
         console.log("User not authenticated yet, skipping fetch");
-        console.log(user);
         return;
       }
       try {
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
         const response = await fetch("http://localhost:5095/api/Review/mine", {
           method: "GET",
           headers:{
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${user?.token}`    
+            "Authorization": `Bearer ${idToken}`    
           }
-        }) 
+        });
         if(response.ok){
           const data = await response.json();
           setReviews(data);
@@ -68,7 +72,7 @@ export default function MyReviewsPage() {
         setIsLoading(false);
       }
     }
-    if(isInitialized && user?.token){
+    if(isInitialized){
       fetchReviews();
     }
   }, [user, isInitialized]);
@@ -209,16 +213,19 @@ export default function MyReviewsPage() {
           <DeleteReviewModal 
             isOpen={isDeleteOpen}
             onClose={() => setIsDeleteOpen(false)}
+            modalText="review"
             onDelete={async () => {
               if(!reviewToDelete){
                 return;
               }
               try{
+                const currentUser = auth.currentUser;
+                const idToken = await currentUser.getIdToken();
                 console.log("THIS REVIEW TO DELETE", reviewToDelete);
                 const response = await fetch(`http://localhost:5095/api/Review/${reviewToDelete}`, {
                   method: "DELETE",
                   headers: {
-                    "Authorization": `Bearer ${user.token}`
+                    "Authorization": `Bearer ${idToken}`
                   }
                 });
                 if (!response.ok) throw new Error("Delete failed");

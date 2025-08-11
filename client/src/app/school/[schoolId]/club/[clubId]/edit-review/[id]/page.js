@@ -90,11 +90,13 @@ export default function EditReviewPage({ params }) {
     try{
       console.log("TRYING NOW");
       console.log(reviewData);
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       const response = await fetch(`http://localhost:5095/api/Review/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
+          "Authorization": `Bearer ${idToken}`
         },
         body: JSON.stringify({
           leadershipRating: reviewData.leadershipRating,
@@ -106,10 +108,6 @@ export default function EditReviewPage({ params }) {
         })
       })
       if(response.ok){
-        if (response.status !== 204) {
-          const authResponse = await response.json();
-          setReviewData(authResponse);
-        }
         toast.success("Review edited successfully!", {
           duration: 5000, // 5 seconds
         });

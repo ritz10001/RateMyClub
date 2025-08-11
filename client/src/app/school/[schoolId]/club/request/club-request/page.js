@@ -263,7 +263,7 @@ export default function RequestClubPage({ params }) {
               {!isLoadingTag && 
                 <div className="flex flex-wrap gap-2">
                   <Label htmlFor="tags" className="text-sm font-medium text-gray-700 mb-2 block">
-                    Select upto 3 tags <span className="text-red-400">*</span>
+                    Select upto 3 tags (Please!)
                   </Label>
                   <div className="space-y-2 space-x-2">
                     {tags.map((tag) => (
@@ -288,12 +288,9 @@ export default function RequestClubPage({ params }) {
           </div>
 
           {/* Additional Details */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
+          {/* <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Additional Details</h2>
             <div className="space-y-6">
-              
-
-              {/* Meeting Location */}
               <div>
                 <Label htmlFor="meetingLocation" className="text-sm font-medium text-gray-700 mb-2 block">
                   Meeting Location <span className="text-gray-400">(Optional)</span>
@@ -308,7 +305,7 @@ export default function RequestClubPage({ params }) {
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Review Process Information */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">

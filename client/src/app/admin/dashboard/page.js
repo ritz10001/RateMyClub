@@ -8,6 +8,8 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from "sonner"
 import { api } from "@/app/utils/axios"
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 
 const ConfirmationModal = ({ 
   isOpen, 
@@ -289,13 +291,25 @@ export default function AdminRequestsPage() {
   });
   const [rejectionReason, setRejectionReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const auth = getAuth(app);
 
   useEffect(() => {
     const fetchUniversityRequests = async () => {
       try {
-        const response = await api.get("/AdminUniversityRequest");
-        console.log(response.data);
-        setUniversityRequests(response.data);
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
+        const response = await fetch("http://localhost:5095/api/AdminUniversityRequest", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          }
+        });
+        if(response.ok){
+          const data = await response.json();
+          console.log(data);
+          setUniversityRequests(data);
+        }
       }
       catch(error){
         toast.error("An error occured while trying to fetch requests.");
@@ -312,9 +326,20 @@ export default function AdminRequestsPage() {
   useEffect(() => {
     const fetchClubRequests = async () => {
       try {
-        const response = await api.get("/AdminClubRequest");
-        console.log("data of clubs", response.data);
-        setClubRequests(response.data); 
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
+        const response = await fetch("http://localhost:5095/api/AdminClubRequest", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          }
+        });
+        if(response.ok){
+          const data = await response.json();
+          console.log("data of clubs", data);
+          setClubRequests(data); 
+        }
       } 
       catch (error) {
         toast.error("An error occurred while trying to fetch club requests.");
@@ -386,33 +411,61 @@ export default function AdminRequestsPage() {
     setIsProcessing(true);
     const { requestId, type } = modalState;
     try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       if (type === "approve") {
         // STEP 1: Apply admin's changes to the request
-        await api.put(`/AdminUniversity/edit-request/${requestId}`, {
-          universityName: universityData.universityName,
-          location: universityData.location,
-          officialWebsite: universityData.officialWebsite
+        await fetch(`http://localhost:5095/api/AdminUniversityRequest/edit-request/${requestId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            universityName: universityData.universityName,
+            location: universityData.location,
+            officialWebsite: universityData.officialWebsite
+          })
         });
-
         // STEP 2: Mark request as approved
-        await api.put(`/AdminUniversityRequest/${requestId}/status`, {
-          status: 1,
-          rejectionReason: null
+        await fetch(`http://localhost:5095/api/AdminUniversityRequest/${requestId}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            status: 1,
+            rejectionReason: null
+          })
         });
-
         // STEP 3: Add final university to DB
-        await api.post("/AdminUniversity", {
-          name: universityData.universityName,
-          location: universityData.location,
-          officialWebsite: universityData.officialWebsite,
-          logoUrl: logoUrl
+        await fetch("http://localhost:5095/api/AdminUniversity", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            name: universityData.universityName,
+            location: universityData.location,
+            officialWebsite: universityData.officialWebsite,
+            logoUrl: logoUrl
+          })
         });
       }
       else if(type === "reject"){ 
         // Only update status with rejection reason
-        await api.put(`/AdminUniversityRequest/${requestId}/status`, {
-          status: 2, // 2 = Rejected
-          rejectionReason: rejectionReason
+        await fetch(`http://localhost:5095/api/AdminUniversityRequest/${requestId}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            status: 2, // 2 = Rejected
+            rejectionReason: rejectionReason
+          })
         });
       }
 
@@ -441,35 +494,65 @@ export default function AdminRequestsPage() {
     setIsProcessing(true);
     const { requestId, type } = modalState;
     try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       if (type === "approve") {
         // STEP 1: Apply admin's changes to the request
-        await api.put(`/AdminClub/edit-request/${requestId}`, {
-          name: clubData.name,
-          description: clubData.description,
-          clubLocation: clubData.clubLocation
+        await fetch(`http://localhost:5095/api/AdminClubRequest/edit-request/${requestId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            name: clubData.name,
+            description: clubData.description,
+            clubLocation: clubData.clubLocation
+          })
         });
         // STEP 2: Mark request as approved
-        await api.put(`/AdminClubRequest/${requestId}/status`, {
-          status: 1,  // 1 = Approved
-          rejectionReason: null
+        await fetch(`http://localhost:5095/api/AdminClubRequest/${requestId}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            status: 1,  // 1 = Approved
+            rejectionReason: null
+          })
         });
         // STEP 3: Add final club to DB
-        const res = await api.post("/AdminClub", {
-          name: clubData.name,
-          description: clubData.description,
-          clubLocation: clubData.clubLocation,
-          universityId: clubData.universityId,
-          categoryId: clubData.categoryId,
-          tagIds: clubData.tagIds.map(tag => tag.id)
+        const res = await fetch("http://localhost:5095/api/AdminClub", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            name: clubData.name,
+            description: clubData.description,
+            clubLocation: clubData.clubLocation,
+            universityId: clubData.universityId,
+            categoryId: clubData.categoryId,
+            tagIds: clubData.tagIds.map(tag => tag.id)
+          })
         });
         // const result = await res.text();
         // console.log("Response:", res.status, result);
       }
       else if(type === "reject"){
         // Only update status with rejection reason
-        await api.put(`/AdminClubRequest/${requestId}/status`, {
-          status: 2, // 2 = Rejected
-          rejectionReason: rejectionReason
+        const response = await fetch(`http://localhost:5095/api/AdminClubRequest/${requestId}/status`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            status: 2, // 2 = Rejected
+            rejectionReason: rejectionReason
+          })
         });
       }
       toast.success(
