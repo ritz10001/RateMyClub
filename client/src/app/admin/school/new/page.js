@@ -12,6 +12,8 @@ import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
 import { useParams, useRouter } from "next/navigation"
 import UniversityForm from "@/app/components/Forms/UniversityForm"
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 
 export default function EditUniversityPage() {
   const { user } = useAuth();
@@ -23,17 +25,20 @@ export default function EditUniversityPage() {
     description: "",
     logoUrl: ""
   });
+  const auth = getAuth(app);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
       console.log("UNIVERSITY DATA");
       console.log(universityData);
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       const response = await fetch(`http://localhost:5095/api/AdminUniversity`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
+          "Authorization": `Bearer ${idToken}`
         },
         body: JSON.stringify({
           name: universityData.name,

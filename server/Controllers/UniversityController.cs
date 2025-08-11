@@ -39,6 +39,13 @@ public class UniversityController : ControllerBase
         var universitiesDTO = _mapper.Map<List<GetUniversitiesDTO>>(universities);
         return Ok(universitiesDTO);
     }
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GetUniversityDTO>> GetUniversityInfo(int id)
+    {
+        var university = await _universityRepository.GetUniversityBasicData(id);
+        var result = _mapper.Map<GetUniversityDTO>(university);
+        return Ok(result);
+    }
     [HttpGet]
     [Route("paged")]
     public async Task<ActionResult<IEnumerable<GetUniversitiesDTO>>> GetPagedUniversities(int page = 1, int pageSize = 6, string? search = null)

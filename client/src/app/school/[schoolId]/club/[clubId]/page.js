@@ -565,47 +565,6 @@ export default function ClubPage({ params }) {
                 </div>
               ))}
             </div>
-            <DeleteModal 
-              isOpen={isDeleteOpen}
-              onClose={() => setIsDeleteOpen(false)}
-              modalText={deleteMode}
-              onDelete={async () => {
-                if((deleteMode === "Review" && !reviewToDelete) || (deleteMode === "Club" && !clubToDelete)){
-                  return;
-                }
-                try {
-                  console.log("club id is", clubToDelete);
-                  const url = deleteMode === "Review" 
-                    ? `/Review/${reviewToDelete}` 
-                    : `/AdminClub/${clubToDelete}`;
-                  console.log(url);
-                  
-                  const response = await api.delete(url);
-                  
-                  if (deleteMode === "Review") {
-                    setReviews((prevReviews) =>
-                      prevReviews.filter((r) => r.id !== reviewToDelete)
-                    );
-                  }
-                  
-                  toast.success(`${deleteMode} deleted successfully!`, {
-                    duration: 5000, // 5 seconds
-                  });
-                  router.push(`/school/${schoolId}/club/${clubId}`);
-                }
-                catch(error){
-                  console.error(error);
-                  toast.error(error.response?.data?.message || "Deletion failed. Please try again.");
-                }
-                finally {
-                  setIsDeleteOpen(false);
-                  setReviewToDelete(null);
-                  setDeleteMode(null);
-                  setClubToDelete(null);
-                }
-              }}
-            />
-
             {/* Load More Reviews */}
             <div className="text-center mt-8">
               {reviews.length < totalReviewCount && (
@@ -620,6 +579,52 @@ export default function ClubPage({ params }) {
       <LoginModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+      />
+      <DeleteModal 
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        modalText={deleteMode}
+        onDelete={async () => {
+          if((deleteMode === "Review" && !reviewToDelete) || (deleteMode === "Club" && !clubToDelete)){
+            return;
+          }
+          try {
+            console.log("club id is", clubToDelete);
+            const url = deleteMode === "Review" 
+              ? `/Review/${reviewToDelete}` 
+              : `/AdminClub/${clubToDelete}`;
+            console.log(url);
+            const currentUser = auth.currentUser;
+            const idToken = await currentUser.getIdToken();
+            
+            const response = await fetch(`http://localhost:5095/api${url}`, {
+              method: "DELETE" ,
+              headers: {
+                "Authorization": `Bearer ${idToken}`
+              }
+            });
+            
+            if (deleteMode === "Review") {
+              setReviews((prevReviews) =>
+                prevReviews.filter((r) => r.id !== reviewToDelete)
+              );
+            }
+            router.push(`/school/${schoolId}`);
+            toast.success(`${deleteMode} deleted successfully!`, {
+              duration: 5000, // 5 seconds
+            });
+          }
+          catch(error){
+            console.error(error);
+            toast.error(error.response?.data?.message || "Deletion failed. Please try again.");
+          }
+          finally {
+            setIsDeleteOpen(false);
+            setReviewToDelete(null);
+            setDeleteMode(null);
+            setClubToDelete(null);
+          }
+        }}
       />
     </div>
   )

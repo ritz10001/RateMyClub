@@ -387,16 +387,19 @@ export default function SchoolPage({ params }) {
               return;
             }
             try{
+              const currentUser = auth.currentUser;
+              const idToken = await currentUser.getIdToken();
               const response = await fetch(`http://localhost:5095/api/AdminUniversity/${universityToDelete}`, {
                 method: "DELETE",
                 headers: {
-                  "Authorization": `Bearer ${user.token}`
+                  "Authorization": `Bearer ${idToken}`
                 }
               });
-              if (!response.ok) throw new Error("Delete failed");
-              toast.success("University deleted successfully!", {
-                duration: 5000, // 5 seconds
-              });
+              if(response.ok){
+                 toast.success("University deleted successfully!", {
+                  duration: 5000, // 5 seconds
+                });
+              }
             }
             catch(error){
               console.error(error);
@@ -405,7 +408,7 @@ export default function SchoolPage({ params }) {
             finally {
               setIsDeleteOpen(false);
               setUniversityToDelete(null);
-              router.push("http://localhost:3000/all-schools");
+              router.push("/all-schools");
             }
           }}
         />

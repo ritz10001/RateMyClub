@@ -163,8 +163,4 @@ public class ClubController : ControllerBase {
         };
         return Ok(result);
     }
-    private string GetUserId()
-    {
-        return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value ?? string.Empty;
-    }
 }

@@ -12,6 +12,8 @@ import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
 import { useParams, useRouter } from "next/navigation"
 import UniversityForm from "@/app/components/Forms/UniversityForm"
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 
 export default function EditUniversityPage({ params }) {
   const { schoolId } = useParams();
@@ -26,21 +28,24 @@ export default function EditUniversityPage({ params }) {
     logoUrl: ""
   });
   const [isLoading, setIsLoading] = useState(true);
+  const auth = getAuth(app);
 
   useEffect(() => {
     const fetchUniversityData = async () => {
       try{
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
         const response = await fetch(`http://localhost:5095/api/University/${schoolId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${user?.token}`
+            "Authorization": `Bearer ${idToken}`
           }
         });
         if(response.ok){
-            const data = await response.json();
-            console.log(data);
-            setUniversityData(data);
+          const data = await response.json();
+          console.log(data);
+          setUniversityData(data);
         }
       }
       catch(error){
@@ -59,11 +64,13 @@ export default function EditUniversityPage({ params }) {
       console.log("UNIVERSITY DATA");
       console.log(universityData);
       console.log("this is college id", schoolId);
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       const response = await fetch(`http://localhost:5095/api/AdminUniversity/${schoolId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
+          "Authorization": `Bearer ${idToken}`
         },
         body: JSON.stringify({
           name: universityData.name,

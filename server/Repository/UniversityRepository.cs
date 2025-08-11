@@ -16,6 +16,11 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
         _context = context;
     }
 
+    public async Task<University> GetUniversityBasicData(int id)
+    {
+        return await _context.Universities.FirstOrDefaultAsync(u => u.Id == id);
+    }
+
     public async Task<List<University>> GetUniversityDetails()
     {
         return await _context.Universities

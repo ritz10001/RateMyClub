@@ -13,11 +13,11 @@ import { toast } from 'sonner';
 import { useParams, useRouter } from "next/navigation"
 import UniversityForm from "@/app/components/Forms/UniversityForm"
 import ClubForm from "@/app/components/Forms/ClubForm"
-// 
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 
 export default function EditClubPage({ params }) {
   const { clubId } = useParams();
-  console.log(clubId);
   const { user } = useAuth();
   const router = useRouter();
   const [categories, setCategories] = useState([]);
@@ -25,29 +25,35 @@ export default function EditClubPage({ params }) {
   const [selectedTags, setSelectedTags] = useState([]);
   const [clubData, setClubData] = useState(null);
   const [tagNamesFromClub, setTagNamesFromClub] = useState([]);
-
+  const auth = getAuth(app);
 
   useEffect(() => {
     const fetchClub = async () => {
       try {
-        const res = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
+        console.log("trying");
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
+        const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
           headers: {
-            "Authorization": `Bearer ${user?.token}`
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
           }
         });
-        if (!res.ok) throw new Error("Failed to fetch club.");
-        const data = await res.json();
-        setClubData(data);
-        console.log("DATA", data);
-        setSelectedTags(data.tagIds || []);
-        setClubData({
-          name: data.name,
-          description: data.description,
-          clubLocation: data.clubLocation,
-          categoryId: data.categoryId,
-          tagIds: [],         // Temporarily empty
-        });
-        setTagNamesFromClub(data.tags);
+        if(response.ok){
+          console.log("in the ok now");
+          const data = await response.json();
+          setClubData(data);
+          console.log("DATA", data);
+          setSelectedTags(data.tagIds || []);
+          setClubData({
+            name: data.name,
+            description: data.description,
+            clubLocation: data.clubLocation,
+            categoryId: data.categoryId,
+            tagIds: []     
+          });
+          setTagNamesFromClub(data.tags);
+        }
       } 
       catch (err) {
         toast.error("Could not load club data.");
@@ -81,11 +87,13 @@ export default function EditClubPage({ params }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       const response = await fetch(`http://localhost:5095/api/AdminClub/${clubId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
+          "Authorization": `Bearer ${idToken}`
         },
         body: JSON.stringify(clubData)
       })

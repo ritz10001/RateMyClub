@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import { useParams, useRouter } from "next/navigation"
 import UniversityForm from "@/app/components/Forms/UniversityForm"
 import ClubForm from "@/app/components/Forms/ClubForm"
+import { getAuth } from "firebase/auth"
+import { app } from "@/app/utils/firebase"
 // 
 
 export default function CreateClubPage({ params }) {
@@ -32,7 +34,7 @@ export default function CreateClubPage({ params }) {
     categoryId: null,
     tagIds: []
   });
-
+  const auth = getAuth(app);
   useEffect(() => {
     fetch(`http://localhost:5095/api/University/all-colleges`)
       .then(res => res.json())
@@ -62,6 +64,8 @@ export default function CreateClubPage({ params }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
       console.log("CLUB DATA");
       console.log(clubData);
       console.log("this is college id", schoolId);
@@ -69,7 +73,7 @@ export default function CreateClubPage({ params }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`
+          "Authorization": `Bearer ${idToken}`
         },
         body: JSON.stringify(clubData)
       })
