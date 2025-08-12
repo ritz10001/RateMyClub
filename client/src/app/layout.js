@@ -30,7 +30,6 @@ export default function RootLayout({ children }) {
           <ClubProvider>
             <Header />
             <LoginModal />
-            {/* <SessionManager /> */}
             {children}
             <Footer />
             <Toaster position="top-center" richColors />

@@ -14,6 +14,7 @@ import { useClub } from "../context/ClubContext"
 import { useRouter } from "next/navigation"
 import { getAuth } from "firebase/auth"
 import { app } from "../utils/firebase"
+import AuthRoute from "../components/AuthRoute"
 
 const monthNumbers = {
   1: "January",
@@ -30,7 +31,15 @@ const monthNumbers = {
   12: "December",
 }
 
-export default function MyReviewsPage() {
+export default function MyReviewsPage(){
+  return (
+    <AuthRoute>
+      <MyReviewsContent />
+    </AuthRoute>
+  );
+}
+
+function MyReviewsContent() {
   const [reviews, setReviews] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true);

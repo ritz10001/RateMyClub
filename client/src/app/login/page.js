@@ -10,8 +10,17 @@ import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/axios";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { app } from "../utils/firebase";
+import GuestRoute from "../components/GuestRoute";
 
 export default function LoginPage() {
+  return (
+    <GuestRoute>
+      <LoginContent />
+    </GuestRoute>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

@@ -15,8 +15,19 @@ import { useParams } from "next/navigation";
 import { toast } from 'sonner';
 import { getAuth } from "firebase/auth";
 import { app } from "@/app/utils/firebase";
+import AuthRoute from "@/app/components/AuthRoute";
 
-export default function EditReviewPage({ params }) {
+export default function EditReviewPage({ params }){
+  const { schoolId, clubId, id } = use(params);
+  const redirectPath = `/school/${schoolId}/club/${clubId}`;
+  return(
+    <AuthRoute redirectTo={redirectPath}>
+      <EditReviewContent schoolId={schoolId} clubId={clubId} id={id} />
+    </AuthRoute>
+  );
+}
+
+function EditReviewContent({ schoolId, clubId, id }) {
   const [isLoading, setIsLoading] = useState(true);
   const { user, isInitialized } = useAuth();
   const { clubData } = useClub();
@@ -30,7 +41,7 @@ export default function EditReviewPage({ params }) {
     recommendation: "",
   })
   const [error, setError] = useState(false);
-  const { schoolId, clubId, id } = useParams();
+  // const { schoolId, clubId, id } = useParams();
   const auth = getAuth(app);
   console.log("THIS IS REVIEW ID", id);
   // console.log("THIS IS THE REVIEW ID", reviewId);

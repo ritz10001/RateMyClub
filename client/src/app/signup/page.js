@@ -12,8 +12,17 @@ import { toast } from "sonner";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 import { app } from "../utils/firebase";
 import axios from "axios";
+import GuestRoute from "../components/GuestRoute";
 
-export default function SignUpPage() {
+export default function SignUpPage(){
+  return (
+    <GuestRoute>
+      <SignUpContent />
+    </GuestRoute>
+  );
+}
+
+function SignUpContent() {
   const router = useRouter();
   const auth = getAuth(app);
   const { user, setUser } = useAuth();

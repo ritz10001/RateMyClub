@@ -10,8 +10,17 @@ import { useAuth } from "../context/AuthContext"
 import { toast } from "sonner"
 import { getAuth } from "firebase/auth"
 import { app } from "../utils/firebase"
+import AuthRoute from "../components/AuthRoute"
 
-export default function SavedClubsPage() {
+
+export default function SavedClubsPage(){
+  return (
+    <AuthRoute>
+      <SavedClubsContent />
+    </AuthRoute>
+  );
+}
+function SavedClubsContent() {
   const [savedClubs, setSavedClubs] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true)

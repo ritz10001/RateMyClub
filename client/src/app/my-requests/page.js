@@ -12,6 +12,7 @@ import { api } from "../utils/axios";
 import WithdrawRequestModal from "../components/withdraw-request-modal";
 import { getAuth } from "firebase/auth";
 import { app } from "../utils/firebase";
+import AuthRoute from "../components/AuthRoute";
 // console.log("Component: imported api instance:", api);
 const monthNumbers = {
   1: "January",
@@ -35,6 +36,14 @@ const statusCodes = {
 }
 
 export default function MyRequestsPage(){
+  return (
+    <AuthRoute>
+      <MyRequestsContent />
+    </AuthRoute>
+  );
+}
+
+function MyRequestsContent(){
   const [universityRequests, setUniversityRequests] = useState([]);
   const [clubRequests, setClubRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

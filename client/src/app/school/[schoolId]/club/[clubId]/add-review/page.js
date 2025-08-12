@@ -13,8 +13,20 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from "@/app/context/AuthContext"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
+import AuthRoute from "@/app/components/AuthRoute"
 
-export default function WriteReviewPage({ params }) {
+export default function WriteReviewPage({ params }){
+  const { schoolId, clubId } = use(params);
+  const redirectPath = `/school/${schoolId}/club/${clubId}`;
+  return(
+    <AuthRoute redirectTo={redirectPath}>
+      <WriteReviewContent schoolId={schoolId} clubId={clubId} />
+    </AuthRoute>
+  );
+}
+
+
+function WriteReviewContent({ schoolId, clubId }) {
   const router = useRouter();
   const { user, isInitialized } = useAuth();
   const [reviewData, setReviewData] = useState({
@@ -26,7 +38,7 @@ export default function WriteReviewPage({ params }) {
     recommendation: "",
   })
   const [error, setError] = useState(false);
-  const { schoolId, clubId } = use(params);
+  // const { schoolId, clubId } = use(params);
   const auth = getAuth(app);
   console.log("THIS IS CLUB ID", clubId);
   useEffect(() => {

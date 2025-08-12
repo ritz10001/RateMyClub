@@ -13,7 +13,17 @@ import { toast } from 'sonner';
 import { useRouter } from "next/navigation";
 import { getAuth } from "firebase/auth";
 import { app } from "@/app/utils/firebase";
-export default function RequestUniversityPage() {
+import AuthRoute from "@/app/components/AuthRoute";
+
+export default function RequestUniversityPage(){
+  const redirectPath = `/all-schools`;
+  return(
+    <AuthRoute redirectTo={redirectPath}>
+      <RequestUniversityContent />
+    </AuthRoute>
+  );
+}
+function RequestUniversityContent() {
   const { user } = useAuth();
   const auth = getAuth(app);
   console.log("User data:", user);

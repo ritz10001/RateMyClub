@@ -6,6 +6,15 @@ import { Menu, X } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
 import { useRouter } from 'next/navigation'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { User, LogOut, ListChecks, Star, ChevronDown, Info, HelpCircle, School, Heart, ChartColumn, NotebookPen } from "lucide-react";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,7 +41,7 @@ export default function Header() {
       <header className="border-b border-blue-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-lg">RC</span>
               </div>
@@ -50,7 +59,7 @@ export default function Header() {
       <div className="px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-lg">RC</span>
             </div>
@@ -58,39 +67,98 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/directory" className="text-gray-600 hover:text-blue-600 transition-colors">
-              Directory
-            </Link>
-            <Link href="/about" className="text-gray-600 hover:text-blue-600 transition-colors">
-              About
-            </Link>
-            <Link href="/help" className="text-gray-600 hover:text-blue-600 transition-colors">
-              Help
-            </Link>
-          </nav>
+          <div className="hidden md:flex items-center space-x-6">
+            <nav className="flex space-x-6 items-center text-black">
+              <Link href="/all-schools" className=" hover:text-blue-600 transition-colors">
+                Schools
+              </Link>
+              <Link href="/about" className=" hover:text-blue-600 transition-colors">
+                About
+              </Link>
+              <Link href="/help" className=" hover:text-blue-600 transition-colors">
+                Help
+              </Link>
+            
 
-          {/* Desktop Auth Buttons */}
-          {user && user.firstName ? (
-            <div className="hidden md:flex items-center space-x-3">
-              <span className="text-gray-700">Hello, {user.firstName}</span>
-              <Button 
-                onClick={handleLogout} 
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Log Out
-              </Button>
-            </div>
-          ) : (
-            <div className="hidden md:flex items-center space-x-3">
-              <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
-                <Link href="/login">Log In</Link>
-              </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
-                <Link href="/signup">Sign Up</Link>
-              </Button>
-            </div>
-          )}
+            {/* Desktop Auth Buttons */}
+            {user && user.firstName ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="hidden md:flex items-center">
+                    <User className="w-4 h-4 stroke-current" />
+                    <span>Hello, {user.firstName}</span>
+                    <ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="px-4 text-gray-700 font-semibold">
+                    Account
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem asChild>
+                    <Link href="/my-requests" className="flex items-center space-x-2">
+                      <ListChecks className="w-4 h-4 stroke-green-500" />
+                      <span>My Requests</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/my-reviews" className="flex items-center space-x-2">
+                      <Star className="w-4 h-4 stroke-amber-500" />
+                      <span>My Reviews</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/saved-clubs" className="flex items-center space-x-2">
+                      <Heart className="w-4 h-4 stroke-red-500" />
+                      <span>My Saved Clubs</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="flex items-center space-x-2 text-red-600"
+                  >
+                    <LogOut className="w-4 h-4 stroke-red-500" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                  {user && user.roles.includes("Administrator") &&
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="px-4 text-gray-700 font-semibold">
+                        Admin
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/dashboard" className="flex items-center space-x-2">
+                          <ChartColumn className="w-4 h-4 stroke-blue-500" />
+                          <span>Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/school/new" className="flex items-center space-x-2">
+                          <NotebookPen className="w-4 h-4 stroke-blue-500" />
+                          <span>Add School</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/club/new" className="flex items-center space-x-2">
+                          <NotebookPen className="w-4 h-4 stroke-blue-500" />
+                          <span>Add Club</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  }
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="hidden md:flex items-center space-x-3">
+                <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
+                  <Link href="/login">Log In</Link>
+                </Button>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </div>
+            )}
+            </nav>
+          </div>
 
           {/* Mobile Menu Button */}
           <button 
@@ -105,58 +173,98 @@ export default function Header() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-blue-100">
-            <nav className="flex flex-col space-y-4 mt-4">
-              {user ? <span className="text-gray-800 text-center">Hello, {user.firstName}</span> : null}
+            <nav className="flex flex-col mt-4">
+              {user ? <span className="text-black font-semibold text-center">Hello, {user.firstName}</span> : null}
+              <span className="block mb-2 px-4 text-gray-700 font-semibold">Information</span>
               <Link
-                href="/directory"
-                className="text-gray-600 hover:text-blue-600 transition-colors"
+                href="/all-schools"
                 onClick={() => setIsMenuOpen(false)}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
               >
-                Directory
+                <School className="w-5 h-5 stroke-blue-600" />
+                <span>Schools</span>
               </Link>
               <Link
                 href="/about"
-                className="text-gray-600 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
               >
-                About
+                <Info className="w-5 h-5 stroke-amber-500" />
+                <span>About</span>
               </Link>
               <Link
                 href="/help"
-                className="text-gray-600 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
               >
-                Help
+                <HelpCircle className="w-5 h-5 stroke-blue-600" />
+                <span>Help</span>
               </Link>
-              <div className="flex flex-col space-y-2 pt-4 border-t border-blue-100">
-                {user ? (
-                  <Button 
-                    onClick={handleLogout}
-                    className="bg-blue-600 hover:bg-blue-700 text-white justify-start"
+
+              {/* Add account section here */}
+              {user && (
+                <>
+                  <div className="mt-6 pt-4 border-t border-blue-100">
+                    <span className="block mb-2 px-4 text-gray-700 font-semibold">Account</span>
+                    <Link
+                      href="/my-requests"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    >
+                      <ListChecks className="w-5 h-5 stroke-green-500" />
+                      <span>My Requests</span>
+                    </Link>
+                    <Link
+                      href="/my-reviews"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    >
+                      <Star className="w-5 h-5 stroke-amber-500" />
+                      <span>My Reviews</span>
+                    </Link>
+                    <Link
+                      href="/saved-clubs"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    >
+                      <Heart className="w-5 h-5 stroke-red-500" />
+                      <span>My Saved Clubs</span>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded transition-colors w-full"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {!user && (
+                <div className="flex flex-col space-y-2 pt-4 border-t border-blue-100">
+                  <Button
+                    variant="ghost"
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 justify-start"
+                    asChild
                   >
-                    Log Out
+                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>Log In</Link>
                   </Button>
-                ) : (
-                  <>
-                    <Button
-                      variant="ghost"
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 justify-start"
-                      asChild
-                    >
-                      <Link href="/login" onClick={() => setIsMenuOpen(false)}>Log In</Link>
-                    </Button>
-                    <Button 
-                      className="bg-blue-600 hover:bg-blue-700 text-white justify-start"
-                      asChild
-                    >
-                      <Link href="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link>
-                    </Button>
-                  </>
-                )}
-              </div>
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700 text-white justify-start"
+                    asChild
+                  >
+                    <Link href="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link>
+                  </Button>
+                </div>
+              )}
             </nav>
           </div>
         )}
+
       </div>
     </header>
   )

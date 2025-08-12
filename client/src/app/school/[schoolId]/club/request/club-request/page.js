@@ -15,9 +15,20 @@ import { useRouter } from "next/navigation"
 import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
+import AuthRoute from "@/app/components/AuthRoute"
 
-export default function RequestClubPage({ params }) {
+export default function RequestClubPage({ params }){
   const { schoolId } = use(params);
+  const redirectPath = `/school/${schoolId}`;
+  return(
+    <AuthRoute redirectTo={redirectPath}>
+      <RequestClubContent schoolId={schoolId} />
+    </AuthRoute>
+  );
+}
+
+function RequestClubContent({ schoolId }) {
+  // const { schoolId } = use(params);
   const router = useRouter();
   const { user } = useAuth();  
   console.log("USER INFO");
@@ -331,7 +342,7 @@ export default function RequestClubPage({ params }) {
                   className="border-2 border-gray-200 text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
-                  <Link href={`/school/${params.id}`}>Cancel</Link>
+                  <Link href={`/school/${schoolId}`}>Cancel</Link>
                 </Button>
                 <Button
                   type="submit"
