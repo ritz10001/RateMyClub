@@ -259,7 +259,7 @@ public class AuthService : IAuthService
         var firebaseUid = decodedToken.Uid;
 
         // Check SQL user exists
-        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        var user = await _userManager.Users.Include(u => u.Tags).FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
         if (user == null) return null;
 
         // Verify with Firebase that email is confirmed
@@ -271,6 +271,11 @@ public class AuthService : IAuthService
         }
 
         var roles = await _userManager.GetRolesAsync(user);
+        Console.WriteLine("THESE ARE THE TAGS");
+        foreach (var t in user.Tags)
+        {
+            Console.WriteLine(t.Name);
+        }
 
         return new AuthResponseDTO
         {
@@ -279,7 +284,8 @@ public class AuthService : IAuthService
             FirstName = user.FirstName,
             LastName = user.LastName,
             Roles = roles.ToList(),
-            Message = "Login successful"
+            Message = "Login successful",
+            Tags = user.Tags.Select(t => t.Name).ToList()
         };
     }
 

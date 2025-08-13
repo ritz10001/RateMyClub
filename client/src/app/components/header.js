@@ -172,8 +172,8 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-blue-100">
-            <nav className="flex flex-col mt-4">
+          <div className="md:hidden mt-2 pt-2 border-t border-blue-100">
+            <nav className="flex flex-col mt-3">
               {user ? <span className="text-black font-semibold text-center">Hello, {user.firstName}</span> : null}
               <span className="block mb-2 px-4 text-gray-700 font-semibold">Information</span>
               <Link
@@ -204,7 +204,7 @@ export default function Header() {
               {/* Add account section here */}
               {user && (
                 <>
-                  <div className="mt-6 pt-4 border-t border-blue-100">
+                  <div className="mt-2 pt-4 border-t border-blue-100">
                     <span className="block mb-2 px-4 text-gray-700 font-semibold">Account</span>
                     <Link
                       href="/my-requests"
@@ -241,12 +241,58 @@ export default function Header() {
                       <span>Sign Out</span>
                     </button>
                   </div>
+                  <div className="mt-2 pt-4 border-t border-blue-100">
+                    <span className="block mb-2 px-4 text-gray-700 font-semibold">Admin</span>
+                    <Link
+                      href="/admin/dashboard"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    >
+                      <ChartColumn className="w-5 h-5 stroke-red-500" />
+                      <span>Dashboard</span>
+                    </Link>
+                    <Link
+                      href="/admin/school/new"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    >
+                      <NotebookPen className="w-5 h-5 stroke-blue-500" />
+                      <span>Add School</span>
+                    </Link>
+                    <Link
+                      href="/admin/club/new"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    >
+                      <NotebookPen className="w-5 h-5 stroke-blue-500" />
+                      <span>Add Club</span>
+                    </Link>
+                  </div>
+                    
+                  {/* </div> */}
                 </>
               )}
 
               {!user && (
-                <div className="flex flex-col space-y-2 pt-4 border-t border-blue-100">
-                  <Button
+                <div className="flex flex-col pt-4 border-t border-blue-100">
+                  <span className="block mb-2 px-4 text-gray-700 font-semibold">Account</span>
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  >
+                    <ListChecks className="w-5 h-5 stroke-green-500" />
+                    <span>Log In</span>
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-2 px-4 pt-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  >
+                    <ListChecks className="w-5 h-5 stroke-green-500" />
+                    <span>Sign Up</span>
+                  </Link>
+                  {/* <Button
                     variant="ghost"
                     className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 justify-start"
                     asChild
@@ -258,7 +304,7 @@ export default function Header() {
                     asChild
                   >
                     <Link href="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link>
-                  </Button>
+                  </Button> */}
                 </div>
               )}
             </nav>

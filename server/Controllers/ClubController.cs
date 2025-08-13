@@ -15,11 +15,12 @@ namespace RateMyCollegeClub.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ClubController : ControllerBase {
-    
+public class ClubController : ControllerBase
+{
+
     private readonly IMapper _mapper;
     private readonly IClubsRepository _clubsRepository;
-    private readonly ITagsRepository  _tagsRepository;
+    private readonly ITagsRepository _tagsRepository;
     private readonly IReviewVoteRepository _reviewVoteRepository;
     private readonly ISavedClubsRepository _savedClubsRepository;
     private readonly IReviewsRepository _reviewsRepository;
@@ -53,7 +54,7 @@ public class ClubController : ControllerBase {
             bookmarkedIds = await _clubsRepository.GetBookmarkedClubIds(user.Id);
             Console.WriteLine("Bookmarked IDs: " + string.Join(", ", bookmarkedIds));
         }
-        
+
         foreach (var clubDTO in clubsDTO)
         {
             var club = clubs.FirstOrDefault(c => c.Id == clubDTO.Id);
@@ -71,10 +72,11 @@ public class ClubController : ControllerBase {
         }
         return Ok(clubsDTO);
     }
-    
+
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<GetClubDTO>> GetClub(int id){
+    public async Task<ActionResult<GetClubDTO>> GetClub(int id)
+    {
         var club = await _clubsRepository.GetIndividualClubDetails(id);
 
         if (club is null)
@@ -94,10 +96,10 @@ public class ClubController : ControllerBase {
             Console.WriteLine("this is the user");
             Console.WriteLine(user.Id);
         }
-        
+
         if (user != null)
         {
-            clubDTO.IsBookmarked =  await _savedClubsRepository.IsBookmarked(id, user.Id);
+            clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(id, user.Id);
         }
         Console.WriteLine("THE CLUB BOOKMARK STATUS");
         Console.WriteLine(clubDTO.IsBookmarked);
@@ -106,7 +108,7 @@ public class ClubController : ControllerBase {
         {
             clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
         }
-        
+
         clubDTO.ReviewCount = await _reviewsRepository.GetReviewCountAsync(id);
         clubDTO.RatingDistribution = await _clubsRepository.GetRatingDistributionForClub(id);
         clubDTO.AverageRating = await _clubsRepository.GetAverageRatingForClub(id);
@@ -121,7 +123,7 @@ public class ClubController : ControllerBase {
     [HttpGet("{id}/reviews")]
     public async Task<ActionResult<PagedResult<GetReviewDTO>>> GetReviewsForClub(int id, int page = 1, int pageSize = 5)
     {
-        var firebaseUid = HttpContext.Items["FirebaseUid"] as string; 
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
         User? user = null;
         if (!string.IsNullOrEmpty(firebaseUid))
         {
@@ -161,6 +163,33 @@ public class ClubController : ControllerBase {
             data = clubDTOs,
             total = totalCount
         };
+        return Ok(result);
+    }
+    [HttpGet("recommended")]
+    [Authorize]
+    public async Task<IActionResult> GetRecommendedClubs()
+    {
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.Include(u => u.Tags).Include(u => u.SavedClubs).FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        if (user == null) return Ok(new List<GetRecommendedClubsDTO>());
+        var recommended = await _clubsRepository.GetRecommendedClubsAsync(user.Id, user.Tags.ToList(), user.SavedClubs.ToList(), user.UniversityId);
+        var recommendedDTO = _mapper.Map<List<GetRecommendedClubsDTO>>(recommended);
+        foreach (var r in recommendedDTO)
+        {
+            Console.WriteLine(r.Name);
+        }
+        return Ok(recommendedDTO);
+    }
+
+    [HttpGet("popular-clubs")]
+    public async Task<IActionResult> GetPopularClubs()
+    {
+        var popularClubs = await _clubsRepository.GetPopularClubsAsync();
+        var result = _mapper.Map<List<GetClubsDTO>>(popularClubs);
         return Ok(result);
     }
 }

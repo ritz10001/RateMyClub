@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }) => {
           lastName: authResponse.lastName,
           sqlUserId: authResponse.userId,
           roles: authResponse.roles,
+          tags: authResponse.tags
         };
         
         // Store in sessionStorage for persistence across refreshes
@@ -40,6 +41,7 @@ export const AuthProvider = ({ children }) => {
           lastName: authResponse.lastName,
           sqlUserId: authResponse.userId,
           roles: authResponse.roles,
+          tags: authResponse.tags,
           timestamp: Date.now()
         }));
         
@@ -81,6 +83,7 @@ export const AuthProvider = ({ children }) => {
       lastName: combinedUserData.lastName,
       sqlUserId: combinedUserData.sqlUserId,
       roles: combinedUserData.roles,
+      tags: combinedUserData.tags,
       timestamp: Date.now()
     }));
   };
@@ -113,6 +116,7 @@ export const AuthProvider = ({ children }) => {
             lastName: storedSqlData.lastName,
             sqlUserId: storedSqlData.sqlUserId,
             roles: storedSqlData.roles,
+            tags: storedSqlData.tags
           });
         } else {
           // No stored data, fetch from SQL (only happens on first login or new session)

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
@@ -207,5 +208,36 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
                 SkillsDevelopmentRating = (decimal)g.Average(r => r.SkillsDevelopmentRating)
             })
             .FirstOrDefaultAsync() ?? new CategoryAveragesDTO();
+    }
+    public async Task<List<Club>> GetRecommendedClubsAsync(string userId, List<Tag> interests, List<SavedClub> savedClubs, int? schoolId)
+    {
+        // Extract IDs for quick filtering
+        var interestTagIds = interests.Select(t => t.Id).ToList();
+        var savedClubIds = savedClubs.Select(sc => sc.ClubId).ToList();
+        IQueryable<Club> query = _context.Clubs
+        .Include(c => c.University)
+        .Include(c => c.Tags)          // Include Tags for mapping Tags property
+        .Include(c => c.Reviews)       // Include Reviews for AverageRating and ReviewCount
+        .Include(c => c.Category).AsQueryable();
+        // Filter by school if provided
+        if (schoolId.HasValue)
+        {
+            query = query.Where(c => c.UniversityId == schoolId.Value);
+        }
+        // Start with clubs matching user's tags, excluding saved clubs
+        query = query.Where(c => !savedClubIds.Contains(c.Id) && c.Tags.Any(t => interestTagIds.Contains(t.Id)));
+
+        var recommendedClubs = await query.Take(10).ToListAsync();
+        return recommendedClubs;
+    }
+    public async Task<List<Club>> GetPopularClubsAsync()
+    {
+        return await _context.Clubs
+        .Include(c => c.Reviews)
+        .Include(c => c.University)
+        .Include(c => c.Category)
+        .OrderByDescending(c => c.Reviews.Count)
+        .Take(10)
+        .ToListAsync();
     }
 }

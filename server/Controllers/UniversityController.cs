@@ -126,12 +126,11 @@ public class UniversityController : ControllerBase
 
         return Ok(results);
     }
-    private string GetUserId()
+    [HttpGet("popular-schools")]
+    public async Task<IActionResult> GetPopularUniversities()
     {
-        return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value ?? string.Empty;
-    }
-    private async Task<bool> UniversityExists(int id)
-    {
-        return await _universityRepository.Exists(id);
+        var popularSchools = await _universityRepository.GetPopularUniversitiesAsync();
+        var result = _mapper.Map<List<GetUniversitiesDTO>>(popularSchools);
+        return Ok(result);
     }
 }

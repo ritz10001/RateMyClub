@@ -79,6 +79,7 @@ function LoginContent() {
         lastName: authResponse.lastName,
         sqlUserId: authResponse.userId,
         roles: authResponse.roles,
+        tags: authResponse.tags
       };
 
       if(login){

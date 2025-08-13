@@ -25,7 +25,7 @@ public class MapperConfig : Profile {
         CreateMap<Club, GetClubsDTO>()
         .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Reviews.Count))
         .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.Name).ToList()))
-        // .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
+        .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
         .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
         .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Reviews.Count != 0
             ? Math.Round(src.Reviews.Average(r => r.OverallRating), 1)
@@ -33,6 +33,14 @@ public class MapperConfig : Profile {
         .ReverseMap();
         CreateMap<Club, UpdateClubDTO>().ReverseMap();
         CreateMap<Club, ClubDTO>().ReverseMap();
+        CreateMap<Club, GetRecommendedClubsDTO>()
+        .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Reviews.Count != 0
+            ? Math.Round(src.Reviews.Average(r => r.OverallRating), 1)
+            : 0))
+        .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
+        .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.Reviews.Count))
+        .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.University.Name))
+        .ReverseMap();
         CreateMap<Review, CreateReviewDTO>().ReverseMap();
         CreateMap<Review, GetReviewDTO>()
         .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.FirstName} {src.User.LastName}" : "Unknown User"))

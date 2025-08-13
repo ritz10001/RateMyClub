@@ -13,4 +13,5 @@ public interface IUniversityRepository : IGenericRepository<University>
     Task<List<University>> GetPagedUniversitiesAsync(int page, int pageSize, string? search);
     Task<int> GetTotalUniversityCountAsync(string? search);
     Task<string> GetUniversityNameByIdAsync(int id);
+    Task<List<University>> GetPopularUniversitiesAsync();
 }

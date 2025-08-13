@@ -18,4 +18,7 @@ public interface IClubsRepository : IGenericRepository<Club>
     Task<Dictionary<int, int>> GetRatingDistributionForClub(int clubId);
     Task<decimal> GetAverageRatingForClub(int clubId);
     Task<CategoryAveragesDTO> GetCategoryAveragesForClubAsync(int clubId);
+    Task<List<Club>> GetRecommendedClubsAsync(string userId, List<Tag> interests, List<SavedClub> savedClubs, int? schoolId);
+    Task<List<Club>> GetPopularClubsAsync();
+
 }

@@ -235,28 +235,30 @@ export default function SchoolPage({ params }) {
         </div>
 
         {/* Can't Find Your Club Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 mb-8 text-white text-center">
-          <h2 className="text-2xl font-bold mb-2">Can't find your club?</h2>
-          <p className="text-blue-100 mb-4">Add yours today and help other students discover your community!</p>
-          <Button className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-xl font-semibold"
-          onClick={(e) => {
-              e.preventDefault();
-              if (user) {
-                router.push(`/school/${schoolId}/club/request/club-request`);
-              } 
-              else {
-                setIsModalOpen(true);
-              }
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Your Club
-          </Button>
-          <LoginModal 
-            isOpen={isModalOpen} 
-            onClose={() => setIsModalOpen(false)} 
-          />
-        </div>
+        {user && !user.roles.includes("Administrator") && 
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 mb-8 text-white text-center">
+            <h2 className="text-2xl font-bold mb-2">Can't find your club?</h2>
+            <p className="text-blue-100 mb-4">Add yours today and help other students discover your community!</p>
+            <Button className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-xl font-semibold"
+            onClick={(e) => {
+                e.preventDefault();
+                if (user) {
+                  router.push(`/school/${schoolId}/club/request/club-request`);
+                } 
+                else {
+                  setIsModalOpen(true);
+                }
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your Club
+            </Button>
+            <LoginModal 
+              isOpen={isModalOpen} 
+              onClose={() => setIsModalOpen(false)} 
+            />
+          </div>
+        }
 
         {/* Search and Filters */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-blue-100">

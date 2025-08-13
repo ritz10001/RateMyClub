@@ -81,4 +81,20 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
 
         return res ?? "Other";
     }
+
+    public async Task<List<University>> GetPopularUniversitiesAsync()
+    {
+        return await _context.Universities
+        .Select(u => new 
+        {
+            University = u,
+            ReviewCount = u.Clubs.SelectMany(c => c.Reviews).Count()
+        })
+        .OrderByDescending(x => x.ReviewCount)
+        .Take(10)
+        .Select(x => x.University) // project back to entity
+        .Include(u => u.Clubs)
+        .ThenInclude(c => c.Reviews)
+        .ToListAsync();
+    }
 }
