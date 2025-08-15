@@ -92,7 +92,7 @@ export default function DirectoryPage() {
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl text-center font-bold text-blue-600 mb-2">School Directory</h1>
+          <h1 className="text-3xl md:text-4xl text-center font-bold text-blue-600 mb-2">School Directory</h1>
           <p className="text-xl text-center text-gray-600">Discover colleges and universities</p>
         </div>
 
@@ -107,7 +107,7 @@ export default function DirectoryPage() {
                 placeholder="Search schools by name or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl w-full"
+                className="pl-10 py-3 text-sm md:text-md xl:text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl w-full"
               />
             </div>
 
@@ -164,14 +164,15 @@ export default function DirectoryPage() {
             </div>
           </div>
           ) : 
-          <div className="rounded-xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="rounded-xl grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
             {filteredSchools.map((school) => (
               <Link key={school.id} href={`/school/${school.id}`} className="group">
                 <div className="bg-white rounded-md shadow-lg border border-blue-100 pb-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
                   {/* School Logo */}
                   <div className="flex justify-center mb-4 h-55">
                     <img
-                      src={school.logoUrl}
+                      // src={school.logoUrl} 
+                      src={"/generic.jpeg"}
                       alt={`${school.name} logo`}
                       className="h-full w-full"
                     />
@@ -179,9 +180,12 @@ export default function DirectoryPage() {
 
                   {/* School Info */}
                   <div className="text-center">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {school.name}
-                    </h3>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
+                        {school.name}
+                      </h3>
+                    </div>
+                    
                     <p className="text-gray-600 mb-4">{school.location}</p>
 
                     {/* Stats */}

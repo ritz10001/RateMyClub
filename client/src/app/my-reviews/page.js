@@ -132,8 +132,8 @@ function MyReviewsContent() {
           </Link>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">My Reviews</h1>
-              <p className="text-gray-600">Your reviews ({reviews.length})</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Reviews</h1>
+              <p className="text-md md:text-lg text-gray-600">Your reviews ({reviews.length})</p>
             </div>
 
             {/* Sort Options */}
@@ -171,8 +171,6 @@ function MyReviewsContent() {
       {reviews.length > 0 &&
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 mx-4">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({reviews.length})</h2>
-
-
           {/* Reviews List */}
           <div className="space-y-6 border-t border-gray-500 py-4">
             {reviews.map((review) => (

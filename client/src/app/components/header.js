@@ -85,7 +85,14 @@ export default function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="hidden md:flex items-center">
-                    <User className="w-4 h-4 stroke-current" />
+                    {user.photoURL ?(
+                <img
+                  src={user.photoURL || "/placeholder.svg?height=120&width=120&text=Profile"}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                ) 
+                :(<User className="w-4 h-4 stroke-current" />)}
                     <span>Hello, {user.firstName}</span>
                     <ChevronDown />
                   </Button>
@@ -174,7 +181,20 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden mt-2 pt-2 border-t border-blue-100">
             <nav className="flex flex-col mt-3">
-              {user ? <span className="text-black font-semibold text-center">Hello, {user.firstName}</span> : null}
+              {user ?
+               (
+               <div className="flex items-center justify-center space-x-2 px-4 py-2">
+                {user.photoURL && 
+                  <img
+                    src={user.photoURL || "/placeholder.svg?height=120&width=120&text=Profile"}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                }
+                <span className="text-black font-semibold text-center">Hello, {user.firstName}</span>
+               </div>
+                ) 
+              : null}
               <span className="block mb-2 px-4 text-gray-700 font-semibold">Information</span>
               <Link
                 href="/all-schools"
@@ -241,35 +261,35 @@ export default function Header() {
                       <span>Sign Out</span>
                     </button>
                   </div>
-                  <div className="mt-2 pt-4 border-t border-blue-100">
-                    <span className="block mb-2 px-4 text-gray-700 font-semibold">Admin</span>
-                    <Link
-                      href="/admin/dashboard"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      <ChartColumn className="w-5 h-5 stroke-red-500" />
-                      <span>Dashboard</span>
-                    </Link>
-                    <Link
-                      href="/admin/school/new"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      <NotebookPen className="w-5 h-5 stroke-blue-500" />
-                      <span>Add School</span>
-                    </Link>
-                    <Link
-                      href="/admin/club/new"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      <NotebookPen className="w-5 h-5 stroke-blue-500" />
-                      <span>Add Club</span>
-                    </Link>
-                  </div>
-                    
-                  {/* </div> */}
+                  {user && user.roles.includes("Administrator") && 
+                    <div className="mt-2 pt-4 border-t border-blue-100">
+                      <span className="block mb-2 px-4 text-gray-700 font-semibold">Admin</span>
+                      <Link
+                        href="/admin/dashboard"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      >
+                        <ChartColumn className="w-5 h-5 stroke-red-500" />
+                        <span>Dashboard</span>
+                      </Link>
+                      <Link
+                        href="/admin/school/new"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      >
+                        <NotebookPen className="w-5 h-5 stroke-blue-500" />
+                        <span>Add School</span>
+                      </Link>
+                      <Link
+                        href="/admin/club/new"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      >
+                        <NotebookPen className="w-5 h-5 stroke-blue-500" />
+                        <span>Add Club</span>
+                      </Link>
+                    </div>
+                  }
                 </>
               )}
 
@@ -292,19 +312,6 @@ export default function Header() {
                     <ListChecks className="w-5 h-5 stroke-green-500" />
                     <span>Sign Up</span>
                   </Link>
-                  {/* <Button
-                    variant="ghost"
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 justify-start"
-                    asChild
-                  >
-                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>Log In</Link>
-                  </Button>
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white justify-start"
-                    asChild
-                  >
-                    <Link href="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link>
-                  </Button> */}
                 </div>
               )}
             </nav>

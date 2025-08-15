@@ -284,6 +284,7 @@ public class AuthService : IAuthService
             FirstName = user.FirstName,
             LastName = user.LastName,
             Roles = roles.ToList(),
+            UniversityId = user.UniversityId ?? 0,
             Message = "Login successful",
             Tags = user.Tags.Select(t => t.Name).ToList()
         };

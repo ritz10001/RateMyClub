@@ -15,7 +15,6 @@ import UniversityForm from "@/app/components/Forms/UniversityForm"
 import ClubForm from "@/app/components/Forms/ClubForm"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
-// 
 
 export default function CreateClubPage({ params }) {
   const { schoolId } = useParams();

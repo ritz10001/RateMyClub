@@ -238,8 +238,8 @@ function MyRequestsContent(){
           </Link>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">My Requests</h1>
-              <p className="text-gray-600">Your requests</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Requests</h1>
+              <p className="text-md md:text-lg text-gray-600">Your requests</p>
             </div>  
             <div className="flex flex-col sm:flex-row items-center gap-4">
               {/* Request Type Toggle */}
@@ -289,7 +289,7 @@ function MyRequestsContent(){
             </div>
           </div> 
         </div>
-            
+      </div>
         {displayedRequests.length === 0 && (
           <div className="bg-white rounded-2xl shadow-lg p-12 border border-blue-100 text-center">
             <div className="text-gray-400 mb-4">
@@ -306,10 +306,10 @@ function MyRequestsContent(){
         )}
         {displayedRequests.length > 0 &&
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 mx-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
               {requestType === "university" ? "University" : "Club"} Requests ({displayedRequests.length})
             </h2>
-            {/* Reviews List */}
+            {/* Requests List */}
             <div className="space-y-6 border-t border-gray-500 py-4">
             {displayedRequests.map((request) => (
               <div key={request.id} className="border-b border-gray-500 pb-6 last:border-b-0">
@@ -349,7 +349,7 @@ function MyRequestsContent(){
                 <p className="text-sm text-gray-500">{monthNumbers[parseInt(request.requestedAt.slice(5,7))] + " " + parseInt(request.requestedAt.slice(8,10)) + ", " + request.requestedAt.slice(0,4)}</p>
               </div>
             ))}
-            </div>
+          </div>
           {/* Load More Reviews */}
           <div className="text-center mt-8">
             <Button
@@ -361,7 +361,6 @@ function MyRequestsContent(){
           </div>
         </div>
       }
-      </div>
       <WithdrawRequestModal 
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}

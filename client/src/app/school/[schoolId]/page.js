@@ -186,7 +186,7 @@ export default function SchoolPage({ params }) {
 
             {/* School Info */}
             <div className="flex-1 text-center lg:text-left">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{university.name}</h1>
+              <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-gray-900 mb-2">{university.name}</h1>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-gray-600 mb-4">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
@@ -237,7 +237,7 @@ export default function SchoolPage({ params }) {
         {/* Can't Find Your Club Section */}
         {user && !user.roles.includes("Administrator") && 
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 mb-8 text-white text-center">
-            <h2 className="text-2xl font-bold mb-2">Can't find your club?</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-2">Can't find your club?</h2>
             <p className="text-blue-100 mb-4">Add yours today and help other students discover your community!</p>
             <Button className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-xl font-semibold"
             onClick={(e) => {
@@ -271,7 +271,7 @@ export default function SchoolPage({ params }) {
                 placeholder="Search clubs by name, description, or tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl w-full"
+                className="pl-10 py-3 text-sm md:text-md xl:text-lg  border-2 border-gray-200 focus:border-blue-500 rounded-xl w-full"
               />
             </div>
 
@@ -321,7 +321,6 @@ export default function SchoolPage({ params }) {
         {/* Clubs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredClubs.map((club) => (
-            
             <Link key={club.id} href={`/school/1/club/${club.id}`} className="group">
               <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 {/* Club Header */}
@@ -344,7 +343,7 @@ export default function SchoolPage({ params }) {
                       />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
                     {club.name}
                   </h3>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">{club.description}</p>

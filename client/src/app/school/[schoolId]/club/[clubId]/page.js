@@ -352,7 +352,7 @@ export default function ClubPage({ params }) {
             <div className="flex-1">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2 md:text-4xl">{club.name}</h1>
+                  <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-gray-900 mb-2">{club.name}</h1>
                   <Link
                     href={`/school/${schoolId}`}
                     className="text-blue-600 hover:text-blue-700 font-medium text-lg underline underline-offset-4"
@@ -405,7 +405,7 @@ export default function ClubPage({ params }) {
                 ))}
               </div>
 
-              <p className="text-gray-700 mb-6 text-lg leading-relaxed">Just a description</p>
+              <p className="text-gray-700 mb-6 text-md md:text-lg leading-relaxed">Just a description</p>
 
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
@@ -419,7 +419,7 @@ export default function ClubPage({ params }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Overall Rating */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Overall Rating</h2>
+            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 mb-6">Overall Rating</h2>
 
             {/* Overall Rating Display */}
             <div className="text-center mb-6">
@@ -432,7 +432,7 @@ export default function ClubPage({ params }) {
 
             {/* Rating Distribution */}
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Rating Breakdown</h3>
+              <h3 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 mb-4">Rating Distribution</h3>
               {[5, 4, 3, 2, 1].map((star) =>
                 renderRatingBar(star, club.ratingDistribution[star], club.reviewCount),
               )}
@@ -457,7 +457,7 @@ export default function ClubPage({ params }) {
 
           {/* Category Breakdown */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Rating Breakdown</h2>
+            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 mb-6">Rating Breakdown</h2>
             <div className="space-y-1">
               {renderCategoryRating("leadership", club.leadershipRating)}
               {renderCategoryRating("inclusivity", club.inclusivityRating)}
@@ -493,7 +493,7 @@ export default function ClubPage({ params }) {
         )}
         {reviews.length > 0 && 
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({reviews.length})</h2>
+            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 mb-6">Reviews ({reviews.length})</h2>
             {/* Reviews List */}
             <div className="space-y-6 border-t border-gray-500 p-4">
               {reviews.map((review) => (

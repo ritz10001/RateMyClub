@@ -31,7 +31,8 @@ export const AuthProvider = ({ children }) => {
           lastName: authResponse.lastName,
           sqlUserId: authResponse.userId,
           roles: authResponse.roles,
-          tags: authResponse.tags
+          tags: authResponse.tags,
+          universityId: authResponse.universityId // Assuming this is part of the response
         };
         
         // Store in sessionStorage for persistence across refreshes
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }) => {
           sqlUserId: authResponse.userId,
           roles: authResponse.roles,
           tags: authResponse.tags,
+          universityId: authResponse.universityId,
           timestamp: Date.now()
         }));
         
@@ -84,6 +86,7 @@ export const AuthProvider = ({ children }) => {
       sqlUserId: combinedUserData.sqlUserId,
       roles: combinedUserData.roles,
       tags: combinedUserData.tags,
+      universityId: combinedUserData.universityId,
       timestamp: Date.now()
     }));
   };
@@ -116,15 +119,18 @@ export const AuthProvider = ({ children }) => {
             lastName: storedSqlData.lastName,
             sqlUserId: storedSqlData.sqlUserId,
             roles: storedSqlData.roles,
-            tags: storedSqlData.tags
+            tags: storedSqlData.tags,
+            universityId: storedSqlData.universityId, // Use Firebase photoURL
           });
-        } else {
+        } 
+        else {
           // No stored data, fetch from SQL (only happens on first login or new session)
           console.log("Fetching fresh SQL data");
           const combinedUser = await fetchSqlUserData(firebaseUser);
           setUser(combinedUser);
         }
-      } else {
+      } 
+      else {
         // User is signed out
         setUser(null);
         sessionStorage.removeItem('combinedUserData');
@@ -137,13 +143,27 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  const updateUserData = (updatedFields) => {
+    setUser(prev => ({
+      ...prev,
+      ...updatedFields
+    }));
+
+    const stored = JSON.parse(sessionStorage.getItem('combinedUserData') || '{}');
+    sessionStorage.setItem('combinedUserData', JSON.stringify({
+      ...stored,
+      ...updatedFields
+    }));
+  };
+
   const value = {
     user,
     setUser,
     isInitialized,
     isLoading,
     login,
-    logout
+    logout,
+    updateUserData
   };
 
   return (

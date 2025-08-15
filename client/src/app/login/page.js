@@ -8,9 +8,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/axios";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../utils/firebase";
 import GuestRoute from "../components/GuestRoute";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   return (
@@ -21,11 +22,12 @@ export default function LoginPage() {
 }
 
 function LoginContent() {
-  const router = useRouter();
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
   const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  const router = useRouter();
+  const { isInitialized, login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -79,7 +81,8 @@ function LoginContent() {
         lastName: authResponse.lastName,
         sqlUserId: authResponse.userId,
         roles: authResponse.roles,
-        tags: authResponse.tags
+        tags: authResponse.tags,
+        universityId: authResponse.universityId
       };
 
       if(login){
@@ -104,7 +107,74 @@ function LoginContent() {
       setIsLoading(false);
     }
   } 
+  const handleGoogleLogin = async () => {
+    try {
+      // Sign in with firebase first
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
+      
+      // fetch the user token
+      const idToken = await firebaseUser.getIdToken();
+      let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(idToken)
+      });
+      if(response.status === 401) {
+        console.log("User not found, registering...");
+        response = await fetch(`http://localhost:5095/api/Account/firebase-register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firebaseIdToken: idToken,
+            firstName: firebaseUser.displayName?.split(" ")[0] || "",
+            fastName: firebaseUser.displayName?.split(" ")[1] || "",
+            email: firebaseUser.email,
+          })
+        });
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error("SSO registration failed: " + errText);
+        }
+      }
+      const authResponse = await response.json();
+      const combinedUser = {
+        ...firebaseUser,
+        firstName: authResponse.firstName,
+        lastName: authResponse.lastName,
+        sqlUserId: authResponse.userId,
+        roles: authResponse.roles,
+        tags: authResponse.tags,
+        universityId: authResponse.universityId,
+      };
+      login(combinedUser);
+      if (!combinedUser.universityId || !combinedUser.tags?.length) {
+        router.push("/user-profile");
+      } 
+      else {
+        router.push("/"); // Existing user, go home
+      }
+    }
+    catch(error){
+      console.error("SSO error:", error);
+      toast.error("Google SSO failed. Please try again");
+      setError("Google SSO failed. Please try again.");
+    }
+    finally {
+      setIsLoading(false);
+    }
 
+  }
+  if(isLoading || !isInitialized){
+     return (
+      <div className="col-span-full flex justify-center py-12 space-x-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="font-bold text-xl">Now Loading..</p>
+      </div>
+     )
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
@@ -113,6 +183,45 @@ function LoginContent() {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-blue-600 mb-2">Welcome back</h1>
             <p className="text-gray-600">Sign in to your account</p>
+          </div>
+          
+          {/* Google SSO Button */}
+          <div className="mb-6">
+            <Button
+              onClick={handleGoogleLogin}
+              variant="outline"
+              className="w-full border-2 border-gray-200 hover:bg-gray-50 py-3 px-4 rounded-xl font-semibold text-gray-700 bg-white transition-colors flex items-center justify-center gap-3"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              Sign in with Google
+            </Button>
+          </div>
+
+          {/* Divider */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
+            </div>
           </div>
 
           {/* Form */}
@@ -167,7 +276,7 @@ function LoginContent() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center mb-5"
               disabled={isLoading}
             >
               {isLoading ? (

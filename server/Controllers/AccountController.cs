@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models.Users;
+using RateMyCollegeClub.Repository;
 
 namespace RateMyCollegeClub.Controllers;
 
@@ -21,11 +22,13 @@ public class AccountController : ControllerBase
     private readonly IAuthService _authService;
     private readonly UserManager<User> _userManager;
     private readonly FirebaseAuthService _firebaseAuthService;
-    public AccountController(IAuthService authService, UserManager<User> userManager, FirebaseAuthService firebaseAuthService)
+    private readonly ITagsRepository _tagsRepository;
+    public AccountController(IAuthService authService, UserManager<User> userManager, FirebaseAuthService firebaseAuthService, ITagsRepository tagsRepository)
     {
         _authService = authService;
         _userManager = userManager;
         _firebaseAuthService = firebaseAuthService;
+        _tagsRepository = tagsRepository;
     }
     [HttpPost("resend-verification")]
     public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequestDTO request)
@@ -61,8 +64,6 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> FirebaseRegister([FromBody] FirebaseRegisterDTO firebaseRegisterDTO, [FromQuery] string role = "User")
     {
         var (authResponse, errors, confirmationUrl) = await _authService.FirebaseRegister(firebaseRegisterDTO, role);
-        Console.WriteLine("THIS IS THE DTO==============================");
-        Console.WriteLine($"DTO: {JsonConvert.SerializeObject(authResponse)}");
 
         if (errors != null && errors.Any())
         {
@@ -120,143 +121,31 @@ public class AccountController : ControllerBase
 
         return Ok(authResponse);
     }
-    // [HttpPost("logout")]
-    // public async Task<ActionResult> Logout()
-    // {
-    //     Response.Cookies.Delete("authToken");
-    //     Response.Cookies.Delete("refreshToken");
-    //     return Ok();
-    // }
-    // [HttpGet("me")]
-    // [Authorize]
-    // public async Task<IActionResult> GetCurrentUser()
-    // {
-    //     Console.WriteLine("---------------------------------------------------------------------");
-    //     var userId = GetUserId();
-    //     if (userId == null)
-    //     {
-    //         Console.WriteLine("USER ID IS NULL");
-    //         return Unauthorized();
-    //     }
-    //     var user = await _userManager.FindByIdAsync(userId);
-    //     if (user == null)
-    //     {
-    //         Console.WriteLine("USER NOT FOUND");
-    //         return Unauthorized();
-    //     }
-    //     var roles = await _userManager.GetRolesAsync(user);
-    //     var authResponse = new AuthResponseDTO
-    //     {
-    //         UserId = user.Id,
-    //         FirstName = user.FirstName,
-    //         LastName = user.LastName,
-    //         Email = user.Email,
-    //         Roles = roles.ToList()
-    //     };
-    //     Console.WriteLine("the me endpoint was successful");
-    //     return Ok(authResponse);
-    // }
+    [HttpPatch("update-profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserInfoDTO updateUserInfo)
+    {
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.Include(u => u.Tags).FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
+        if (user == null) return Unauthorized();
+        user.FirstName = updateUserInfo.FirstName ?? user.FirstName;
+        user.LastName = updateUserInfo.LastName ?? user.LastName;
+        user.UniversityId = updateUserInfo.UniversityId ?? user.UniversityId;
+        if (updateUserInfo.TagIds != null && updateUserInfo.TagIds.Any())
+        {
+            var tags = await _tagsRepository.GetTagsByIdsAsync(updateUserInfo.TagIds);
+            user.Tags = tags;
+        }
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
 
-    // /Controllers/AccountController.cs
-
-    // [HttpPost("refresh")]
-    // public async Task<ActionResult> Refresh()
-    // {
-    //     var isInitialRequest = Request.Headers.ContainsKey("X-Init-Request");
-    //     Console.WriteLine("=== Refresh endpoint called ===");
-
-    //     // 1. Get refresh token from cookie
-    //     var refreshToken = Request.Cookies["refreshToken"];
-    //     if (string.IsNullOrEmpty(refreshToken))
-    //     {
-    //         Console.WriteLine("No refresh token in cookies");
-    //         return Unauthorized(new { Message = "No refresh token" });
-    //     }
-
-    //     Console.WriteLine($"Found refresh token: {refreshToken.Substring(0, Math.Min(10, refreshToken.Length))}...");
-
-    //     var tokenParts = refreshToken.Split('.');
-    //     if (tokenParts.Length < 2)
-    //     {
-    //         return Unauthorized(new { Message = "Invalid token format" });
-    //     }
-    //     var userId = tokenParts[0];
-    //     var user = await _userManager.FindByIdAsync(userId);
-    //     if (user == null)
-    //     {
-    //         Console.WriteLine("User not found for refresh token");
-    //         return Unauthorized(new { Message = "Invalid refresh token" });
-    //     }
-    //     // 2. Verify the stored token matches
-    //     var storedToken = await _userManager.GetAuthenticationTokenAsync(
-    //         user,
-    //         "RateMyCollegeClub",
-    //         "RefreshToken");
-
-    //     if (storedToken != refreshToken)
-    //     {
-    //         Console.WriteLine("Refresh token mismatch");
-    //         await _userManager.UpdateSecurityStampAsync(user); // Rotate security stamp on mismatch
-    //         return Unauthorized(new { Message = "Invalid refresh token" });
-    //     }
-    //     Console.WriteLine($"Found user: {user.Email}");
-
-    //     // 3. Check if token is expired
-    //     if (user.RefreshTokenExpiry == null || DateTime.UtcNow > user.RefreshTokenExpiry)
-    //     {
-    //         Console.WriteLine("Refresh token expired");
-    //         await _userManager.RemoveAuthenticationTokenAsync(user, "RateMyCollegeClub", "RefreshToken");
-
-    //         // Clear cookies
-    //         Response.Cookies.Delete("authToken");
-    //         Response.Cookies.Delete("refreshToken");
-
-    //         return Unauthorized(new { Message = "Refresh token expired" });
-    //     }
-
-    //     // 4. Generate new tokens
-    //     var authResponse = await _authService.VerifyRefreshToken(user.Id);
-    //     if (authResponse == null)
-    //     {
-    //         Console.WriteLine("Token verification failed");
-    //         return Unauthorized(new { Message = "Token verification failed" });
-    //     }
-
-    //     Console.WriteLine($"Refresh successful for user: {user.Email}");
-    //     var roles = await _userManager.GetRolesAsync(user);
-    //     // var authResponse = new AuthResponseDTO
-    //     // {
-    //     //     UserId = user.Id,
-    //     //     FirstName = user.FirstName,
-    //     //     LastName = user.LastName,
-    //     //     Email = user.Email,
-    //     //     Roles = roles.ToList(),
-    //     //     Token = result.Token
-    //     // };
-    //     return Ok(authResponse);
-    // }
-
-    // private string GetUserIdFromToken()
-    // {
-    //     var refreshToken = Request.Cookies["refreshToken"];
-    //     if (string.IsNullOrEmpty(refreshToken))
-    //     {
-    //         return null;
-    //     }
-    //     try
-    //     {
-    //         var tokenHandler = new JwtSecurityTokenHandler();
-    //         var jsonToken = tokenHandler.ReadJwtToken(refreshToken);
-    //         // Extract userId from token claims (adjust claim name as needed)
-    //         var userIdClaim = jsonToken.Claims.FirstOrDefault(x => x.Type == "sub" || x.Type == "uid" || x.Type == ClaimTypes.NameIdentifier);
-    //         return userIdClaim?.Value;
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Error reading token: {ex.Message}");
-    //         return null;
-    //     }
-    // }
+        return NoContent();
+    }
     private string? GetUserId()
     {
         return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value;

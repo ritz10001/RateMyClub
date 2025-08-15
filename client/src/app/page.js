@@ -156,7 +156,7 @@ export default function HeroSection() {
 
         {/* Search Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Enter your school name to get started</h2>
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-6">Enter your school name to get started</h2>
           <form className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -165,7 +165,7 @@ export default function HeroSection() {
                 placeholder="Your school..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3 text-lg border-2 border-blue-200 focus:border-blue-500 rounded-xl"
+                className="pl-10 py-3 text-md md:text-lg border-2 border-blue-200 focus:border-blue-500 rounded-xl"
               />
               {searchResults.length > 0 && (
                 <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-2 max-h-64 overflow-y-auto">
@@ -211,7 +211,7 @@ export default function HeroSection() {
                     />
                   </div>
                   <div className="h-10 flex items-center justify-center px-4">
-                    <h3 className="text-lg text-center font-semibold text-gray-800 line-clamp-2 leading-tight max-w-full">
+                    <h3 className="text-lg text-center font-semibold text-gray-800 line-clamp-1 leading-tight max-w-full">
                       {school.name}
                     </h3>
                   </div>
@@ -304,7 +304,7 @@ export default function HeroSection() {
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
                   <IconComponent className="w-6 h-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{feature.title}</h3>
+                <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">{feature.title}</h3>
                 <p className="text-gray-600">{feature.description}</p>
               </div>
             )

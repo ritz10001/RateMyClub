@@ -143,21 +143,21 @@ export default function ClubForm({ clubData, setClubData, handleSubmit, submitLa
               </Label>
               <div className="flex flex-wrap gap-2 w-full mb-5">
                 {tags.map((tag) => (
-              <Button
-                key={tag.id}
-                type="button"
-                variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                onClick={() => handleTagClick(tag.id)}
-                className={`rounded-full px-4 py-2 min-w-[80px] text-sm font-medium transition-colors ${
-                selectedTags.includes(tag.id)
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "border-blue-200 text-blue-600 hover:bg-blue-50"
-                }`}
-              >
-                  {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
-                </Button>
-              ))}
-            </div>
+                <Button
+                  key={tag.id}
+                  type="button"
+                  variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                  onClick={() => handleTagClick(tag.id)}
+                  className={`rounded-full px-4 py-2 min-w-[80px] text-sm font-medium transition-colors ${
+                  selectedTags.includes(tag.id)
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "border-blue-200 text-blue-600 hover:bg-blue-50"
+                  }`}
+                >
+                    {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                  </Button>
+                ))}
+              </div>
             </div>
             
             </div>
