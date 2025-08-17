@@ -8,17 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Plus, Info, University } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { use } from "react";
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 import AuthRoute from "@/app/components/AuthRoute"
 
 export default function RequestClubPage({ params }){
-  const { schoolId } = use(params);
+  const { schoolId } = useParams();
   const redirectPath = `/school/${schoolId}`;
   return(
     <AuthRoute redirectTo={redirectPath}>
@@ -28,7 +27,6 @@ export default function RequestClubPage({ params }){
 }
 
 function RequestClubContent({ schoolId }) {
-  // const { schoolId } = use(params);
   const router = useRouter();
   const { user } = useAuth();  
   console.log("USER INFO");
@@ -156,7 +154,7 @@ function RequestClubContent({ schoolId }) {
         toast.success("Club request submitted! We'll review it shortly.", {
           duration: 5000,
         });
-        router.push(`/school/${schoolId}`);
+        router.replace(`/school/${schoolId}`);
       }
       else{
         const errorData = await response.json();
@@ -173,12 +171,14 @@ function RequestClubContent({ schoolId }) {
   }
 
   if (isLoading) {
-    return <>
-      <div className="col-span-full flex justify-center py-12 space-x-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="font-bold text-xl">Now Loading..</p>
+    return(
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 text-lg font-medium">Loading...</p>
+        </div>
       </div>
-    </>;
+    );
   }
 
 

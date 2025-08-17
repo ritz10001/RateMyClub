@@ -11,21 +11,19 @@ export default function AuthRoute({ children, redirectTo = "/" }) {
   useEffect(() => {
     if (!isLoading && !user) {
       setIsRedirecting(true);
-      setTimeout(() => {
+      // setTimeout(() => {
         router.replace(redirectTo);
-      }, 100);
+      // }, 100);
     }
   }, [user, isLoading, router, redirectTo]);
 
   // Show full-screen loading that covers header/footer
-  if (isLoading || isRedirecting || !user) {
+  if (isLoading || !user) {
     return (
-      <div className="fixed inset-0 bg-white z-[9999] flex items-center justify-center">
-        <div className="flex items-center space-x-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          <p className="font-bold text-xl">
-            Now Loading...
-          </p>
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 text-lg font-medium">Loading...</p>
         </div>
       </div>
     ); 

@@ -4,87 +4,133 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Pencil, Save, X, UserRound } from "lucide-react";
+import { Pencil, Save, X, UserRound } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { getAuth } from "firebase/auth";
 import { app } from "@/app/utils/firebase";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import AuthRoute from "../components/AuthRoute";
+import Link from "next/link";
 
-export default function UserProfilePage() {
-  return (
-    <AuthRoute>
-      <ProfilePage />
-    </AuthRoute>
-  );
-}
-
-function ProfilePage() {
+export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const [profileData, setProfileData] = useState({
     firstName: "",
     lastName: "",
     universityId: null,
-    // profilePhoto: "/placeholder.svg?height=120&width=120&text=JD",
     tagIds: [], // Selected tag IDs
   });
   const [tags, setTags] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [selectedTags, setSelectedTags] = useState([1, 2, 5]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [universities, setUniversities] = useState([]);
-  const { user, updateUserData } = useAuth();
+  const { user, updateUserData, isInitialized } = useAuth();
   const auth = getAuth(app);
-  console.log("HERE IS FULL USER DATA", user);
 
+  // Consolidated useEffect for data fetching and state initialization
   useEffect(() => {
-    const stored = sessionStorage.getItem("combinedUserData");
-    if(stored){
-      const data = JSON.parse(stored);
-      console.log("Stored profile data:", data);
-      setProfileData({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        universityId: data.universityId || null,
-        tags: data.tags || [],
-        profilePhoto: data.photoURL || null
-      })
-    }
-  }, []);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [universitiesRes, tagsRes] = await Promise.all([
+          fetch(`http://localhost:5095/api/University/all-colleges`),
+          fetch('http://localhost:5095/api/Tag')
+        ]);
 
-  useEffect(() => {
-    fetch(`http://localhost:5095/api/University/all-colleges`)
-    .then(res => res.json())
-    .then(data => {
-      console.log("UNIS", data);
-      setUniversities(data);
-    });
-    fetch('http://localhost:5095/api/Tag')
-      .then(res => res.json())
-      .then(data => {
-      console.log(data);
-      setTags(data);
-    });
-    setIsLoading(false);
-  }, []);
+        const universitiesData = await universitiesRes.json();
+        const tagsData = await tagsRes.json();
+
+        setUniversities(universitiesData);
+        setTags(tagsData);
+
+        const stored = sessionStorage.getItem("combinedUserData");
+        if (stored) {
+          const data = JSON.parse(stored);
+          const storedTagNames = data.tags || [];
+
+          // Convert stored tag names to tag IDs using the fetched tagsData
+          const matchedTagIds = tagsData
+            .filter(tag => storedTagNames.includes(tag.name))
+            .map(tag => tag.id);
+
+          setProfileData({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            universityId: data.universityId || null,
+            tagIds: matchedTagIds,
+          });
+          setSelectedTags(matchedTagIds);
+        }
+      } catch (error) {
+        console.error("Failed to fetch initial data:", error);
+        toast.error("Failed to load profile data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []); // Run only once on component mount
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user && !isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="bg-white rounded-2xl shadow-lg p-12 border border-blue-100 text-center">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <UserRound className="w-10 h-10 text-gray-400" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">No Profile Found</h1>
+            <p className="text-gray-600 text-lg mb-8">
+              You need to be logged in to view your profile. Please create an account or sign in to continue.
+            </p>
+            <div className="space-y-4">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold" asChild>
+                <Link href="/signup">Create Account</Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 py-3 rounded-xl font-semibold bg-transparent"
+                asChild
+              >
+                <Link href="/login">Sign In</Link>
+              </Button>
+            </div>
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <Link href="/" className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-4">
+                ← Back to Home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleInputChange = (field, value) => {
     setProfileData((prev) => ({
       ...prev,
       [field]: value,
     }));
-    console.log(profileData);
   };
 
   const handleTagClick = (tagId) => {
     let updatedTags;
     if (selectedTags.includes(tagId)) {
       updatedTags = selectedTags.filter((id) => id !== tagId);
-    } 
-    else {
+    } else {
       if (selectedTags.length >= 5) {
         toast.error("You can select up to 5 tags only.");
         return;
@@ -93,7 +139,7 @@ function ProfilePage() {
     }
     setSelectedTags(updatedTags);
     setProfileData({ ...profileData, tagIds: updatedTags });
-  }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -115,49 +161,37 @@ function ProfilePage() {
       if (!response.ok) {
         toast.error("Failed to update profile on server");
       }
-      // Update the AuthContext so all components reflect the new info immediately
+      const updatedTagNames = tags
+        .filter(tag => profileData.tagIds.includes(tag.id))
+        .map(tag => tag.name);
+      console.log("Updated tag names:", updatedTagNames);
       updateUserData({
         firstName: profileData.firstName,
         lastName: profileData.lastName,
         universityId: parseInt(profileData.universityId),
-        tags: profileData.tagIds,
+        tags: updatedTagNames,
       });
-      console.log("Saving profile:", profileData)
       toast.success("Profile updated successfully!", {
         duration: 5000
       });
       setIsEditing(false);
-      // router.push("/user-profile");
-    } 
-    catch (error) {
-      toast.error("Failed to update profile. Please try again.")
+    } catch (error) {
+      toast.error("Failed to update profile. Please try again.");
     }
-  }
+  };
 
   const handleCancel = () => {
-    setIsEditing(false)
-  }
+    setIsEditing(false);
+  };
 
   const getSelectedUniversity = () => {
-    console.log("universities", universities);
     const uni = universities.find((u) => u.id === profileData.universityId);
     return uni ? uni.name : "Not selected";
-  }
+  };
 
   const getSelectedTagNames = () => {
-    return tags.filter((tag) => selectedTags.includes(tag.id)).map((tag) => tag.name)
-  }
-
-  if (isLoading) { 
-    return (
-      <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-        <div className="flex items-center space-x-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          <p className="font-bold text-xl">Now Loading..</p>
-        </div>
-      </div>
-    ); 
-  }
+    return tags.filter((tag) => selectedTags.includes(tag.id)).map((tag) => tag.name);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
@@ -192,13 +226,11 @@ function ProfilePage() {
                   alt="Profile"
                   className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover"
                 />
-                ) 
-                : (
+              ) : (
                 <div className="w-24 h-24 md:w-32 md:h-32 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <UserRound className="w-16 h-16 md:w-24 md:h-24 text-blue-600" />
                 </div>
-                )
-              }
+              )}
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mt-4">
               {profileData.firstName} {profileData.lastName}
@@ -268,7 +300,7 @@ function ProfilePage() {
 
             {/* Tags */}
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">Interests (Select up to 5 tags)</Label>
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">Interests</Label>
               {isEditing ? (
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
@@ -331,5 +363,5 @@ function ProfilePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -154,64 +154,60 @@ export default function SchoolPage({ params }) {
     setFilterBy(category);
   }
 
-  if (isLoading || !isInitialized || !university) { 
+  if (isLoading || !university) { 
     return (
-      <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-        <div className="flex items-center space-x-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          <p className="font-bold text-xl">Now Loading..</p>
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 text-lg font-medium">Loading...</p>
         </div>
       </div>
     ); 
   }
 
-  // if (!university) {
-  //   return <div className="text-center py-8">University not found</div>;
-  // }
-
   const categories = ["all", ...new Set(clubs.map(club => club.categoryName.toLowerCase()))];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+  return(
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* School Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 dark:border-blue-900">
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
             {/* School Logo */}
             <img
               src={"https://www.texastech.edu/universities/ttu-campus-2022.jpg"}
               alt={`${university.name} logo`}
-              className="w-32 h-32 rounded-full border-4 border-blue-100"
+              className="w-32 h-32 rounded-full border-4 border-blue-100 dark:border-blue-900"
             />
 
             {/* School Info */}
             <div className="flex-1 text-center lg:text-left">
-              <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-gray-900 mb-2">{university.name}</h1>
-              <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-gray-600 mb-4">
+              <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{university.name}</h1>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-gray-600 dark:text-gray-400 mb-4">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
                   <span>{university.location}</span>
                 </div>
               </div>
-              <p className="text-gray-700 mb-6 max-w-2xl">{university.description}</p>
+              <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-2xl">{university.description}</p>
 
               {/* Stats */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{university.clubsCount}</div>
-                  <div className="text-sm text-gray-600">Active Clubs</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{university.clubsCount}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Active Clubs</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{clubs.reduce((s, e) => s + e.reviewCount, 0)}</div>
-                  <div className="text-sm text-gray-600">Total Reviews</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{clubs.reduce((s, e) => s + e.reviewCount, 0)}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</div>
                 </div>
               </div>
-            </div>            
+            </div>          
             {/* Action Button */}
             {user && user.roles.includes("Administrator") &&
               <div className="flex items-center gap-2">
                 <Button 
-                  className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                  className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-300 dark:hover:border-blue-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                   title="Edit University" 
                   onClick = {() => {
                     router.push(`http://localhost:3000/admin/school/${schoolId}/edit`);
@@ -220,7 +216,7 @@ export default function SchoolPage({ params }) {
                   <Pencil className="w-4 h-4" />
                 </Button>
                 <Button 
-                  className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                  className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                   title="Delete University"
                   onClick={() => {
                       setUniversityToDelete(schoolId);
@@ -228,7 +224,7 @@ export default function SchoolPage({ params }) {
                   }}
                 >Delete
                   <Trash2 className="w-4 h-4" />
-                </Button>           
+                </Button>          
               </div>
             } 
           </div>
@@ -236,10 +232,10 @@ export default function SchoolPage({ params }) {
 
         {/* Can't Find Your Club Section */}
         {user && !user.roles.includes("Administrator") && 
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 mb-8 text-white text-center">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 rounded-2xl p-6 mb-8 text-white text-center">
             <h2 className="text-xl md:text-2xl font-bold mb-2">Can't find your club?</h2>
-            <p className="text-blue-100 mb-4">Add yours today and help other students discover your community!</p>
-            <Button className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-xl font-semibold"
+            <p className="text-blue-100 mb-4 dark:text-blue-300">Add yours today and help other students discover your community!</p>
+            <Button className="bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-zinc-700 px-6 py-3 rounded-xl font-semibold"
             onClick={(e) => {
                 e.preventDefault();
                 if (user) {
@@ -261,32 +257,32 @@ export default function SchoolPage({ params }) {
         }
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-blue-100">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-6 mb-8 border border-blue-100 dark:border-blue-900">
           <div className="flex flex-col lg:flex-row gap-4 items-center mb-4">
             {/* Search Bar */}
             <div className="relative flex-1 w-full lg:w-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
               <Input
                 type="text"
                 placeholder="Search clubs by name, description, or tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3 text-sm md:text-md xl:text-lg  border-2 border-gray-200 focus:border-blue-500 rounded-xl w-full"
+                className="pl-10 py-3 text-sm md:text-md xl:text-lg border-2 border-gray-200 dark:border-zinc-700 focus:border-blue-500 rounded-xl w-full bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               />
             </div>
 
             {/* Sort By */}
             <div className="flex items-center gap-2 w-full lg:w-auto">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sort by:</span>
               <Select value={sortBy} onValueChange={handleSort}>
-                <SelectTrigger className="w-full lg:w-48 border-2 border-gray-200 rounded-xl">
+                <SelectTrigger className="w-full lg:w-48 border-2 border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Club Name</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="reviews">Most Reviews</SelectItem>
-                  <SelectItem value="bookmarked">Bookmarked</SelectItem>
+                <SelectContent className="bg-white dark:bg-zinc-800 border-zinc-700">
+                  <SelectItem value="name" className="text-gray-900 dark:text-gray-100">Club Name</SelectItem>
+                  <SelectItem value="rating" className="text-gray-900 dark:text-gray-100">Highest Rated</SelectItem>
+                  <SelectItem value="reviews" className="text-gray-900 dark:text-gray-100">Most Reviews</SelectItem>
+                  <SelectItem value="bookmarked" className="text-gray-900 dark:text-gray-100">Bookmarked</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -301,8 +297,8 @@ export default function SchoolPage({ params }) {
                 onClick={() => handleFilter(category)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   filterBy === category
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "border-blue-200 text-blue-600 hover:bg-blue-50"
+                    ? "bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
+                    : "border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950"
                 }`}
               >
                 {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
@@ -313,7 +309,7 @@ export default function SchoolPage({ params }) {
 
         {/* Results Count */}
         <div className="mb-6">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Showing {filteredClubs.length} of {clubs.length} clubs
           </p>
         </div>
@@ -322,35 +318,35 @@ export default function SchoolPage({ params }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredClubs.map((club) => (
             <Link key={club.id} href={`/school/1/club/${club.id}`} className="group">
-              <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-blue-100 dark:border-blue-900 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 {/* Club Header */}
                 <div className="mb-4">
                   <div className="flex justify-between items-start mb-2">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                    <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">
                       {club.categoryName}
                     </Badge>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 text-yellow-500">
+                      <div className="flex items-center gap-1 text-yellow-500 dark:text-yellow-400">
                         <Star className="w-4 h-4 fill-current" />
-                        <span className="text-sm font-medium text-gray-700">{club.averageRating}</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{club.averageRating}</span>
                       </div>
                       <Heart
                         className={`w-5 h-5 p-0.5 transition-all group-hover/heart:scale-110 cursor-pointer ${
                           club.isBookmarked 
                             ? "text-red-500 fill-red-500" 
-                            : "text-red-500 hover:fill-red-500"
+                            : "text-red-500 hover:fill-red-500 dark:text-red-400 dark:hover:fill-red-400"
                         }`} 
                       />
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                     {club.name}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{club.description}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">{club.description}</p>
                 </div>
 
                 {/* Club Stats */}
-                <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
+                <div className="flex justify-between items-center mb-4 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4" />
                     <span>{club.reviewCount} reviews</span>
@@ -360,7 +356,7 @@ export default function SchoolPage({ params }) {
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1">
                   {club.tags.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs border-blue-200 text-blue-600">
+                    <Badge key={index} variant="outline" className="text-xs border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400">
                       {tag}
                     </Badge>
                   ))}
@@ -378,7 +374,6 @@ export default function SchoolPage({ params }) {
         }
       </div>
       {isDeleteOpen &&
-            
         <DeleteModal 
           isOpen={isDeleteOpen}
           onClose={() => setIsDeleteOpen(false)}
@@ -397,9 +392,9 @@ export default function SchoolPage({ params }) {
                 }
               });
               if(response.ok){
-                 toast.success("University deleted successfully!", {
-                  duration: 5000, // 5 seconds
-                });
+                  toast.success("University deleted successfully!", {
+                    duration: 5000, // 5 seconds
+                  });
               }
             }
             catch(error){
@@ -415,6 +410,5 @@ export default function SchoolPage({ params }) {
         />
       }
     </div>
-    
   )
 }

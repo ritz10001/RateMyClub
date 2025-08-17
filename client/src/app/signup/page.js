@@ -9,28 +9,24 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../utils/firebase";
 import axios from "axios";
 import GuestRoute from "../components/GuestRoute";
+import ProfileCompletionToast from "../components/profile-completion";
 
-export default function SignUpPage(){
-  return (
-    <GuestRoute>
-      <SignUpContent />
-    </GuestRoute>
-  );
-}
-
-function SignUpContent() {
+export default function SignUpContent() {
   const router = useRouter();
   const auth = getAuth(app);
-  const { user, setUser } = useAuth();
+  const { user, isInitialized, setUser, login } = useAuth();
+  const provider = new GoogleAuthProvider();
   const [isLoadingTag, setIsLoadingTag] = useState(true);
   const [selectedTags, setSelectedTags] = useState([]);
   const [tags, setTags] = useState(null);
   const [schoolSearchTerm, setSchoolSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -120,118 +116,120 @@ function SignUpContent() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(false);
-    await new Promise(resolve => setTimeout(resolve, 200));
-    // 1. Password match check
-    if (formData.password !== formData.confirmPassword) {
-      setError(true);
-      setErrorMessage("Passwords do not match!");
-      setIsSubmitting(false);  // Clear any previous specific message
-      return;
+  e.preventDefault();
+  setIsSubmitting(true);
+  setIsRegistering(true);
+  setError(false);
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
+  // Password match check
+  if (formData.password !== formData.confirmPassword) {
+    setError(true);
+    setErrorMessage("Passwords do not match!");
+    setIsSubmitting(false);
+    setIsRegistering(false);
+    return;
+  }
+  
+  let idToken;
+  // Register in Firebase
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+    const fbUser = userCredential.user;
+    idToken = await fbUser.getIdToken();
+    
+    // Sign out immediately and clear user state
+    await auth.signOut();
+    setUser(null);
+  } 
+  catch (firebaseError) {
+    console.error("Firebase registration error:", firebaseError);
+    setError(true);
+    switch (firebaseError.code) {
+      case "auth/weak-password":
+        setErrorMessage("Password must be at least 6 characters.");
+        break;
+      case "auth/email-already-in-use":
+        setErrorMessage("This email is already registered.");
+        break;
+      case "auth/invalid-email":
+        setErrorMessage("Invalid email address.");
+        break;
+      default:
+        setErrorMessage("Firebase error: " + firebaseError.message);
     }
-    let idToken;
-    // 2. Register in Firebase
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const fbUser = userCredential.user;
-      // await updateProfile(user, { displayName: formData.firstName });
-      // Get the Firebase ID token to send to backend
-      idToken = await fbUser.getIdToken();
-      // Send verification email before signing out
-      // await sendEmailVerification(fbUser);
-      // Sign out immediately to prevent auto-login
-      await auth.signOut();
-      setUser(null);
-    } 
-    catch (firebaseError) {
-      console.error("Firebase registration error:", firebaseError);
-      setError(true);
-      switch (firebaseError.code) {
-        case "auth/weak-password":
-          setErrorMessage("Password must be at least 6 characters.");
-          break;
-        case "auth/email-already-in-use":
-          setErrorMessage("This email is already registered.");
-          break;
-        case "auth/invalid-email":
-          setErrorMessage("Invalid email address.");
-          break;
-        default:
-          setErrorMessage("Firebase error: " + firebaseError.message);
-      }
-      setIsSubmitting(false);
-      return;
-    }
-    // 3. Sync with backend (SQL)
-    try {
-      const response = await fetch("http://localhost:5095/api/Account/firebase-register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          firebaseIdToken: idToken,
-          email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          universityId: formData.universityId,
-          tagIds: selectedTags
-        })
-      });
+    setIsSubmitting(false);
+    setIsRegistering(false);
+    return;
+  }
+  
+  // Sync with backend (SQL)
+  try {
+    const response = await fetch("http://localhost:5095/api/Account/firebase-register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        firebaseIdToken: idToken,
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        universityId: formData.universityId,
+        tagIds: selectedTags
+      })
+    });
 
-      if (response.ok) {
-        const { confirmationUrl, ...authResponse } = await response.json();
-        console.log("Sign up successful:", authResponse);
-        console.log("confirmationurl", confirmationUrl);
+    if (response.ok) {
+      const { confirmationUrl, ...authResponse } = await response.json();
+      console.log("Sign up successful:", authResponse);
+      console.log("confirmationurl", confirmationUrl);
 
-        const userData = {
-          firstName: authResponse.firstName,
-          lastName: authResponse.lastName,
-          userId: authResponse.userId,
-          email: authResponse.email,
-          roles: authResponse.roles,
-          tagIds: authResponse.tags,
-          idToken: authResponse.firebaseIdToken
-        };
-
-        if (confirmationUrl) {
-          router.push(`http://localhost:3000/email-confirmation?email=${encodeURIComponent(formData.email)}`);
-        } 
-        else {
-          toast.error("No confirmation URL received. Staying on page.");
-        }
-      } 
-      else if (response.status === 400) {
-        const errorData = await response.json();
-        console.log("Sign up failed: Invalid data");
-        // Backend validation message handling
-        if (errorData?.type) {
-          setErrorMessage(errorData.errors?.Password?.[0] ?? "Invalid input.");
-        } 
-        else {
-          setErrorMessage(
-            Object.values(errorData)
-              .map(arr => arr[0])
-              .join("\n")
-          );
-        }
+      if (confirmationUrl) {
+        // Clear all states immediately before redirect
+        setIsSubmitting(false);
+        setIsRegistering(false);
+        
+        // Use Next.js router for SPA navigation
+        router.push(`/email-confirmation?email=${encodeURIComponent(formData.email)}`);
+        return; // Exit early
       } 
       else {
-        throw new Error(`Unexpected backend response: ${response.status}`);
+        toast.error("No confirmation URL received. Staying on page.");
+        setIsRegistering(false);
       }
     } 
-    catch (networkError) {
-      console.error("Network/backend error:", networkError);
+    else if (response.status === 400) {
+      const errorData = await response.json();
+      console.log("Sign up failed: Invalid data");
       setError(true);
-      setErrorMessage("A network error occurred. Please try again.");
+      if (errorData?.type) {
+        setErrorMessage(errorData.errors?.Password?.[0] ?? "Invalid input.");
+      } 
+      else {
+        setErrorMessage(
+          Object.values(errorData)
+            .map(arr => arr[0])
+            .join("\n")
+        );
+      }
+      setIsRegistering(false);
+    } 
+    else {
+      throw new Error(`Unexpected backend response: ${response.status}`);
     }
-    finally {
-      setIsSubmitting(false);
-    }
+  } 
+  catch (networkError) {
+    console.error("Network/backend error:", networkError);
+    setError(true);
+    setErrorMessage("A network error occurred. Please try again.");
+    setIsRegistering(false);
   }
+  finally {
+    setIsSubmitting(false);
+  }
+}
 
   const isEmailValid = (email) => /\S+@\S+\.\S+/.test(email);
 
@@ -245,74 +243,107 @@ function SignUpContent() {
            confirmPassword.trim() != "" &&
            password === confirmPassword
   };
-  const handleGoogleLogin = async () => {
-    try {
-      // Sign in with firebase first
-      const result = await signInWithPopup(auth, provider);
-      const firebaseUser = result.user;
-      
-      // fetch the user token
-      const idToken = await firebaseUser.getIdToken();
-      let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(idToken)
-      });
-      if(response.status === 401) {
-        console.log("User not found, registering...");
+  const handleGoogleRegister = async () => {
+  try {
+    // Step 1: Sign in with Firebase popup
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
+
+    // Step 2: Show loading AFTER user selects account
+    setIsLoading(true);
+
+    // Step 3: Get Firebase ID token
+    const idToken = await firebaseUser.getIdToken();
+
+    // Step 4: Try backend login
+    let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(idToken)
+    });
+
+    // Step 5: If user not found, register
+    if (response.status === 401) {
+      console.log("User not found, registering...");
+      try {
         response = await fetch(`http://localhost:5095/api/Account/firebase-register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             firebaseIdToken: idToken,
             firstName: firebaseUser.displayName?.split(" ")[0] || "",
-            fastName: firebaseUser.displayName?.split(" ")[1] || "",
+            lastName: firebaseUser.displayName?.split(" ")[1] || "",
             email: firebaseUser.email,
+            universityId: 1, // default university
+            isSSO: true
           })
         });
+
         if (!response.ok) {
           const errText = await response.text();
           throw new Error("SSO registration failed: " + errText);
         }
-      }
-      const authResponse = await response.json();
-      const combinedUser = {
-        ...firebaseUser,
-        firstName: authResponse.firstName,
-        lastName: authResponse.lastName,
-        sqlUserId: authResponse.userId,
-        roles: authResponse.roles,
-        tags: authResponse.tags,
-        universityId: authResponse.universityId,
-      };
-      login(combinedUser);
-      if (!combinedUser.universityId || !combinedUser.tags?.length) {
-        router.push("/user-profile");
+        else{
+          console.log("SSO REGISTRATION COMPLETE");
+        }
       } 
-      else {
-        router.push("/"); // Existing user, go home
+      catch (sqlError) {
+        console.error("SQL registration failed, deleting Firebase user...", sqlError);
+        try {
+          await firebaseUser.delete(); // Delete dangling Firebase user
+          console.log("Firebase user deleted due to SQL failure");
+        } catch (deleteError) {
+          console.error("Failed to delete Firebase user:", deleteError);
+        }
+        throw sqlError; // propagate error
       }
     }
-    catch(error){
-      console.error("SSO error:", error);
-      toast.error("Google SSO failed. Please try again");
-      setError("Google SSO failed. Please try again.");
-    }
-    finally {
-      setIsLoading(false);
-    }
-  }
 
-  if (isLoading) {
-    return <>
-      <div className="col-span-full flex justify-center py-12 space-x-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="font-bold text-xl">Now Loading..</p>
-      </div>
-    </>;
+    // Step 6: Parse backend response
+    const authResponse = await response.json();
+    console.log("THE AUTHRESPONSE FROM SSO", authResponse);
+
+    // Step 7: Merge Firebase + SQL data and store in session
+    const combinedUser = {
+      ...firebaseUser,
+      firstName: authResponse.firstName,
+      lastName: authResponse.lastName,
+      sqlUserId: authResponse.userId,
+      roles: authResponse.roles,
+      tags: authResponse.tags,
+      universityId: authResponse.universityId
+    };
+    login(combinedUser); // updates AuthContext + sessionStorage immediately
+    router.replace("/");
+  } 
+  catch (error) {
+    console.error("SSO error:", error);
+    toast.error("Google SSO failed. Please try again");
+    setError("Google SSO failed. Please try again.");
+  } 
+  finally {
+    setIsLoading(false);
   }
+};
+// Modified useEffect - only redirect if NOT registering
+useEffect(() => {
+  if (isInitialized && !isLoading && user && !isRegistering) {
+    // User is already logged in, redirect to home
+    router.replace("/");
+  }
+}, [user, isLoading, router, isRegistering, isInitialized]);
+
+// Modified loading condition - don't show loading if registering
+if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering)) {
+  return(
+   <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div className="text-center">
+      <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+      <p className="text-gray-600 text-lg font-medium">Loading...</p>
+    </div>
+  </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center py-12 px-4">
@@ -332,7 +363,7 @@ function SignUpContent() {
           {/* Google SSO Button */}
           <div className="mb-6">
             <Button
-              onClick={handleGoogleLogin}
+              onClick={handleGoogleRegister}
               variant="outline"
               className="w-full border-2 border-gray-200 hover:bg-gray-50 py-3 px-4 rounded-xl font-semibold text-gray-700 bg-white transition-colors flex items-center justify-center gap-3"
             >

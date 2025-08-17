@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/app/utils/firebase'; // adjust import path as needed
+import { useRouter } from "next/navigation";
 
 const AuthContext = createContext();
 
@@ -9,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   // Function to fetch SQL user data (only called when needed)
   const fetchSqlUserData = async (firebaseUser) => {
@@ -49,7 +51,8 @@ export const AuthProvider = ({ children }) => {
         
         return combinedUser;
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Error fetching SQL user data:", error);
     }
     
@@ -94,10 +97,12 @@ export const AuthProvider = ({ children }) => {
   // Custom logout function
   const logout = async () => {
     try {
+      console.log("trying to log out");
       await auth.signOut();
       setUser(null);
       sessionStorage.removeItem('combinedUserData'); // Clear stored data
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Error signing out:", error);
     }
   };

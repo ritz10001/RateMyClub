@@ -52,7 +52,7 @@ export default function EditUniversityPage() {
         toast.success("University Created!", {
           duration: 5000, // 5 seconds
         });
-        router.push("/all-schools");
+        router.replace("/all-schools");
       }
       else{
         const errorData = await response.json();

@@ -26,7 +26,6 @@ export default function RequestUniversityPage(){
 function RequestUniversityContent() {
   const { user } = useAuth();
   const auth = getAuth(app);
-  console.log("User data:", user);
   const router = useRouter();
   const [universityData, setUniversityData] = useState({
     fullName: user?.firstName ? `${user.firstName} ${user.lastName}` : "",
@@ -72,7 +71,7 @@ function RequestUniversityContent() {
         toast.success("University request submitted! We'll review it shortly.", {
           duration: 5000, // 5 seconds
         });
-        router.push("/all-schools");
+        router.replace("/all-schools");
       }
       else{
         const errorData = await response.json();

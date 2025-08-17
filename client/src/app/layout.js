@@ -6,7 +6,8 @@ import Footer from "./components/footer";
 import LoginModal from "./components/login-modal";
 import { ClubProvider } from "./context/ClubContext";
 import { Toaster } from 'sonner';
-import SessionManager from "./components/SessionManager";
+import { ThemeProvider } from 'next-themes';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,17 +25,19 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>
-          <ClubProvider>
-            <Header />
-            <LoginModal />
-            {children}
-            <Footer />
-            <Toaster position="top-center" richColors />
-          </ClubProvider>
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <ClubProvider>
+              <Header />
+              <LoginModal />
+              {children}
+              <Footer />
+              <Toaster position="top-center" richColors />
+            </ClubProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

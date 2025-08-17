@@ -7,18 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Star, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { use } from "react"; 
-import { useRouter } from 'next/navigation';
 import { useAuth } from "@/app/context/AuthContext";
 import { useClub } from "@/app/context/ClubContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from 'sonner';
 import { getAuth } from "firebase/auth";
 import { app } from "@/app/utils/firebase";
 import AuthRoute from "@/app/components/AuthRoute";
 
 export default function EditReviewPage({ params }){
-  const { schoolId, clubId, id } = use(params);
+  const { schoolId, clubId, id } = useParams();
+  const [isLoading, setIsLoading] = useState(true);
   const redirectPath = `/school/${schoolId}/club/${clubId}`;
   return(
     <AuthRoute redirectTo={redirectPath}>
@@ -41,10 +40,8 @@ function EditReviewContent({ schoolId, clubId, id }) {
     recommendation: "",
   })
   const [error, setError] = useState(false);
-  // const { schoolId, clubId, id } = useParams();
   const auth = getAuth(app);
   console.log("THIS IS REVIEW ID", id);
-  // console.log("THIS IS THE REVIEW ID", reviewId);
   useEffect(() => {
     const fetchReviewData = async () => {
       console.log("ENTERING");
@@ -122,7 +119,7 @@ function EditReviewContent({ schoolId, clubId, id }) {
         toast.success("Review edited successfully!", {
           duration: 5000, // 5 seconds
         });
-        router.push(`/school/${schoolId}/club/${clubId}`);
+        router.replace(`/school/${schoolId}/club/${clubId}`);
       }
       else{
         const errorData = await response.json(); // Get error details
@@ -163,10 +160,10 @@ function EditReviewContent({ schoolId, clubId, id }) {
 
   if (isLoading) { 
     return (
-      <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-        <div className="flex items-center space-x-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          <p className="font-bold text-xl">Now Loading..</p>
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 text-lg font-medium">Loading...</p>
         </div>
       </div>
     ); 

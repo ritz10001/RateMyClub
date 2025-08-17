@@ -74,6 +74,11 @@ public class AccountController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        if (firebaseRegisterDTO.IsSSO)
+        {
+            return Ok(authResponse);
+        }
+
         var response = new RegisterResponseDTO
         {
             AuthResponse = authResponse,

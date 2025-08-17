@@ -13,7 +13,7 @@ export default function GuestRoute({ children, redirectTo = "/" }) {
 
   useEffect(() => {
     // If user is already logged in, redirect them away from auth pages
-    if (!isLoading && user) {
+    if (!isLoading && user && user.emailVerified) {
       setIsRedirecting(true);
       setTimeout(() => {
         router.replace(redirectTo);
@@ -36,5 +36,5 @@ export default function GuestRoute({ children, redirectTo = "/" }) {
   }
 
   // Only render children if user is NOT logged in
-  return user ? null : children;
+  return user && user.emailVerified ? null : children;
 }

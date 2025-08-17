@@ -9,14 +9,14 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { toast } from 'sonner';
 import { use } from "react"; 
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/app/context/AuthContext"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 import AuthRoute from "@/app/components/AuthRoute"
 
 export default function WriteReviewPage({ params }){
-  const { schoolId, clubId } = use(params);
+  const { schoolId, clubId } = useParams();
   const redirectPath = `/school/${schoolId}/club/${clubId}`;
   return(
     <AuthRoute redirectTo={redirectPath}>
@@ -38,7 +38,6 @@ function WriteReviewContent({ schoolId, clubId }) {
     recommendation: "",
   })
   const [error, setError] = useState(false);
-  // const { schoolId, clubId } = use(params);
   const auth = getAuth(app);
   console.log("THIS IS CLUB ID", clubId);
   useEffect(() => {
@@ -104,7 +103,7 @@ function WriteReviewContent({ schoolId, clubId }) {
         toast.success("Review submitted successfully!", {
             duration: 5000, // 5 seconds
         });
-        router.push(`/school/${schoolId}/club/${clubId}`);
+        router.replace(`/school/${schoolId}/club/${clubId}`);
       }
       else{
         console.log("failed");
@@ -268,7 +267,7 @@ function WriteReviewContent({ schoolId, clubId }) {
                   className="border-2 border-gray-200 text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
-                  <Link href={`/club/${params.id}`}>Cancel</Link>
+                  <Link href={`/club/${clubId}`}>Cancel</Link>
                 </Button>
                 <Button
                   type="submit"

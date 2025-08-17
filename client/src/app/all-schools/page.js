@@ -88,46 +88,46 @@ export default function DirectoryPage() {
     setSortBy(value)
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl text-center font-bold text-blue-600 mb-2">School Directory</h1>
-          <p className="text-xl text-center text-gray-600">Discover colleges and universities</p>
+          <h1 className="text-3xl md:text-4xl text-center font-bold text-blue-600 dark:text-blue-400 mb-2">School Directory</h1>
+          <p className="text-xl text-center text-gray-600 dark:text-gray-400">Discover colleges and universities</p>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-blue-100">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-6 mb-8 border border-blue-100 dark:border-blue-900">
           <div className="flex flex-col lg:flex-row gap-4 items-center">
             {/* Search Bar */}
             <div className="relative flex-1 w-full lg:w-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
               <Input
                 type="text"
                 placeholder="Search schools by name or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3 text-sm md:text-md xl:text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl w-full"
+                className="pl-10 py-3 text-sm md:text-md xl:text-lg border-2 border-gray-200 dark:border-zinc-700 focus:border-blue-500 rounded-xl w-full bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               />
             </div>
 
             {/* Sort By */}
             <div className="flex items-center gap-2 w-full lg:w-auto">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sort by:</span>
               <Select value={sortBy} onValueChange={handleSort}>
-                <SelectTrigger className="w-full lg:w-48 border-2 border-gray-200 rounded-xl">
+                <SelectTrigger className="w-full lg:w-48 border-2 border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">School Name</SelectItem>
-                  <SelectItem value="reviews">Most Reviews</SelectItem>
-                  <SelectItem value="clubs">Most Clubs</SelectItem>
+                <SelectContent className="bg-white dark:bg-zinc-800 border-zinc-700">
+                  <SelectItem value="name" className="text-gray-900 dark:text-gray-100">School Name</SelectItem>
+                  <SelectItem value="reviews" className="text-gray-900 dark:text-gray-100">Most Reviews</SelectItem>
+                  <SelectItem value="clubs" className="text-gray-900 dark:text-gray-100">Most Clubs</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Add School Button */}
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold whitespace-nowrap w-full lg:w-auto"
+            <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold whitespace-nowrap w-full lg:w-auto"
               onClick={(e) => {
                 e.preventDefault();
                 if (user) {
@@ -150,24 +150,24 @@ export default function DirectoryPage() {
 
         {/* Results Count */}
         <div className="mb-6">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Showing {filteredSchools.length} schools
           </p>
         </div>
 
         {/* School Grid */}
         {isLoading ? (
-          <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-            <div className="flex items-center space-x-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-              <p className="font-bold text-xl">Now Loading..</p>
+          <div className="fixed inset-0 bg-white dark:bg-zinc-950 z-50 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-20 h-20 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">Loading...</p>
             </div>
           </div>
           ) : 
           <div className="rounded-xl grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
             {filteredSchools.map((school) => (
               <Link key={school.id} href={`/school/${school.id}`} className="group">
-                <div className="bg-white rounded-md shadow-lg border border-blue-100 pb-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
+                <div className="bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-blue-100 dark:border-blue-900 pb-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
                   {/* School Logo */}
                   <div className="flex justify-center mb-4 h-55">
                     <img
@@ -181,20 +181,20 @@ export default function DirectoryPage() {
                   {/* School Info */}
                   <div className="text-center">
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                         {school.name}
                       </h3>
                     </div>
                     
-                    <p className="text-gray-600 mb-4">{school.location}</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">{school.location}</p>
 
                     {/* Stats */}
                     <div className="flex justify-center gap-6 text-sm">
-                      <div className="flex items-center gap-1 text-gray-600">
+                      <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                         <Users className="w-4 h-4" />
                         <span>{school.reviewCount} reviews</span>
                       </div>
-                      <div className="flex items-center gap-1 text-gray-600">
+                      <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                         <Building className="w-4 h-4" />
                         <span>{school.clubsCount} clubs</span>
                       </div>
@@ -203,7 +203,7 @@ export default function DirectoryPage() {
 
                   {/* Club Count Badge */}
                   <div className="mt-4 text-center">
-                    <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-semibold">
                       {school.clubsCount} Active Clubs
                     </span>
                   </div>

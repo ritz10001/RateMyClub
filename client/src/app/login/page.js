@@ -7,27 +7,18 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import { api } from "../utils/axios";
 import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../utils/firebase";
 import GuestRoute from "../components/GuestRoute";
 import { toast } from "sonner";
 
-export default function LoginPage() {
-  return (
-    <GuestRoute>
-      <LoginContent />
-    </GuestRoute>
-  );
-}
-
-function LoginContent() {
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+export default function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const router = useRouter();
-  const { isInitialized, login } = useAuth();
+  const { user, isInitialized, login } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -42,6 +33,7 @@ function LoginContent() {
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoggingIn(true);
     setIsLoading(true);
     setError(false);
     try{
@@ -88,11 +80,7 @@ function LoginContent() {
       if(login){
         login(combinedUser);
       }
-      setTimeout(() => {
-        console.log("handleSubmit: Navigating to /");
-        router.push("/");
-      }, 100);
-      
+      router.replace("/");
     }
     catch (err) {
       console.error("❌ Firebase login error:", err);
@@ -105,75 +93,111 @@ function LoginContent() {
     } 
     finally {
       setIsLoading(false);
+      setIsLoggingIn(false);
     }
   } 
   const handleGoogleLogin = async () => {
-    try {
-      // Sign in with firebase first
-      const result = await signInWithPopup(auth, provider);
-      const firebaseUser = result.user;
-      
-      // fetch the user token
-      const idToken = await firebaseUser.getIdToken();
-      let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(idToken)
-      });
-      if(response.status === 401) {
-        console.log("User not found, registering...");
+  try {
+    // Step 1: Sign in with Firebase popup
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
+
+    // Step 2: Show loading AFTER user selects account
+    setIsLoading(true);
+
+    // Step 3: Get Firebase ID token
+    const idToken = await firebaseUser.getIdToken();
+
+    // Step 4: Try backend login
+    let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(idToken)
+    });
+
+    // Step 5: If user not found, register
+    if (response.status === 401) {
+      console.log("User not found, registering...");
+      try {
         response = await fetch(`http://localhost:5095/api/Account/firebase-register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             firebaseIdToken: idToken,
             firstName: firebaseUser.displayName?.split(" ")[0] || "",
-            fastName: firebaseUser.displayName?.split(" ")[1] || "",
+            lastName: firebaseUser.displayName?.split(" ")[1] || "",
             email: firebaseUser.email,
+            universityId: 1, // default university
+            isSSO: true
           })
         });
+
         if (!response.ok) {
           const errText = await response.text();
           throw new Error("SSO registration failed: " + errText);
         }
-      }
-      const authResponse = await response.json();
-      const combinedUser = {
-        ...firebaseUser,
-        firstName: authResponse.firstName,
-        lastName: authResponse.lastName,
-        sqlUserId: authResponse.userId,
-        roles: authResponse.roles,
-        tags: authResponse.tags,
-        universityId: authResponse.universityId,
-      };
-      login(combinedUser);
-      if (!combinedUser.universityId || !combinedUser.tags?.length) {
-        router.push("/user-profile");
+        else{
+          console.log("SSO REGISTRATION COMPLETE");
+        }
       } 
-      else {
-        router.push("/"); // Existing user, go home
+      catch (sqlError) {
+        console.error("SQL registration failed, deleting Firebase user...", sqlError);
+        try {
+          await firebaseUser.delete(); // Delete dangling Firebase user
+          console.log("Firebase user deleted due to SQL failure");
+        } catch (deleteError) {
+          console.error("Failed to delete Firebase user:", deleteError);
+        }
+        throw sqlError; // propagate error
       }
-    }
-    catch(error){
-      console.error("SSO error:", error);
-      toast.error("Google SSO failed. Please try again");
-      setError("Google SSO failed. Please try again.");
-    }
-    finally {
-      setIsLoading(false);
     }
 
+    // Step 6: Parse backend response
+    const authResponse = await response.json();
+    console.log("THE AUTHRESPONSE FROM SSO", authResponse);
+
+    // Step 7: Merge Firebase + SQL data and store in session
+    const combinedUser = {
+      ...firebaseUser,
+      firstName: authResponse.firstName,
+      lastName: authResponse.lastName,
+      sqlUserId: authResponse.userId,
+      roles: authResponse.roles,
+      tags: authResponse.tags,
+      universityId: authResponse.universityId
+    };
+    login(combinedUser); // updates AuthContext + sessionStorage immediately
+    router.replace("/");
+  } 
+  catch (error) {
+    console.error("SSO error:", error);
+    toast.error("Google SSO failed. Please try again");
+    setError("Google SSO failed. Please try again.");
+  } 
+  finally {
+    setIsLoading(false);
   }
-  if(isLoading || !isInitialized){
-     return (
-      <div className="col-span-full flex justify-center py-12 space-x-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="font-bold text-xl">Now Loading..</p>
+};
+
+useEffect(() => {
+  if (isInitialized && user && user?.emailVerified && !isLoggingIn) {
+    router.replace("/");
+  }
+}, [isInitialized, user, router, isLoggingIn]);
+
+// Modified loading condition - don't show loading for unverified users during login
+if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerified && !isLoggingIn)) {
+   return (
+    <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+        <p className="text-gray-600 text-lg font-medium">Loading...</p>
       </div>
-     )
+    </div>
+  ); 
+}
+  if (user?.emailVerified) {
+    return null; // or just `return null`
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center py-12 px-4">

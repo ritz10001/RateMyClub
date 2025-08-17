@@ -12,4 +12,5 @@ public class FirebaseRegisterDTO
     public string LastName { get; set; }
     public int? UniversityId { get; set; }  // For DB linkage if used
     public List<int> TagIds { get; set; } = [];
+    public bool IsSSO { get; set; } = false;
 }

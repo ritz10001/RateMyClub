@@ -18,6 +18,7 @@ import { Elsie_Swash_Caps } from "next/font/google"
 import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const monthNumbers = {
   1: "January",
@@ -344,27 +345,27 @@ export default function ClubPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Club Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 dark:border-blue-900">
           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             <div className="flex-1">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-gray-900 mb-2">{club.name}</h1>
+                  <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{club.name}</h1>
                   <Link
                     href={`/school/${schoolId}`}
-                    className="text-blue-600 hover:text-blue-700 font-medium text-lg underline underline-offset-4"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium text-lg underline underline-offset-4"
                   >
                     {club.universityName}
                   </Link>
                 </div>
                 
-                <button onClick={handleBookmark} className="p-2 rounded-full hover:bg-red-50 transition-colors group">
+                <button onClick={handleBookmark} className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-950 transition-colors group">
                   <Heart
                     className={`w-6 h-6 transition-all ${
-                      isBookmarked ? "text-red-500 fill-current" : "text-red-500 hover:fill-current hover:scale-110"
+                      isBookmarked ? "text-red-500 fill-current" : "text-red-500 dark:text-red-400 hover:fill-current hover:scale-110"
                     }`}
                   />
                 </button>
@@ -373,16 +374,16 @@ export default function ClubPage({ params }) {
               {user && user.roles.includes("Administrator") && 
                 <div className="flex items-center gap-2">
                   <Button 
-                    className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                    className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-300 dark:hover:border-blue-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                     title="Edit University"
                     onClick = {() => {
-                      router.push(`http://localhost:3000/admin/club/${clubId}/edit`);
+                      router.replace(`http://localhost:3000/admin/club/${clubId}/edit`);
                     }}
                   >Edit
                     <Pencil className="w-4 h-4" />
                   </Button>
                   <Button 
-                    className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                    className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                     title="Delete Club"
                     onClick={() => {
                         setIsDeleteOpen(true);
@@ -392,22 +393,22 @@ export default function ClubPage({ params }) {
                     }}
                   >Delete
                     <Trash2 className="w-4 h-4" />
-                  </Button>           
+                  </Button>          
                 </div>
               }
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
-                <Badge className="bg-blue-100 text-blue-800">{club.categoryName}</Badge>
+                <Badge className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{club.categoryName}</Badge>
                 {club.tags.map((tag, index) => (
-                  <Badge key={index} variant="outline" className="border-blue-200 text-blue-600">
+                  <Badge key={index} variant="outline" className="border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400">
                     {tag}
                   </Badge>
                 ))}
               </div>
 
-              <p className="text-gray-700 mb-6 text-md md:text-lg leading-relaxed">Just a description</p>
+              <p className="text-gray-700 dark:text-gray-300 mb-6 text-md md:text-lg leading-relaxed">Just a description</p>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <MapPin className="w-4 h-4" />
                   <span>{club.clubLocation}</span>
                 </div>
@@ -418,21 +419,21 @@ export default function ClubPage({ params }) {
         {/* Rating Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Overall Rating */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 mb-6">Overall Rating</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-6 border border-blue-100 dark:border-blue-900">
+            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Overall Rating</h2>
 
             {/* Overall Rating Display */}
             <div className="text-center mb-6">
-              <div className="text-5xl font-bold text-gray-900 mb-2">{club.averageRating}</div>
+              <div className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">{club.averageRating}</div>
               <div className="flex justify-center gap-1 mb-2">
                 {renderStars(Math.round(club.averageRating), "w-6 h-6")}
               </div>
-              <p className="text-gray-600">Based on {club.reviewCount} review(s)</p>
+              <p className="text-gray-600 dark:text-gray-400">Based on {club.reviewCount} review(s)</p>
             </div>
 
             {/* Rating Distribution */}
             <div className="mb-6">
-              <h3 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 mb-4">Rating Distribution</h3>
+              <h3 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Rating Distribution</h3>
               {[5, 4, 3, 2, 1].map((star) =>
                 renderRatingBar(star, club.ratingDistribution[star], club.reviewCount),
               )}
@@ -440,10 +441,10 @@ export default function ClubPage({ params }) {
 
             {/* Add Review Button */}
             
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center"
+            <Button className="w-full bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 rounded-xl font-semibold flex items-center justify-center"
               onClick={() => {
                 if(user) {
-                  router.push(`/school/${schoolId}/club/${clubId}/add-review`);
+                  router.replace(`/school/${schoolId}/club/${clubId}/add-review`);
                 }
                 else{
                   setIsModalOpen(true);
@@ -456,8 +457,8 @@ export default function ClubPage({ params }) {
           </div>
 
           {/* Category Breakdown */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 mb-6">Rating Breakdown</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-6 border border-blue-100 dark:border-blue-900">
+            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Rating Breakdown</h2>
             <div className="space-y-1">
               {renderCategoryRating("leadership", club.leadershipRating)}
               {renderCategoryRating("inclusivity", club.inclusivityRating)}
@@ -470,18 +471,18 @@ export default function ClubPage({ params }) {
         {/* Reviews Section */}
         {/* {reviews.length > 0 &&} */}
         {reviews.length === 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-12 border border-blue-100 text-center">
-            <div className="text-gray-400 mb-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-12 border border-blue-100 dark:border-blue-900 text-center">
+            <div className="text-gray-400 dark:text-gray-500 mb-4">
               <NotebookPen className="w-16 h-16 mx-auto" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Reviews</h3>
-            <p className="text-gray-600 mb-6">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Reviews</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               No ratings yet. Be the first one to review!
             </p>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold"
+            <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold"
               onClick={() => {
                 if(user) {
-                  router.push(`/school/${schoolId}/club/${clubId}/add-review`);
+                  router.replace(`/school/${schoolId}/club/${clubId}/add-review`);
                 }
                 else{
                   setIsModalOpen(true);
@@ -492,31 +493,31 @@ export default function ClubPage({ params }) {
           </div>
         )}
         {reviews.length > 0 && 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 mb-6">Reviews ({reviews.length})</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-6 border border-blue-100 dark:border-blue-900">
+            <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Reviews ({reviews.length})</h2>
             {/* Reviews List */}
-            <div className="space-y-6 border-t border-gray-500 p-4">
+            <div className="space-y-6 border-t border-gray-500 dark:border-zinc-700 p-4">
               {reviews.map((review) => (
-                <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                <div key={review.id} className="border-b border-gray-200 dark:border-zinc-800 pb-6 last:border-b-0">
                   <p>{console.log("REVIEW USER ID", review.userId)}</p>
-                  {user && review.userId === user.sqlUserId && <p className="font-bold">(MY REVIEW)</p>}
+                  {user && review.userId === user.sqlUserId && <p className="font-bold dark:text-gray-300">(MY REVIEW)</p>}
                   <div className="flex justify-between mb-3">
                     <div>
                       <div className="flex items-center justify-center gap-2 mt-1 w-full">
                         <div className="flex items-center gap-2">
                           <div className="flex">{renderStars(((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1))}</div>
-                          <div className="flex font-bold">{((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1)}</div>
+                          <div className="flex font-bold dark:text-gray-300">{((review.inclusivityRating + review.leadershipRating + review.networkingRating + review.skillsDevelopmentRating) / 4).toFixed(1)}</div>
                         </div>
                         {user && (
                           <div className="flex items-center gap-2">
                             {/* Only allows editing if the user is the owner */}
                             {review.userId === user.sqlUserId && (
                               <Button 
-                                className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                                className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-300 dark:hover:border-blue-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                                 title="Edit Review"
                                 onClick={() => {
                                   setClubData(review);
-                                  router.push(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
+                                  router.replace(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
                                 }}
                               >
                                 Edit
@@ -527,7 +528,7 @@ export default function ClubPage({ params }) {
                             {/* Allow deletion if the user is the owner OR an admin */}
                             {(review.userId === user.sqlUserId) && (
                               <Button 
-                                className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
+                                className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                                 title="Delete Review"
                                 onClick={() => {
                                   setReviewToDelete(review.id);
@@ -542,25 +543,39 @@ export default function ClubPage({ params }) {
                           </div>
                         )}
                       </div>
-                      <div className="text-sm mt-1 text-gray-500">{monthNumbers[parseInt(review.createdAt.slice(5,7))] + " " + parseInt(review.createdAt.slice(8,10)) + ", " + review.createdAt.slice(0,4)}</div>
+                      <div className="text-sm mt-1 text-gray-500 dark:text-gray-400">{monthNumbers[parseInt(review.createdAt.slice(5,7))] + " " + parseInt(review.createdAt.slice(8,10)) + ", " + review.createdAt.slice(0,4)}</div>
                     </div>
                   </div>
-                  <p className="text-gray-700 leading-relaxed mb-3">{review.comment}</p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{review.comment}</p>
+                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-4">
                       <button className={`transition-colors ${userVotes[review.id] === 1 ? "text-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
                       onClick={() => handleVoteClick(1, review.id)} disabled={isVoting}>
                         <ArrowBigUp className={`hover:text-green-600 transition-colors ${userVotes[review.id] === 1 ? "fill-green-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
                       </button>
-                      <p className="font-bold">{review.netScore}</p>
+                      <p className="font-bold dark:text-gray-300">{review.netScore}</p>
                       <button className={`transition-colors ${userVotes[review.id] === -1 ? "text-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`} 
                       onClick={() => handleVoteClick(-1, review.id)} disabled={isVoting}>
                       <ArrowBigDown className={`hover:text-red-600 transition-colors ${userVotes[review.id] === -1 ? "fill-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
                       </button>
                     </div>
-                    <button className="flex items-center gap-2 text-sm hover:text-red-500 font-medium">
+                    {/* <button className="flex items-center gap-2 text-sm hover:text-red-500 font-medium">
                       <span className="text-black font-bold"></span><Flag className="hover:fill-red-500 transition-colors" />
-                    </button>
+                      
+                    </button> */}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="flex items-center gap-2 text-sm hover:text-red-500 font-medium">
+                            <span className="text-black dark:text-gray-200 font-bold"></span>
+                            <Flag className="hover:fill-red-500 transition-colors" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Coming soon!</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               ))}
@@ -568,7 +583,7 @@ export default function ClubPage({ params }) {
             {/* Load More Reviews */}
             <div className="text-center mt-8">
               {reviews.length < totalReviewCount && (
-                <Button className="bg-white text-blue-600 border border-blue-300 hover:bg-gray-100 hover:text-blue-700 hover:border-blue-400 transition-colors duration-200" onClick={() => fetchReviewsPage(currentPage + 1)}>
+                <Button className="bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-blue-700 dark:hover:text-blue-500 hover:border-blue-400 dark:hover:border-blue-600 transition-colors duration-200" onClick={() => fetchReviewsPage(currentPage + 1)}>
                   Load More Reviews
                 </Button>
               )}
@@ -608,8 +623,11 @@ export default function ClubPage({ params }) {
               setReviews((prevReviews) =>
                 prevReviews.filter((r) => r.id !== reviewToDelete)
               );
+              router.replace(`/school/${schoolId}/club/${clubId}`);
             }
-            router.push(`/school/${schoolId}`);
+            if(deleteMode == "Club"){
+              router.replace(`/school/${schoolId}`);
+            }
             toast.success(`${deleteMode} deleted successfully!`, {
               duration: 5000, // 5 seconds
             });

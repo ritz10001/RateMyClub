@@ -6,14 +6,18 @@ import { Mail, CheckCircle, RefreshCw, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import Link from "next/link"
-import {user} from "../context/AuthContext"
+import { useAuth } from "../context/AuthContext"
+import { useRouter } from "next/navigation"
 
 export default function EmailConfirmationPage() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "your email";
   const [isResending, setIsResending] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [emailSent, setEmailSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const { user, isInitialized } = useAuth();
+  const router = useRouter();
   console.log("user informatioon", user);
 
   useEffect(() => {
@@ -31,6 +35,13 @@ export default function EmailConfirmationPage() {
 
     return () => clearInterval(timerId);
   }, [cooldown]);
+
+  // Set loading to false once auth is initialized, regardless of user status
+  useEffect(() => {
+    if (isInitialized) {
+      setIsLoading(false);
+    }
+  }, [isInitialized]);
 
   const handleResendEmail = async () => {
     if(cooldown > 0) return;
@@ -57,6 +68,30 @@ export default function EmailConfirmationPage() {
     finally {
       setIsResending(false);
     }
+  }
+
+  // Only redirect to home if user is logged in AND email is verified
+  useEffect(() => {
+    if (isInitialized && user && user?.emailVerified) {
+      router.replace("/");
+    }
+  }, [user, router, isInitialized]);
+
+  // Show loading only while auth is initializing
+  if (!isInitialized || isLoading) {
+     return (
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 text-lg font-medium">Loading...</p>
+        </div>
+      </div>
+    ); 
+  }
+
+  // If user is logged in and email is verified, don't render anything (redirect will happen)
+  if (user && user?.emailVerified) {
+    return null;
   }
 
   return (
@@ -145,6 +180,11 @@ export default function EmailConfirmationPage() {
                     <>
                       <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                       Sending...
+                    </>
+                  ) : cooldown > 0 ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Resend in {cooldown}s
                     </>
                   ) : (
                     <>
