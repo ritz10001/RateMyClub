@@ -85,31 +85,31 @@ function RequestUniversityContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/all-schools"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Directory
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <GraduationCap className="w-8 h-8 text-blue-600" />
-            <h1 className="text-4xl font-bold text-gray-900">Request a New University</h1>
+            <GraduationCap className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">Request a New University</h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Can't find your school? Help us expand our directory by requesting to add your university.
           </p>
         </div>
 
         {/* Information Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-8">
+        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-2xl p-6 mb-8">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-800">
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-blue-800 dark:text-blue-200">
               <p className="font-semibold mb-2">Before you submit:</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>Make sure your university isn't already listed in our directory</li>
@@ -124,12 +124,12 @@ function RequestUniversityContent() {
         {/* Request Form */}
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Information */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">University Information</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-blue-100 dark:border-blue-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">University Information</h2>
             <div className="space-y-6">
               {/* University Name */}
               <div>
-                <Label htmlFor="universityName" className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label htmlFor="universityName" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   University Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -138,36 +138,13 @@ function RequestUniversityContent() {
                   placeholder="Enter the full official name of the university..."
                   value={universityData.universityName}
                   onChange={(e) => handleInputChange("universityName", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                   required
                 />
               </div>
-
-              {/* School Type */}
-              {/* <div>
-                <Label htmlFor="schoolType" className="text-sm font-medium text-gray-700 mb-2 block">
-                  School Type <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={universityData.universityType}
-                  onValueChange={(value) => handleInputChange("universityType", Number(value))}
-                >
-                  <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
-                    <SelectValue placeholder="Select the type of institution..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {schoolTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div> */}
-
               {/* Location */}
               <div>
-                <Label htmlFor="location" className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label htmlFor="location" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   Location <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -176,7 +153,7 @@ function RequestUniversityContent() {
                   placeholder="City, State (e.g., Austin, TX)"
                   value={universityData.location}
                   onChange={(e) => handleInputChange("location", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                   required
                 />
               </div>
@@ -184,13 +161,13 @@ function RequestUniversityContent() {
           </div>
 
           {/* Contact Information */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact & Additional Details</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-blue-100 dark:border-blue-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Contact & Additional Details</h2>
             <div className="space-y-6">
               {/* Website */}
               <div>
-                <Label htmlFor="officialWebsite" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Official Website <span className="text-gray-400">(Optional)</span>
+                <Label htmlFor="officialWebsite" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  Official Website <span className="text-gray-400 dark:text-gray-500">(Optional)</span>
                 </Label>
                 <Input
                   id="officialWebsite"
@@ -198,29 +175,29 @@ function RequestUniversityContent() {
                   placeholder="https://www.university.edu"
                   value={universityData.officialWebsite}
                   onChange={(e) => handleInputChange("officialWebsite", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 />
               </div>
               {/* Additional Information */}
               <div>
-                <Label htmlFor="additionalInfo" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Additional Information <span className="text-gray-400">(Optional)</span>
+                <Label htmlFor="additionalInfo" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  Additional Information <span className="text-gray-400 dark:text-gray-500">(Optional)</span>
                 </Label>
                 <Textarea
                   id="additionalInfo"
                   placeholder="Any additional information about the university that would be helpful (student population, notable programs, etc.)..."
                   value={universityData.additionalInfo}
                   onChange={(e) => handleInputChange("additionalInfo", e.target.value)}
-                  className="min-h-32 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                  className="min-h-32 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 />
               </div>
             </div>
           </div>
 
           {/* Review Process Information */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 rounded-2xl p-6 text-white">
             <h3 className="text-xl font-bold mb-3">What happens next?</h3>
-            <div className="space-y-2 text-blue-100">
+            <div className="space-y-2 text-blue-100 dark:text-blue-300">
               <p>• Our team will verify the university information within 3-5 business days</p>
               <p>• We may reach out for additional verification if needed</p>
               <p>• Once approved, the university will be added to our directory</p>
@@ -230,23 +207,23 @@ function RequestUniversityContent() {
           </div>
 
           {/* Submit Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-blue-100 dark:border-blue-900">
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 <p>By submitting this request, you confirm that the information provided is accurate and complete.</p>
               </div>
               <div className="flex gap-3">
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-2 border-gray-200 text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
+                  className="border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
                   <Link href="/directory">Cancel</Link>
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold"
+                  className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold"
                   disabled={
                     !universityData.universityName || !universityData.location
                   }

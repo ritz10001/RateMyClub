@@ -187,26 +187,26 @@ useEffect(() => {
 
 // Modified loading condition - don't show loading for unverified users during login
 if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerified && !isLoggingIn)) {
-   return (
-    <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+  return (
+    <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
       <div className="text-center">
         <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-        <p className="text-gray-600 text-lg font-medium">Loading...</p>
+        <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
       </div>
     </div>
-  ); 
+  );
 }
   if (user?.emailVerified) {
     return null; // or just `return null`
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border border-blue-100 dark:border-blue-900">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-blue-600 mb-2">Welcome back</h1>
-            <p className="text-gray-600">Sign in to your account</p>
+            <h1 className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">Welcome back</h1>
+            <p className="text-gray-600 dark:text-gray-400">Sign in to your account</p>
           </div>
           
           {/* Google SSO Button */}
@@ -214,7 +214,7 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerifie
             <Button
               onClick={handleGoogleLogin}
               variant="outline"
-              className="w-full border-2 border-gray-200 hover:bg-gray-50 py-3 px-4 rounded-xl font-semibold text-gray-700 bg-white transition-colors flex items-center justify-center gap-3"
+              className="w-full border-2 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 py-3 px-4 rounded-xl font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-900 transition-colors flex items-center justify-center gap-3"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -241,23 +241,23 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerifie
           {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-gray-200 dark:border-zinc-800" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
+              <span className="px-4 bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 font-medium">OR</span>
             </div>
           </div>
 
           {/* Form */}
           {error && (
-            <div className="mb-4 text-red-600 text-sm">
+            <div className="mb-4 text-red-600 dark:text-red-400 text-sm">
               Invalid email or password. Please try again.
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700 mb-2 block">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Your Email
               </Label>
               <Input
@@ -266,14 +266,14 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerifie
                 placeholder="example@gmail.com"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
               />
             </div>
 
             {/* Password */}
             <div>
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700 mb-2 block">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Your Password
               </Label>
               <Input
@@ -282,25 +282,25 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerifie
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
               />
             </div>
 
             {/* Forgot Password Link */}
-            <div className="text-right">
+            {/* <div className="text-right">
               <Link
                 href="/forgot-password"
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium underline underline-offset-4"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium underline underline-offset-4"
               >
                 Forgot Password?
               </Link>
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center mb-5"
+              className="w-full bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center mb-5"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -319,11 +319,11 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerifie
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Don't have an account?{" "}
               <Link
                 href="/signup"
-                className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-4"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium underline underline-offset-4"
               >
                 Sign up
               </Link>

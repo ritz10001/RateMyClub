@@ -10,6 +10,7 @@ import PageNav from "../components/PageNav";
 import LoginModal from "../components/login-modal";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
+import { useDebounce } from 'use-debounce';
 
 export default function DirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,6 +23,7 @@ export default function DirectoryPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user, isInitialized } = useAuth();
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 700);
   const router = useRouter();
   useEffect(() => {
   const fetchSchools = async () => {
@@ -53,18 +55,10 @@ export default function DirectoryPage() {
     }
   }
   fetchSchools();
-}, [searchQuery, page])
+}, [debouncedSearchQuery, page])
 
   const updateDisplayedSchools = () => {
     let results = [...schools]
-    
-    // Filter
-    if (searchQuery) {
-      results = results.filter(school =>
-        school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        school.location.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
     
     // Sort
     results.sort((a, b) => {
@@ -81,11 +75,21 @@ export default function DirectoryPage() {
 
   useEffect(() => {
     updateDisplayedSchools()
-  }, [searchQuery, sortBy, schools])
+  }, [debouncedSearchQuery, sortBy, schools])
 
   // Handler for sort select
   const handleSort = (value) => {
     setSortBy(value)
+  }
+  if(isLoading){
+    return(
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
+        </div>
+      </div>
+    )
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
@@ -156,62 +160,54 @@ export default function DirectoryPage() {
         </div>
 
         {/* School Grid */}
-        {isLoading ? (
-          <div className="fixed inset-0 bg-white dark:bg-zinc-950 z-50 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-20 h-20 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-              <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">Loading...</p>
-            </div>
-          </div>
-          ) : 
-          <div className="rounded-xl grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-            {filteredSchools.map((school) => (
-              <Link key={school.id} href={`/school/${school.id}`} className="group">
-                <div className="bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-blue-100 dark:border-blue-900 pb-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
-                  {/* School Logo */}
-                  <div className="flex justify-center mb-4 h-55">
-                    <img
-                      // src={school.logoUrl} 
-                      src={"/generic.jpeg"}
-                      alt={`${school.name} logo`}
-                      className="h-full w-full"
-                    />
+        <div className="rounded-xl grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+          {filteredSchools.map((school) => (
+            <Link key={school.id} href={`/school/${school.id}`} className="group">
+              <div className="bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-blue-100 dark:border-blue-900 pb-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
+                {/* School Logo */}
+                <div className="flex justify-center mb-4 h-55">
+                  <img
+                    // src={school.logoUrl} 
+                    src={"/generic.jpeg"}
+                    alt={`${school.name} logo`}
+                    className="h-full w-full"
+                  />
+                </div>
+
+                {/* School Info */}
+                <div className="text-center">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                      {school.name}
+                    </h3>
                   </div>
+                  
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">{school.location}</p>
 
-                  {/* School Info */}
-                  <div className="text-center">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
-                        {school.name}
-                      </h3>
+                  {/* Stats */}
+                  <div className="flex justify-center gap-6 text-sm">
+                    <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                      <Users className="w-4 h-4" />
+                      <span>{school.reviewCount} reviews</span>
                     </div>
-                    
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">{school.location}</p>
-
-                    {/* Stats */}
-                    <div className="flex justify-center gap-6 text-sm">
-                      <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                        <Users className="w-4 h-4" />
-                        <span>{school.reviewCount} reviews</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                        <Building className="w-4 h-4" />
-                        <span>{school.clubsCount} clubs</span>
-                      </div>
+                    <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                      <Building className="w-4 h-4" />
+                      <span>{school.clubsCount} clubs</span>
                     </div>
-                  </div>
-
-                  {/* Club Count Badge */}
-                  <div className="mt-4 text-center">
-                    <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-semibold">
-                      {school.clubsCount} Active Clubs
-                    </span>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-          }
+
+                {/* Club Count Badge */}
+                <div className="mt-4 text-center">
+                  <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-semibold">
+                    {school.clubsCount} Active Clubs
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+          
         {/* Load More Button */}
         <div className="text-center">
           <PageNav current={page} total={totalPages} onChange={setPage} />

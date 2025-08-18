@@ -94,19 +94,19 @@ export default function CreateClubPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-3xl mx-auto px-4">
         <div className="mb-8">
           <Link
-             href="/all-schools"
-             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
-            >
-          <ArrowLeft className="w-4 h-4" />
+            href="/all-schools"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            <ArrowLeft className="w-4 h-4" />
             Back to Directory
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <GraduationCap className="w-8 h-8 text-blue-600" />
-            <h1 className="text-4xl font-bold text-gray-900">Create Club</h1>
+            <GraduationCap className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">Create Club</h1>
           </div>
         </div>
         <ClubForm

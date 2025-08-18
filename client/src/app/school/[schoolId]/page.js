@@ -18,6 +18,7 @@ import PageNav from "@/app/components/PageNav"
 import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
+import { useDebounce } from 'use-debounce';
 // Mock data for school details
 
 export default function SchoolPage({ params }) {
@@ -39,6 +40,7 @@ export default function SchoolPage({ params }) {
   const [pageSize] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
   const { user, isInitialized } = useAuth();
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 700);
   const auth = getAuth(app);
   console.log("USER INFORMATION", user);
   const router = useRouter();
@@ -74,7 +76,7 @@ export default function SchoolPage({ params }) {
         return;
       }
       console.log("User logged in, fetching with auth");
-      const idToken = await currentUser.getIdToken();
+      const idToken = await currentUser.getIdToken(true);
       const response = await fetch(`http://localhost:5095/api/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
         method: "GET",
         headers: {
@@ -100,27 +102,14 @@ export default function SchoolPage({ params }) {
     }
   } 
   fetchClubs();
-}, [schoolId, searchQuery, page, isInitialized]); // Remove 'user' from dependencies since we're not using it
+}, [schoolId, debouncedSearchQuery, page, isInitialized]); // Remove 'user' from dependencies since we're not using it
 
   useEffect(() => {
     updateDisplayedClubs();
-  }, [searchQuery, sortBy, clubs, filterBy]);
+  }, [debouncedSearchQuery, sortBy, clubs, filterBy]);
 
   const updateDisplayedClubs = () => {
     let results = [...clubs];
-
-    // Filter by search query
-    if (searchQuery) {
-      results = results.filter(
-        (club) =>
-          club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          club.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          club.tags?.some((tag) =>
-            tag.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-      );
-    }
-
     // Filter by category
     results = results.filter((club) => {
       if (filterBy === "all") return true;
@@ -154,18 +143,18 @@ export default function SchoolPage({ params }) {
     setFilterBy(category);
   }
 
-  if (isLoading || !university) { 
-    return (
-      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+  const categories = ["all", ...new Set(clubs.map(club => club.categoryName.toLowerCase()))];
+
+  if(isLoading || !university){
+    return(
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <p className="text-gray-600 text-lg font-medium">Loading...</p>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
         </div>
       </div>
-    ); 
+    );
   }
-
-  const categories = ["all", ...new Set(clubs.map(club => club.categoryName.toLowerCase()))];
 
   return(
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
@@ -384,7 +373,7 @@ export default function SchoolPage({ params }) {
             }
             try{
               const currentUser = auth.currentUser;
-              const idToken = await currentUser.getIdToken();
+              const idToken = await currentUser.getIdToken(true);
               const response = await fetch(`http://localhost:5095/api/AdminUniversity/${universityToDelete}`, {
                 method: "DELETE",
                 headers: {
@@ -410,5 +399,5 @@ export default function SchoolPage({ params }) {
         />
       }
     </div>
-  )
+  );
 }

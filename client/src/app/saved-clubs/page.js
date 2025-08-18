@@ -130,47 +130,47 @@ const handleRemoveClub = async (clubId) => {
     ))
   }
 
-  if (!isInitialized || isLoading) { 
-    return (
-      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+  if(!isInitialized || isLoading){
+    return(
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <p className="text-gray-600 text-lg font-medium">Loading...</p>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
         </div>
       </div>
-    ); 
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Link>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Saved Clubs</h1>
-              <p className="text-gray-600">Your bookmarked clubs ({savedClubs.length})</p>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Saved Clubs</h1>
+              <p className="text-gray-600 dark:text-gray-400">Your bookmarked clubs ({savedClubs.length})</p>
             </div>
 
             {/* Sort Options */}
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sort by:</span>
               <Select value={sortBy} onValueChange={handleSort}>
-                <SelectTrigger className="w-48 border-2 border-gray-200 rounded-xl">
+                <SelectTrigger className="w-48 border-2 border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recent">Recently Saved</SelectItem>
-                  <SelectItem value="name">Club Name</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="school">School Name</SelectItem>
+                <SelectContent className="bg-white dark:bg-zinc-800 border-zinc-700">
+                  <SelectItem value="recent" className="text-gray-900 dark:text-gray-100">Recently Saved</SelectItem>
+                  <SelectItem value="name" className="text-gray-900 dark:text-gray-100">Club Name</SelectItem>
+                  <SelectItem value="rating" className="text-gray-900 dark:text-gray-100">Highest Rated</SelectItem>
+                  <SelectItem value="school" className="text-gray-900 dark:text-gray-100">School Name</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -179,15 +179,15 @@ const handleRemoveClub = async (clubId) => {
 
         {/* Empty State */}
         {savedClubs.length === 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-12 border border-blue-100 text-center">
-            <div className="text-gray-400 mb-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-12 border border-blue-100 dark:border-blue-900 text-center">
+            <div className="text-gray-400 dark:text-gray-500 mb-4">
               <HeartCrack className="w-16 h-16 mx-auto" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Saved Clubs</h3>
-            <p className="text-gray-600 mb-6">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Saved Clubs</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               You haven't saved any clubs yet. Start exploring and bookmark clubs you're interested in!
             </p>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold" asChild>
+            <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold" asChild>
               <Link href="/directory">Explore Clubs</Link>
             </Button>
           </div>
@@ -199,26 +199,26 @@ const handleRemoveClub = async (clubId) => {
             {savedClubs.map((club) => (
               <div
                 key={club.clubId}
-                className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-xl transition-all duration-300"
+                className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-blue-100 dark:border-blue-900 p-6 hover:shadow-xl transition-all duration-300"
               >
                 {/* Club Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge className="bg-blue-100 text-blue-800 text-xs">{club.categoryName}</Badge>
+                      <Badge className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 text-xs">{club.categoryName}</Badge>
                       <div className="flex items-center gap-1 text-yellow-500">
-                        <Star className="w-4 h-4 fill-current" />
-                        <span className="text-sm font-medium text-gray-700">{club.averageRating}</span>
+                        <Star className="w-4 h-4 fill-current dark:text-yellow-400" />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{club.averageRating}</span>
                       </div>
                     </div>
                     <Link href={`/school/${club.universityId}/club/${club.clubId}`} className="group">
-                      <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {club.clubName}
                       </h3>
                     </Link>
                     <Link
                       href={`/school/${club.universityId}`}
-                      className="text-blue-600 hover:text-blue-700 font-medium text-sm underline underline-offset-4"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium text-sm underline underline-offset-4"
                     >
                       {club.universityName}
                     </Link>
@@ -227,22 +227,18 @@ const handleRemoveClub = async (clubId) => {
                   {/* Remove Button */}
                   <button
                     onClick={() => handleRemoveClub(club.clubId)}
-                    className="p-2 rounded-full hover:bg-red-50 transition-colors group/remove"
+                    className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-950 transition-colors group/remove"
                     title="Remove from saved clubs"
                   >
-                    <HeartCrack className="w-5 h-5 text-red-500 hover:scale-110 transition-all group-hover/remove:text-red-600" />
+                    <HeartCrack className="w-5 h-5 text-red-500 dark:text-red-400 hover:scale-110 transition-all group-hover/remove:text-red-600 dark:group-hover/remove:text-red-500" />
                   </button>
                 </div>
 
                 {/* Club Description */}
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{club.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{club.description}</p>
 
                 {/* Club Stats */}
-                <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
-                  {/* <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    <span>{club.memberCount} members</span>
-                  </div> */}
+                <div className="flex justify-between items-center mb-4 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4" />
                     <span>{club.reviewCount} reviews</span>
@@ -252,14 +248,14 @@ const handleRemoveClub = async (clubId) => {
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1 mb-4">
                   {club.tags.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs border-blue-200 text-blue-600">
+                    <Badge key={index} variant="outline" className="text-xs border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 bg-white dark:bg-zinc-900">
                       {tag}
                     </Badge>
                   ))}
                 </div>
 
                 {/* Saved Date */}
-                <div className="text-xs text-gray-500 border-t border-gray-100 pt-3">
+                <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-zinc-800 pt-3">
                   Saved on{" "}
                   {new Date(club.savedAt).toLocaleDateString("en-US", {
                     year: "numeric",
@@ -277,7 +273,7 @@ const handleRemoveClub = async (clubId) => {
           <div className="mt-8 text-center">
             <Button
               variant="outline"
-              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold bg-transparent mr-4"
+              className="border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 px-6 py-3 rounded-xl font-semibold bg-transparent mr-4"
               asChild
             >
               <Link href="/directory">Explore More Clubs</Link>

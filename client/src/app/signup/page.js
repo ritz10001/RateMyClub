@@ -336,27 +336,26 @@ useEffect(() => {
 // Modified loading condition - don't show loading if registering
 if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering)) {
   return(
-   <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
-    <div className="text-center">
-      <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-      <p className="text-gray-600 text-lg font-medium">Loading...</p>
+   <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+        <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
+      </div>
     </div>
-  </div>
   );
 }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border border-blue-100 dark:border-blue-900">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-blue-600 mb-2">Sign Up</h1>
-            <p className="text-gray-600">Create your account to get started</p>
+            <h1 className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">Sign Up</h1>
+            <p className="text-gray-600 dark:text-gray-400">Create your account to get started</p>
           </div>
 
           {error && (
-            <div className="mb-4 text-red-600 text-sm  whitespace-pre-line">
+            <div className="mb-4 text-red-600 dark:text-red-400 text-sm whitespace-pre-line">
               {errorMessage || "Passwords do not match or data is invalid. Please check your inputs."}
             </div>
           )}
@@ -365,7 +364,7 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
             <Button
               onClick={handleGoogleRegister}
               variant="outline"
-              className="w-full border-2 border-gray-200 hover:bg-gray-50 py-3 px-4 rounded-xl font-semibold text-gray-700 bg-white transition-colors flex items-center justify-center gap-3"
+              className="w-full border-2 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 py-3 px-4 rounded-xl font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-900 transition-colors flex items-center justify-center gap-3"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -392,10 +391,10 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
           {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-gray-200 dark:border-zinc-800" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
+              <span className="px-4 bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 font-medium">OR</span>
             </div>
           </div>
 
@@ -403,7 +402,7 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* First Name */}
             <div>
-              <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 mb-2 block">
+              <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 First Name <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -411,14 +410,14 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                 type="text"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange("firstName", e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
               />
             </div>
 
             {/* Last Name */}
             <div>
-              <Label htmlFor="lastName" className="text-sm font-medium text-gray-700 mb-2 block">
+              <Label htmlFor="lastName" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Last Name <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -426,14 +425,14 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                 type="text"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange("lastName", e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
               />
             </div>
 
             {/* Email */}
             <div>
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700 mb-2 block">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Email <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -441,22 +440,22 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
               />
             </div>
 
             {/* School Selection */}
             <div>
-              <Label htmlFor="school" className="text-sm font-medium text-gray-700 mb-2 block">
+              <Label htmlFor="school" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Select your school <span className="text-red-400">*</span>
               </Label>
               <Select onValueChange={(value) => handleInputChange("universityId", parseInt(value))}>
-                <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
+                <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Choose your school..." />
                 </SelectTrigger>
-                <SelectContent className="max-h-56 overflow-y-auto">
-                  <div className="px-1 mb-1 sticky top-0 bg-white z-10">
+                <SelectContent className="max-h-56 overflow-y-auto bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-zinc-700">
+                  <div className="px-1 mb-1 sticky top-0 bg-white dark:bg-zinc-800 z-10">
                     <Input 
                       placeholder="Search schools..."
                       value={schoolSearchTerm}
@@ -464,7 +463,7 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                         e.stopPropagation()
                         setSchoolSearchTerm(e.target.value.toLowerCase())
                       }}
-                      className="w-full"
+                      className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100"
                       onKeyDown={(e) => e.stopPropagation()}
                       onFocus={(e) => e.stopPropagation()}
                       autoFocus
@@ -477,7 +476,11 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                       // (university.location && university.location.toLowerCase().includes(schoolSearchTerm))
                     )
                     .map(university => (
-                      <SelectItem key={university.id} value={university.id.toString()}>
+                      <SelectItem 
+                        key={university.id} 
+                        value={university.id.toString()}
+                        className="hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer"
+                      >
                         {university.name}
                       </SelectItem>
                     ))}
@@ -485,33 +488,33 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
               </Select>
             </div>
             {!isLoadingTag && 
-                <div className="flex flex-wrap gap-2">
-                  <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 mb-2 block">
-                    Select a few interests (tags) to help us recommend clubs you'll love!
-                  </Label>
-                  <div className="space-y-2 space-x-2">
-                    {tags.map((tag) => (
-                    <Button
-                      key={tag.id}
-                      type="button"
-                      variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                      onClick={() => handleTagClick(tag.id)}
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                        selectedTags.includes(tag.id)
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
-                          : "border-blue-200 text-blue-600 hover:bg-blue-50"
-                      }`}
-                    >
-                      {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
-                    </Button>
+              <div className="flex flex-wrap gap-2">
+                <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  Select a few interests (tags) to help us recommend clubs you'll love!
+                </Label>
+                <div className="space-y-2 space-x-2">
+                  {tags.map((tag) => (
+                  <Button
+                    key={tag.id}
+                    type="button"
+                    variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                    onClick={() => handleTagClick(tag.id)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      selectedTags.includes(tag.id)
+                        ? "bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
+                        : "border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950"
+                    }`}
+                  >
+                    {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                  </Button>
                   ))}
-                  </div>
                 </div>
-              }
+              </div>
+            }
 
             {/* Password */}
             <div>
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700 mb-2 block">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Password <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -519,14 +522,14 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
               />
             </div>
 
             {/* Confirm Password */}
             <div>
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 mb-2 block">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Re-type Password <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -534,7 +537,7 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                 type="password"
                 value={formData.confirmPassword}
                 onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
               />
             </div>
@@ -542,7 +545,7 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center"
+              className="w-full bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center"
               disabled={isSubmitting || !isFormValid()}
             >
               {isSubmitting ? (
@@ -561,11 +564,11 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
 
           {/* Login Link */}
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-4"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium underline underline-offset-4"
               >
                 Log in
               </Link>

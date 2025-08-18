@@ -16,6 +16,10 @@ using RateMyCollegeClub.Repository;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+var firebaseApp = FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("Configurations/firebase-key.json")
+});
 
 // Add services to the container.
 

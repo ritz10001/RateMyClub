@@ -68,7 +68,9 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
 
         if (!string.IsNullOrEmpty(search))
         {
-            query = query.Where(u => u.Name.Contains(search));
+            query = query.Where(u => u.Name.Contains(search)
+            || u.Category.Name.Contains(search)
+            || u.Tags.Any(t => t.Name.Contains(search)));
         }
 
         return await query
@@ -93,11 +95,17 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
     {
         var query = _context.Clubs
         .Where(c => c.UniversityId == universityId)
+        .Include(c => c.Category)   
+        .Include(c => c.Tags)  
         .AsQueryable();
 
         if (!string.IsNullOrEmpty(search))
         {
-            query = query.Where(c => c.Name.Contains(search));
+            query = query.Where(c =>
+                c.Name.Contains(search) ||                                  // club name
+                c.Category.Name.Contains(search) ||                         // category name
+                c.Tags.Any(t => t.Name.Contains(search))                    // any tag name
+            );
         }
 
         var total = await query.CountAsync();

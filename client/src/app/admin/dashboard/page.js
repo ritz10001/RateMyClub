@@ -594,98 +594,97 @@ export default function AdminRequestsPage() {
 
   if (isUniversityLoading || isClubLoading) { 
     return (
-      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <p className="text-gray-600 text-lg font-medium">Loading...</p>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
         </div>
       </div>
     ); 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage university and club requests</p>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage university and club requests</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 dark:bg-zinc-800 dark:border-zinc-700 dark:shadow-xl">
             <div className="flex items-center gap-3">
-              <GraduationCap className="w-8 h-8 text-blue-600" />
+              <GraduationCap className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               <div>
-                <p className="text-sm text-gray-600">Pending Universities</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Pending Universities</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {universityRequests.filter((r) => r.status.toLowerCase() === "pending").length}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 dark:bg-zinc-800 dark:border-zinc-700 dark:shadow-xl">
             <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-green-600" />
+              <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
               <div>
-                <p className="text-sm text-gray-600">Pending Clubs</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Pending Clubs</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {clubRequests.filter((r) => r.status.toLowerCase() === "pending").length}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 dark:bg-zinc-800 dark:border-zinc-700 dark:shadow-xl">
             <div className="flex items-center gap-3">
-              <Check className="w-8 h-8 text-green-600" />
+              <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
               <div>
-                <p className="text-sm text-gray-600">Total Approved</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Approved</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {[...universityRequests, ...clubRequests].filter((r) => r.status.toLowerCase() === "approved").length}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 dark:bg-zinc-800 dark:border-zinc-700 dark:shadow-xl">
             <div className="flex items-center gap-3">
-              <Clock className="w-8 h-8 text-yellow-600" />
+              <Clock className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
               <div>
-                <p className="text-sm text-gray-600">Total Requests</p>
-                <p className="text-2xl font-bold text-gray-900">{universityRequests.length + clubRequests.length}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Requests</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{universityRequests.length + clubRequests.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* University Requests Table */}
-        
-        <div className="bg-white rounded-2xl shadow-lg mb-8 border border-blue-100">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <GraduationCap className="w-6 h-6 text-blue-600" />
+        <div className="bg-white rounded-2xl shadow-lg mb-8 border border-blue-100 dark:bg-zinc-800 dark:border-zinc-700">
+          <div className="p-6 border-b border-gray-200 dark:border-zinc-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <GraduationCap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               University Requests
             </h2>
           </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>University Name</TableHead>
-                  <TableHead>Requested By</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead>Actions</TableHead>
+                <TableRow className="bg-gray-50 dark:bg-zinc-900">
+                  <TableHead className="text-gray-600 dark:text-gray-400">University Name</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Requested By</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Location</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Submitted</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {universityRequests.map((request) => (
-                  <TableRow key={request.id}>
+                  <TableRow key={request.id} className="border-b border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-300">
                     <TableCell className="font-medium">{request.universityName}</TableCell>
                     <TableCell>
                       <div>
                         <p className="font-medium">{request.fullName}</p>
-                        <p className="text-sm text-gray-600">{request.requestedBy}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{request.requestedBy}</p>
                       </div>
                     </TableCell>
                     <TableCell>{request.location}</TableCell>
@@ -704,7 +703,7 @@ export default function AdminRequestsPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => openModal('reject', 'university', request.id, request.universityName)}
-                          className="border-red-200 text-red-600 hover:bg-red-50 p-2 rounded-lg"
+                          className="border-red-200 text-red-600 hover:bg-red-50 p-2 rounded-lg dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900"
                           disabled={isProcessing}
                         >
                           <X className="w-4 h-4" />
@@ -719,47 +718,47 @@ export default function AdminRequestsPage() {
         </div>
 
         {/* Club Requests Table */}
-        <div className="bg-white rounded-2xl shadow-lg border border-blue-100">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-6 h-6 text-green-600" />
+        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 dark:bg-zinc-800 dark:border-zinc-700">
+          <div className="p-6 border-b border-gray-200 dark:border-zinc-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
               Club Requests
             </h2>
           </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Club Name</TableHead>
-                  <TableHead>Requested By</TableHead>
-                  <TableHead>University</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead>Actions</TableHead>
+                <TableRow className="bg-gray-50 dark:bg-zinc-900">
+                  <TableHead className="text-gray-600 dark:text-gray-400">Club Name</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Requested By</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">University</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Category</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Tags</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Submitted</TableHead>
+                  <TableHead className="text-gray-600 dark:text-gray-400">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {clubRequests.map((request) => (
-                  <TableRow key={request.id}>
+                  <TableRow key={request.id} className="border-b border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-300">
                     <TableCell className="font-medium">{request.name}</TableCell>
                     <TableCell>
                       <div>
                         <p className="font-medium">{request.fullName}</p>
-                        <p className="text-sm text-gray-600">{request.requestedBy}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{request.requestedBy}</p>
                       </div>
                     </TableCell>
                     <TableCell>{request.universityName}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="border-green-200 text-green-600">
+                      <Badge variant="outline" className="border-green-200 text-green-600 dark:border-green-700 dark:text-green-400">
                         {request.category}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       {request.tags.map((tag, idx) => {
-                        return(
+                        return (
                           <div key={idx} className="flex flex-col">
-                            <Badge variant="outline" className="border-red-200 text-red-600">
+                            <Badge variant="outline" className="border-red-200 text-red-600 dark:border-red-700 dark:text-red-400">
                               {tag.name}
                             </Badge>
                           </div>
@@ -781,7 +780,7 @@ export default function AdminRequestsPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => openModal('reject', 'club', request.id, request.name)}
-                          className="border-red-200 text-red-600 hover:bg-red-50 p-2 rounded-lg"
+                          className="border-red-200 text-red-600 hover:bg-red-50 p-2 rounded-lg dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900"
                           disabled={isProcessing}
                         >
                           <X className="w-4 h-4" />

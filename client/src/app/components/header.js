@@ -86,14 +86,17 @@ export default function Header() {
               <Link href="/help" className=" hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Help
               </Link>
-              
+              {!user &&
+              <div className="flex items-center space-x-3">
+                <Moon className="h-5 w-5" />
+                <Switch className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-gray-200" checked={theme === "dark"} onCheckedChange={handleToggle} />
+              </div>}
               {user && 
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button className="relative hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-colors">
                         <Bell className="w-5 h-5 text-center" />
-                        {/* Optional notification badge */}
                         <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                       </button>
                     </TooltipTrigger>
@@ -149,7 +152,6 @@ export default function Header() {
                         <span>My Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-gray-200 dark:bg-zinc-700" />
                     <DropdownMenuItem
                       onClick={handleLogout}
                       className="flex items-center space-x-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 dark:hover:text-red-400"
@@ -199,7 +201,9 @@ export default function Header() {
                     }
                   </DropdownMenuContent>
                 </DropdownMenu>
-              ) : (
+              ) 
+              : 
+              (
                 <div className="hidden md:flex items-center space-x-3">
                   <Button variant="ghost" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950" asChild>
                     <Link href="/login">Log In</Link>
@@ -211,25 +215,24 @@ export default function Header() {
               )}
             </nav>
           </div>
-
           <div className="md:hidden flex items-center space-x-3">
             {user && 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="relative hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-colors">
-                    <Bell className="w-5 h-5 text-center" />
-                    {/* Optional notification badge */}
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Notifications Coming soon!</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          }
-
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="relative hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-colors">
+                      <Bell className="w-5 h-5 text-center" />
+                      {/* Optional notification badge */}
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Notifications Coming soon!</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            }
+          </div>
           {/* Mobile Menu Button */}
           <button 
             className="md:hidden p-2" 
@@ -243,11 +246,11 @@ export default function Header() {
       
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden mt-2 pt-2 border-t border-blue-100 dark:border-blue-900 h-screen bg-white dark:bg-zinc-950">
-          <nav className="flex flex-col mt-3">
+        <div className="md:hidden border-blue-100 dark:border-blue-900 bg-white dark:bg-zinc-950 max-h-[calc(100vh-88px)] overflow-y-auto">
+          <nav className="flex flex-col pb-4 mt-3">
             {user ?
              (
-            <div className="flex items-center justify-center space-x-2 px-4">
+            <div className="flex items-center justify-center space-x-2 px-4 mb-2">
               {user.photoURL && 
                 <img
                   src={user.photoURL || "/placeholder.svg?height=120&width=120&text=Profile"}
@@ -284,11 +287,19 @@ export default function Header() {
               <HelpCircle className="w-5 h-5 stroke-blue-600 dark:stroke-blue-400" />
               <span>Help</span>
             </Link>
+            <div className="mt-2 pt-4 border-blue-100 dark:border-blue-900">
+              <span className="block mb-2 px-4 text-gray-700 dark:text-gray-400 font-semibold">Preferences</span>
+              <div className="flex items-center mb-2 space-x-2 px-4 py-2 text-gray-600 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-zinc-800 rounded transition-colors">
+                <Moon className="h-5 w-5" />
+                <span>Dark Mode</span>
+                <Switch className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-gray-200" checked={theme === "dark"} onCheckedChange={handleToggle} />
+              </div>
+            </div>
 
             {/* Add account section here */}
             {user && (
               <>
-                <div className="mt-2 pt-4 border-t border-blue-100 dark:border-blue-900">
+                <div className="mt-2 pt-4 border-blue-100 dark:border-blue-900">
                   <span className="block mb-2 px-4 text-gray-700 dark:text-gray-400 font-semibold">Account</span>
                   <Link
                     href="/my-requests"
@@ -334,7 +345,7 @@ export default function Header() {
                   </button>
                 </div>
                 {user && user.roles.includes("Administrator") && 
-                  <div className="mt-2 pt-4 border-t border-blue-100 dark:border-blue-900">
+                  <div className="mt-2 pt-4 border-blue-100 dark:border-blue-900">
                     <span className="block mb-2 px-4 text-gray-700 dark:text-gray-400 font-semibold">Admin</span>
                     <Link
                       href="/admin/dashboard"
@@ -366,7 +377,7 @@ export default function Header() {
             )}
 
             {!user && (
-              <div className="flex flex-col pt-4 border-t border-blue-100 dark:border-blue-900">
+              <div className="flex flex-col pt-4 border-blue-100 dark:border-blue-900">
                 <span className="block mb-2 px-4 text-gray-700 dark:text-gray-400 font-semibold">Account</span>
                 <Link
                   href="/login"
@@ -389,7 +400,6 @@ export default function Header() {
           </nav>
         </div>
       )}
-    </div>
   </header>
   )
 }

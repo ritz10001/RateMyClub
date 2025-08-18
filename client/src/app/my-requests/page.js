@@ -67,7 +67,7 @@ function MyRequestsContent(){
         }
         const currentUser = auth.currentUser;
         console.log("user is logged in", currentUser);
-        const idToken = await currentUser.getIdToken();
+        const idToken = await currentUser.getIdToken(true);
         console.log("here is the idtoken");
         console.log(idToken);
 
@@ -115,7 +115,7 @@ function MyRequestsContent(){
           throw new Error("User not logged in");
         }
         const currentUser = auth.currentUser; // or wherever you get your Firebase user
-        const idToken = await currentUser.getIdToken();
+        const idToken = await currentUser.getIdToken(true);
         const response = await fetch("http://localhost:5095/api/ClubRequest/my-club-requests", {
           method: "GET",
           headers: {
@@ -156,7 +156,7 @@ function MyRequestsContent(){
       // if (toastId.current) toast.dismiss(toastId.current);
       // toastId.current = toast.success(message, { duration: 1000 });
       const currentUser = auth.currentUser;
-      const idToken = await currentUser.getIdToken();
+      const idToken = await currentUser.getIdToken(true);
       const response = await fetch(`http://localhost:5095/api${endpoint}`, {
         method: "DELETE",
         headers: {
@@ -212,19 +212,18 @@ function MyRequestsContent(){
     setFilterBy(category);
   }
 
-  if (!isInitialized || isLoading) { 
-    return (
+  if(isLoading || !isInitialized){
+    return(
       <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
           <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
         </div>
       </div>
-    ); 
+    );
   }
 
   return(
-    
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
@@ -351,14 +350,14 @@ function MyRequestsContent(){
             ))}
           </div>
           {/* Load More Reviews */}
-          <div className="text-center mt-8">
+          {/* <div className="text-center mt-8">
             <Button
               variant="outline"
               className="border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 px-8 py-3 rounded-xl font-semibold bg-transparent"
             >
               Load More Requests
             </Button>
-          </div>
+          </div> */}
         </div>
       }
       <WithdrawRequestModal 
@@ -367,5 +366,5 @@ function MyRequestsContent(){
         onDelete={WithdrawRequest}
       />
     </div>
-    );
+  );
 }

@@ -170,41 +170,40 @@ function RequestClubContent({ schoolId }) {
     }
   }
 
-  if (isLoading) {
+  if(isLoading){
     return(
-      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <p className="text-gray-600 text-lg font-medium">Loading...</p>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
         </div>
       </div>
     );
   }
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <Link
             href={`/school/${schoolId}`}
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to University
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Request a New Club</h1>
-          <p className="text-gray-600">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Request a New Club</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             Can't find your club? Help us expand our directory by requesting to add your club.
           </p>
         </div>
 
         {/* Information Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-8">
+        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-2xl p-6 mb-8">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-800">
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-blue-800 dark:text-blue-200">
               <p className="font-semibold mb-2">Before you submit:</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>Make sure your club isn't already listed</li>
@@ -219,12 +218,12 @@ function RequestClubContent({ schoolId }) {
         {/* Request Form */}
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Information */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Information</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-blue-100 dark:border-blue-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Basic Information</h2>
             <div className="space-y-6">
               {/* Club Name */}
               <div>
-                <Label htmlFor="name" className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   Club Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -233,23 +232,23 @@ function RequestClubContent({ schoolId }) {
                   placeholder="Enter the full name of your club..."
                   value={clubData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                   // required
                 />
               </div>
 
               {/* Category */}
               <div>
-                <Label htmlFor="category" className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label htmlFor="category" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   Category <span className="text-red-500">*</span>
                 </Label>
                 <Select onValueChange={(value) => handleInputChange("categoryId", value)}>
-                  <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500">
+                  <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Select a category for your club..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white dark:bg-zinc-800 border-zinc-700">
                     {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
+                      <SelectItem key={category.id} value={category.id.toString()} className="text-gray-900 dark:text-gray-100">
                         {category.name}
                       </SelectItem>
                     ))}
@@ -259,69 +258,49 @@ function RequestClubContent({ schoolId }) {
 
               {/* Short Description */}
               <div>
-                <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Short Description <span className="text-gray-400">(Optional)</span>
+                <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  Short Description <span className="text-gray-400 dark:text-gray-500">(Optional)</span>
                 </Label>
                 <Textarea
                   id="shortDescription"
                   placeholder="Provide a brief description of what your club does..."
                   value={clubData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
-                  className="min-h-24 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                  className="min-h-24 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 />
               </div>
               
               {!isLoadingTag && 
                 <div className="flex flex-wrap gap-2">
-                  <Label htmlFor="tags" className="text-sm font-medium text-gray-700 mb-2 block">
+                  <Label htmlFor="tags" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                     Select upto 3 tags (Please!)
                   </Label>
                   <div className="space-y-2 space-x-2">
                     {tags.map((tag) => (
                     <Button
-                      key={tag.id}
-                      type="button"
-                      variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                      onClick={() => handleTagClick(tag.id)}
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                        selectedTags.includes(tag.id)
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
-                          : "border-blue-200 text-blue-600 hover:bg-blue-50"
-                      }`}
-                    >
-                      {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
-                    </Button>
-                  ))}
+                        key={tag.id}
+                        type="button"
+                        variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                        onClick={() => handleTagClick(tag.id)}
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                          selectedTags.includes(tag.id)
+                            ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                            : "border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-400 dark:hover:bg-blue-950"
+                        }`}
+                      >
+                        {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                      </Button>
+                    ))}
                   </div>
                 </div>
               }
             </div>
           </div>
 
-          {/* Additional Details */}
-          {/* <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Additional Details</h2>
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="meetingLocation" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Meeting Location <span className="text-gray-400">(Optional)</span>
-                </Label>
-                <Input
-                  id="meetingLocation"
-                  type="text"
-                  placeholder="Where does your club typically meet?"
-                  value={clubData.meetingLocation}
-                  onChange={(e) => handleInputChange("meetingLocation", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                />
-              </div>
-            </div>
-          </div> */}
-
           {/* Review Process Information */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 rounded-2xl p-6 text-white">
             <h3 className="text-xl font-bold mb-3">What happens next?</h3>
-            <div className="space-y-2 text-blue-100">
+            <div className="space-y-2 text-blue-100 dark:text-blue-300">
               <p>• Our team will review your club request within 2-3 business days</p>
               <p>• We may reach out for additional information if needed</p>
               <p>• Once approved, your club will be added to the directory</p>
@@ -330,23 +309,23 @@ function RequestClubContent({ schoolId }) {
           </div>
 
           {/* Submit Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-blue-100 dark:border-blue-900">
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 <p>By submitting this request, you confirm that the information provided is accurate.</p>
               </div>
               <div className="flex gap-3">
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-2 border-gray-200 text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
+                  className="border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
                   <Link href={`/school/${schoolId}`}>Cancel</Link>
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold"
+                  className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold"
                   disabled={!isFormValid()}
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -358,5 +337,5 @@ function RequestClubContent({ schoolId }) {
         </form>
       </div>
     </div>
-  )
+  );
 }

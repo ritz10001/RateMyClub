@@ -53,7 +53,7 @@ function WriteReviewContent({ schoolId, clubId }) {
   const isFormValid = () => {
     const { comment, leadership, inclusivity, networking, skillsDevelopment, recommendation } = reviewData;
 
-    return comment.trim().length > 20 && 
+    return comment.trim().length >= 20 && 
             recommendation !== "" &&
             leadership > 0 && 
             inclusivity > 0 && 
@@ -150,36 +150,36 @@ function WriteReviewContent({ schoolId, clubId }) {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <Link
             href={`/school/${schoolId}/club/${clubId}`}
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Club
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900">Write a Review</h1>
-          <p className="text-gray-600 mt-2">Share your experience with Tech Robotics Association</p>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">Write a Review</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Share your experience with Tech Robotics Association</p>
         </div>
 
         {/* Review Form */}
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Rating Categories */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Rate Your Experience</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-blue-100 dark:border-blue-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Rate Your Experience</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {ratingCategories.map((category) => (
                 <div key={category.key} className="space-y-3">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{category.label + " "}<span className="text-red-500">*</span></h3>
-                    <p className="text-sm text-gray-600">{category.description}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{category.label + " "}<span className="text-red-500">*</span></h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{category.description}</p>
                   </div>
                   {renderStarRating(category.key, reviewData[category.key])}
                   {reviewData[category.key] > 0 && (
-                    <p className="text-sm text-blue-600 font-medium">{reviewData[category.key]} out of 5 stars</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{reviewData[category.key]} out of 5 stars</p>
                   )}
                 </div>
               ))}
@@ -187,13 +187,13 @@ function WriteReviewContent({ schoolId, clubId }) {
           </div>
 
           {/* Review Details */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Tell Us More</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-blue-100 dark:border-blue-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Tell Us More</h2>
             <div className="space-y-6">
 
               {/* Main Review */}
               <div>
-                <Label htmlFor="comment" className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label htmlFor="comment" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   Your Review (Min: 20 characters, Max: 1000 characters) <span className="text-red-500">*</span>
                 </Label>
                 <Textarea
@@ -201,12 +201,12 @@ function WriteReviewContent({ schoolId, clubId }) {
                   placeholder="Share your detailed experience with this club. What did you like? What could be improved?"
                   value={reviewData.comment}
                   onChange={(e) => handleInputChange("comment", e.target.value)}
-                  className="min-h-32 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                  className="min-h-32 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors dark:bg-zinc-800 dark:text-gray-100 dark:placeholder:text-gray-400"
                   required
                 />
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
                   Would you recommend others to join this club? <span className="text-red-500">*</span>
                 </Label>
                 <div className="flex flex-col items-start">
@@ -220,14 +220,14 @@ function WriteReviewContent({ schoolId, clubId }) {
                       // checked={reviewData.recommendation === "yes"}
                       onChange={(e) => handleInputChange("recommendation", e.target.value)}
                       className="
-                        mr-2 w-5 h-5 border border-gray-300 rounded 
-                        checked:bg-blue-500 checked:border-blue-500
-                        focus:outline-none focus:ring-2 focus:ring-blue-200
+                        mr-2 w-5 h-5 border border-gray-300 dark:border-zinc-600 rounded 
+                        checked:bg-blue-500 dark:checked:bg-blue-600 checked:border-blue-500 dark:checked:border-blue-600
+                        focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800
                         transition-colors duration-200
                         relative
                       "
                     />
-                    <label htmlFor="recommend-yes" className="cursor-pointer">Yes</label>
+                    <label htmlFor="recommend-yes" className="cursor-pointer text-gray-900 dark:text-gray-100">Yes</label>
                   </div>
                   <div className="flex items-center mb-2">
                     <input
@@ -239,14 +239,14 @@ function WriteReviewContent({ schoolId, clubId }) {
                       required
                       onChange={(e) => handleInputChange("recommendation", e.target.value)}
                       className="
-                        mr-2 w-5 h-5 border border-gray-300 rounded 
-                        checked:bg-red-500 checked:border-red-500
-                        focus:outline-none focus:ring-2 focus:ring-blue-200
+                        mr-2 w-5 h-5 border border-gray-300 dark:border-zinc-600 rounded 
+                        checked:bg-red-500 dark:checked:bg-red-600 checked:border-red-500 dark:checked:border-red-600
+                        focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800
                         transition-colors duration-200
                         relative
                       "
                     />
-                    <label htmlFor="recommend-no" className="cursor-pointer">No</label>
+                    <label htmlFor="recommend-no" className="cursor-pointer text-gray-900 dark:text-gray-100">No</label>
                   </div>
                 </div>
               </div>
@@ -254,9 +254,9 @@ function WriteReviewContent({ schoolId, clubId }) {
           </div>
 
           {/* Submit Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-blue-100 dark:border-blue-900">
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 <p>Your review will be posted publicly and help other students make informed decisions.</p>
                 <p className="mt-1">Please be honest and constructive in your feedback.</p>
               </div>
@@ -264,14 +264,14 @@ function WriteReviewContent({ schoolId, clubId }) {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-2 border-gray-200 text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
+                  className="border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
                   <Link href={`/club/${clubId}`}>Cancel</Link>
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold"
+                  className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold"
                   disabled={!isFormValid()}
                 >
                   Submit Review
@@ -282,5 +282,5 @@ function WriteReviewContent({ schoolId, clubId }) {
         </form>
       </div>
     </div>
-  )
+  );
 }

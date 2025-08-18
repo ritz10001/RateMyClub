@@ -100,7 +100,7 @@ export default function ClubPage({ params }) {
 
     // User is logged in, get token from Firebase directly
     console.log("User logged in, fetching with auth");
-    const idToken = await currentUser.getIdToken(); // Use currentUser, not user from context
+    const idToken = await currentUser.getIdToken(true); // Use currentUser, not user from context
     
     const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
       method: "GET",
@@ -150,7 +150,7 @@ export default function ClubPage({ params }) {
 
       // Get token from Firebase if logged in
       if (auth.currentUser) {
-        const idToken = await auth.currentUser.getIdToken();
+        const idToken = await auth.currentUser.getIdToken(true);
         headers["Authorization"] = `Bearer ${idToken}`;
       }
 
@@ -200,7 +200,7 @@ export default function ClubPage({ params }) {
         return;
       }
 
-      const idToken = await currentUser.getIdToken();
+      const idToken = await currentUser.getIdToken(true);
 
       const url = `http://localhost:5095/api/SavedClub`;
       const options = !isBookmarked
@@ -239,7 +239,7 @@ export default function ClubPage({ params }) {
 
   try {
     // Get token from the current Firebase auth user
-    const idToken = await auth.currentUser.getIdToken();
+    const idToken = await auth.currentUser.getIdToken(true);
 
     const currentVote = userVotes[reviewId] || 0;
     const sendValue = currentVote === newValue ? 0 : newValue;
@@ -335,13 +335,24 @@ export default function ClubPage({ params }) {
 
   if (isLoading || !isInitialized) { 
     return (
-      <div className="h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-        <div className="flex items-center space-x-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          <p className="font-bold text-xl">Now Loading..</p>
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
         </div>
       </div>
     ); 
+  }
+
+  if(isLoading || !isInitialized){
+    return(
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -610,7 +621,7 @@ export default function ClubPage({ params }) {
               : `/AdminClub/${clubToDelete}`;
             console.log(url);
             const currentUser = auth.currentUser;
-            const idToken = await currentUser.getIdToken();
+            const idToken = await currentUser.getIdToken(true);
             
             const response = await fetch(`http://localhost:5095/api${url}`, {
               method: "DELETE" ,
@@ -645,5 +656,5 @@ export default function ClubPage({ params }) {
         }}
       />
     </div>
-  )
+  );
 }

@@ -52,7 +52,7 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
 
         if (!string.IsNullOrEmpty(search))
         {
-            query = query.Where(u => u.Name.Contains(search));
+            query = query.Where(u => u.Name.Contains(search) || u.Location.Contains(search));
         }
 
         return await query
