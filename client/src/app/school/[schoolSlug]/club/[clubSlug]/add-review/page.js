@@ -25,7 +25,6 @@ export default function WriteReviewPage({ params }){
   );
 }
 
-
 function WriteReviewContent({ schoolSlug, clubSlug }) {
   const router = useRouter();
   const { user, isInitialized } = useAuth();

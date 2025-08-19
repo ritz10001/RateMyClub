@@ -90,6 +90,17 @@ const ConfirmationModal = ({
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:ring-blue-400 dark:focus:border-blue-400"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
+                Description
+              </label>
+              <textarea
+                value={universityData?.description || ''}
+                onChange={(e) => setClubData(prev => ({ ...prev, description: e.target.value }))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                rows={4}
+              />
+            </div>
             {/* Logo URL for approval only */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
@@ -272,7 +283,8 @@ export default function AdminRequestsPage() {
   const [universityData, setUniversityData] = useState({
     universityName: '',
     location: '',
-    officialWebsite: ''
+    officialWebsite: '',
+    description: ''
   });
   const [clubData, setClubData] = useState({
     name: '',

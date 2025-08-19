@@ -19,6 +19,8 @@ import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { notFound } from "next/navigation"
+import NotFound from "@/app/not-found"
 
 const monthNumbers = {
   1: "January",
@@ -36,6 +38,12 @@ const monthNumbers = {
 }
 
 export default function ClubPage({ params }) {
+  const { schoolSlug, clubSlug } = useParams();
+  const slugRegex = /^[a-z-]+$/;
+  if (!slugRegex.test(clubSlug)) {
+    console.log(`Invalid slug format: ${clubSlug}`);
+    return notFound();
+  }
   const { user, isInitialized } = useAuth();
   const { setClubData } = useClub();
   const router = useRouter();
@@ -53,6 +61,7 @@ export default function ClubPage({ params }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [votesLoading, setVotesLoading] = useState(true);
   const toastId = useRef(null);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [newReview, setNewReview] = useState({
     rating: 5,
     reviewText: "",
@@ -63,7 +72,6 @@ export default function ClubPage({ params }) {
   const [totalReviewCount, setTotalReviewCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const { schoolSlug, clubSlug } = useParams();
   const auth = getAuth(app);
   // console.log("Club ID:", clubId);
   console.log("bookmark status", isBookmarked);
@@ -89,6 +97,11 @@ export default function ClubPage({ params }) {
           "Content-Type": "application/json"
         }
       });
+      if(response.status === 404){
+        console.log("setting not found status");
+        setIsNotFound(true);
+        return;
+      }
       
       if (response.ok) {
         const data = await response.json();
@@ -109,6 +122,11 @@ export default function ClubPage({ params }) {
         "Authorization": `Bearer ${idToken}`
       }
     });
+    if(response.status === 404){
+      console.log("setting not found status");
+      setIsNotFound(true);
+      return;
+    }
     
     if (response.ok) {
       const data = await response.json();
@@ -160,6 +178,12 @@ export default function ClubPage({ params }) {
         `http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}/reviews?page=${page}&pageSize=${pageSize}`,
         { method: "GET", headers }
       );
+
+      if(response.status === 404){
+        console.log("setting not found status");
+        setIsNotFound(true);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -292,9 +316,6 @@ export default function ClubPage({ params }) {
   }
 };
 
-
-
-
   const handleSubmitReview = (e) => {
     e.preventDefault()
     console.log("New review:", newReview)
@@ -335,6 +356,10 @@ export default function ClubPage({ params }) {
         </div>
       </div>
     )
+  }
+
+  if (isNotFound) {
+    return <NotFound />;
   }
 
   if (isLoading || !isInitialized) { 

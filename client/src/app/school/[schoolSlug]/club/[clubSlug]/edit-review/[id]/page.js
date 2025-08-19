@@ -14,9 +14,14 @@ import { toast } from 'sonner';
 import { getAuth } from "firebase/auth";
 import { app } from "@/app/utils/firebase";
 import AuthRoute from "@/app/components/AuthRoute";
+import { notFound } from "next/navigation";
+import NotFound from "@/app/not-found";
 
 export default function EditReviewPage({ params }){
   const { schoolSlug, clubSlug, id } = useParams();
+  if (isNaN(id)) {
+    notFound(); // Redirects to your custom 404 page
+  }
   const [isLoading, setIsLoading] = useState(true);
   const redirectPath = `/school/${schoolSlug}/club/${clubSlug}`;
   return(
@@ -32,6 +37,7 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
   const { user, isInitialized } = useAuth();
   const { clubData } = useClub();
   const router = useRouter();
+  const [isNotFound, setIsNotFound] = useState(false);
   const [reviewData, setReviewData] = useState({
     leadershipRating: 0,
     inclusivityRating: 0,
@@ -57,6 +63,11 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
             "Authorization": `Bearer ${idToken}`
           }
         });
+        if(response.status === 404){
+          console.log("setting not found status");
+          setIsNotFound(true);
+          return;
+        }
         if (response.status === 403) {
           setForbidden(true);
           return;
@@ -184,9 +195,14 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
 
   useEffect(() => {
     if (forbidden) {
-      return router.replace("/"); 
+      console.log("FORBIDDEN REDIRECTING BACK");
+      router.replace("/"); 
     }
   }, [forbidden, router]);
+
+  if (isNotFound) {
+    return <NotFound />;
+  }
 
   if(isLoading || forbidden){
     return(

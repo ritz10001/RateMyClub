@@ -19,10 +19,19 @@ import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 import { useDebounce } from 'use-debounce';
+import { notFound } from 'next/navigation';
+import NotFound from "@/app/not-found"
 // Mock data for school details
 
 export default function SchoolPage({ params }) {
+
   const { schoolSlug } = useParams();
+  // Define the strict regex for a valid slug
+  const slugRegex = /^[a-z-]+$/;
+  if (!slugRegex.test(schoolSlug)) {
+    console.log(`Invalid slug format: ${schoolSlug}`);
+    return notFound();
+  }
   console.log("params:", params);
 
   const [university, setUniversity] = useState(null);
@@ -40,6 +49,7 @@ export default function SchoolPage({ params }) {
   const [totalPages, setTotalPages] = useState(1);
   const { user, isInitialized } = useAuth();
   const [debouncedSearchQuery] = useDebounce(searchQuery, 700);
+  const [isNotFound, setIsNotFound] = useState(false);
   const auth = getAuth(app);
   console.log("USER INFORMATION", user);
   const router = useRouter();
@@ -63,6 +73,12 @@ export default function SchoolPage({ params }) {
             "Content-Type": "application/json"
           }
         });
+
+        if(response.status === 404){
+          console.log("setting not found status");
+          setIsNotFound(true);
+          return;
+        }
         
         if (response.ok) {
           const data = await response.json();
@@ -83,6 +99,12 @@ export default function SchoolPage({ params }) {
           "Authorization": `Bearer ${idToken}`
         }
       });
+
+      if(response.status === 404){
+        console.log("setting not found status");
+        setIsNotFound(true);
+        return;
+      }
       
       if (response.ok) {
         const data = await response.json();
@@ -143,6 +165,10 @@ export default function SchoolPage({ params }) {
   }
 
   const categories = ["all", ...new Set(clubs.map(club => club.categoryName.toLowerCase()))];
+
+  if (isNotFound) {
+    return <NotFound />;
+  }
 
   if(isLoading || !university){
     return(
@@ -379,10 +405,15 @@ export default function SchoolPage({ params }) {
                   "Authorization": `Bearer ${idToken}`
                 }
               });
+              if(response.status === 404){
+                console.log("setting not found status");
+                setIsNotFound(true);
+                return;
+              }
               if(response.ok){
-                  toast.success("University deleted successfully!", {
-                    duration: 5000, // 5 seconds
-                  });
+                toast.success("University deleted successfully!", {
+                  duration: 5000, // 5 seconds
+                });
               }
             }
             catch(error){
