@@ -11,7 +11,7 @@ public class University
     public string Description { get; set; } = string.Empty;
     [MaxLength(100)]
     public string Location { get; set; } = string.Empty;
-    public UniversityType UniversityType = UniversityType.Public;
+    public string Slug { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string LogoUrl { get; set; } = string.Empty;
     public string OfficialWebsite { get; set; } = string.Empty;

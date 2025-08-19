@@ -40,7 +40,7 @@ export default function LoginContent() {
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
       console.log("✅ Firebase login successful:", user);
-      const idToken = await user.getIdToken();
+      const idToken = await user.getIdToken(true);
 
       // Call backend login to verify user and get roles, etc.
       const response = await fetch("http://localhost:5095/api/Account/firebase-login", {
@@ -106,7 +106,7 @@ export default function LoginContent() {
     setIsLoading(true);
 
     // Step 3: Get Firebase ID token
-    const idToken = await firebaseUser.getIdToken();
+    const idToken = await firebaseUser.getIdToken(true);
 
     // Step 4: Try backend login
     let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
@@ -166,6 +166,8 @@ export default function LoginContent() {
       tags: authResponse.tags,
       universityId: authResponse.universityId
     };
+    console.log("HERE IS THE USER DATA AFTER LOGIN");
+    console.log(combinedUser);
     login(combinedUser); // updates AuthContext + sessionStorage immediately
     router.replace("/");
   } 

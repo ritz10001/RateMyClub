@@ -12,6 +12,7 @@ public class GetReviewDTO
     public int SkillsDevelopmentRating { get; set; }
     public decimal OverallRating { get; set; }
     public string Comment { get; set; } = string.Empty;
+    public string Recommendation { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public string UserDisplayName { get; set; } = string.Empty;
     public string UserId { get; set; }

@@ -8,10 +8,13 @@ public interface IUniversityRepository : IGenericRepository<University>
 {
     Task<List<University>> GetUniversityDetails();
     Task<University> GetUniversityBasicData(int id);
-    Task<University> GetIndividualUniversityDetails(int id);
+    Task<University> GetIndividualUniversityDetails(string slug);
     Task<List<University>> SearchByNameAsync(string query);
     Task<List<University>> GetPagedUniversitiesAsync(int page, int pageSize, string? search);
     Task<int> GetTotalUniversityCountAsync(string? search);
     Task<string> GetUniversityNameByIdAsync(int id);
     Task<List<University>> GetPopularUniversitiesAsync();
+    Task<string> GenerateSlug(string name);
+    Task<University?> GetBySlugAsync(string slug);
+    Task<University?> GetUniversityBySlug(string slug);
 }

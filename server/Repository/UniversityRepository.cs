@@ -27,13 +27,13 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
             .Include(u => u.Clubs).ThenInclude(c => c.Reviews)
             .ToListAsync();
     }
-    public async Task<University> GetIndividualUniversityDetails(int id)
+    public async Task<University?> GetIndividualUniversityDetails(string slug)
     {
         return await _context.Universities
             .Include(u => u.Clubs).ThenInclude(c => c.Category)
             .Include(u => u.Clubs).ThenInclude(c => c.Reviews)
             .Include(u => u.Clubs).ThenInclude(c => c.Tags)
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.Slug == slug);
     }
     public async Task<List<University>> SearchByNameAsync(string query)
     {
@@ -85,7 +85,7 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
     public async Task<List<University>> GetPopularUniversitiesAsync()
     {
         return await _context.Universities
-        .Select(u => new 
+        .Select(u => new
         {
             University = u,
             ReviewCount = u.Clubs.SelectMany(c => c.Reviews).Count()
@@ -97,4 +97,26 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
         .ThenInclude(c => c.Reviews)
         .ToListAsync();
     }
+
+    public async Task<string> GenerateSlug(string name)
+    {
+        return name.ToLower()
+        .Replace(" ", "-")
+        .Replace(".", "")
+        .Replace(",", "")
+        .Replace("'", "")
+        .Replace("(", "")
+        .Replace(")", "")
+        .Replace("&", "and");
+    }
+    public async Task<University?> GetBySlugAsync(string slug)
+    {
+        return await _context.Universities.FirstOrDefaultAsync(u => u.Slug == slug);
+    }
+
+    public async Task<University?> GetUniversityBySlug(string slug)
+    {
+        return await _context.Universities.FirstOrDefaultAsync(u => u.Slug == slug);
+    }
+
 }

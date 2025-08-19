@@ -150,12 +150,15 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(user, "User");
         }
     }
-    var adminEmail = "admin@gmail.com";
+    var adminEmail = "ratemycollegeclub@gmail.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    Console.WriteLine("in the admin now");
+    Console.WriteLine(adminUser);
     if (adminUser != null)
     {
         if (!await userManager.IsInRoleAsync(adminUser, "Administrator"))
         {
+            Console.WriteLine("adding admin role");
             await userManager.AddToRoleAsync(adminUser, "Administrator");
         }
     }

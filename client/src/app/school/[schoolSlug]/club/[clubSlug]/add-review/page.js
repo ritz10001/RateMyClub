@@ -16,19 +16,20 @@ import { app } from "@/app/utils/firebase"
 import AuthRoute from "@/app/components/AuthRoute"
 
 export default function WriteReviewPage({ params }){
-  const { schoolId, clubId } = useParams();
-  const redirectPath = `/school/${schoolId}/club/${clubId}`;
+  const { schoolSlug, clubSlug } = useParams();
+  const redirectPath = `/school/${schoolSlug}/club/${clubSlug}`;
   return(
     <AuthRoute redirectTo={redirectPath}>
-      <WriteReviewContent schoolId={schoolId} clubId={clubId} />
+      <WriteReviewContent schoolSlug={schoolSlug} clubSlug={clubSlug} />
     </AuthRoute>
   );
 }
 
 
-function WriteReviewContent({ schoolId, clubId }) {
+function WriteReviewContent({ schoolSlug, clubSlug }) {
   const router = useRouter();
   const { user, isInitialized } = useAuth();
+  const [club, setClub] = useState(null);
   const [reviewData, setReviewData] = useState({
     leadership: 0,
     inclusivity: 0,
@@ -39,7 +40,7 @@ function WriteReviewContent({ schoolId, clubId }) {
   })
   const [error, setError] = useState(false);
   const auth = getAuth(app);
-  console.log("THIS IS CLUB ID", clubId);
+  // console.log("THIS IS CLUB ID", clubId);
   useEffect(() => {
     console.log("HERE IS LATEST REVIEW DATA", reviewData)
   }, [reviewData]);
@@ -49,6 +50,14 @@ function WriteReviewContent({ schoolId, clubId }) {
       toast.error('Please make sure to fill all the required details!');
     }
   }, [error]);
+  useEffect(() => {
+    const fetchClub = async () => {
+      const res = await fetch(`http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}`);
+      const data = await res.json();
+      setClub(data); // data.id is the numeric clubId
+    };
+    fetchClub();
+  }, [schoolSlug, clubSlug]);
 
   const isFormValid = () => {
     const { comment, leadership, inclusivity, networking, skillsDevelopment, recommendation } = reviewData;
@@ -95,7 +104,7 @@ function WriteReviewContent({ schoolId, clubId }) {
           skillsDevelopmentRating: reviewData.skillsDevelopment,
           comment: reviewData.comment,
           recommendation: reviewData.recommendation,
-          clubId: clubId
+          clubId: club.id
         })
       })
       if(response.ok){
@@ -103,7 +112,7 @@ function WriteReviewContent({ schoolId, clubId }) {
         toast.success("Review submitted successfully!", {
             duration: 5000, // 5 seconds
         });
-        router.replace(`/school/${schoolId}/club/${clubId}`);
+        router.replace(`/school/${schoolSlug}/club/${clubSlug}`);
       }
       else{
         console.log("failed");
@@ -155,7 +164,7 @@ function WriteReviewContent({ schoolId, clubId }) {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/school/${schoolId}/club/${clubId}`}
+            href={`/school/${schoolSlug}/club/${clubSlug}`}
             className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -267,7 +276,7 @@ function WriteReviewContent({ schoolId, clubId }) {
                   className="border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
-                  <Link href={`/club/${clubId}`}>Cancel</Link>
+                  <Link href={`/school/${schoolSlug}/club/${clubSlug}`}>Cancel</Link>
                 </Button>
                 <Button
                   type="submit"

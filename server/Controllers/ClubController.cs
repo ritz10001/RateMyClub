@@ -24,8 +24,9 @@ public class ClubController : ControllerBase
     private readonly IReviewVoteRepository _reviewVoteRepository;
     private readonly ISavedClubsRepository _savedClubsRepository;
     private readonly IReviewsRepository _reviewsRepository;
+    private readonly IUniversityRepository _universityRepository;
     private readonly UserManager<User> _userManager;
-    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository, ISavedClubsRepository savedClubsRepository, IReviewsRepository reviewsRepository, UserManager<User> userManager)
+    public ClubController(IMapper mapper, IClubsRepository clubsRepository, ITagsRepository tagsRepository, IReviewVoteRepository reviewVoteRepository, ISavedClubsRepository savedClubsRepository, IReviewsRepository reviewsRepository, UserManager<User> userManager, IUniversityRepository universityRepository)
     {
         _mapper = mapper;
         _clubsRepository = clubsRepository;
@@ -34,6 +35,7 @@ public class ClubController : ControllerBase
         _savedClubsRepository = savedClubsRepository;
         _reviewsRepository = reviewsRepository;
         _userManager = userManager;
+        _universityRepository = universityRepository;
     }
 
     [HttpGet]
@@ -74,15 +76,16 @@ public class ClubController : ControllerBase
     }
 
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<GetClubDTO>> GetClub(int id)
+    [HttpGet("{universitySlug}/clubs/{slug}")]
+    public async Task<ActionResult<GetClubDTO>> GetClub(string universitySlug, string slug)
     {
-        var club = await _clubsRepository.GetIndividualClubDetails(id);
+        var university = await _universityRepository.GetBySlugAsync(universitySlug);
+        var club = await _clubsRepository.GetIndividualClubDetails(university.Id, slug);
 
         if (club is null)
             return NotFound();
 
-        var averages = await _clubsRepository.GetCategoryAveragesForClubAsync(id);
+        var averages = await _clubsRepository.GetCategoryAveragesForClubAsync(club.Id);
         var clubDTO = _mapper.Map<GetClubDTO>(club);
 
         var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
@@ -99,7 +102,7 @@ public class ClubController : ControllerBase
 
         if (user != null)
         {
-            clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(id, user.Id);
+            clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(club.Id, user.Id);
         }
         Console.WriteLine("THE CLUB BOOKMARK STATUS");
         Console.WriteLine(clubDTO.IsBookmarked);
@@ -109,9 +112,54 @@ public class ClubController : ControllerBase
             clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
         }
 
-        clubDTO.ReviewCount = await _reviewsRepository.GetReviewCountAsync(id);
-        clubDTO.RatingDistribution = await _clubsRepository.GetRatingDistributionForClub(id);
-        clubDTO.AverageRating = await _clubsRepository.GetAverageRatingForClub(id);
+        clubDTO.ReviewCount = await _reviewsRepository.GetReviewCountAsync(club.Id);
+        clubDTO.RatingDistribution = await _clubsRepository.GetRatingDistributionForClub(club.Id);
+        clubDTO.AverageRating = await _clubsRepository.GetAverageRatingForClub(club.Id);
+        clubDTO.LeadershipRating = averages.LeadershipRating;
+        clubDTO.InclusivityRating = averages.InclusivityRating;
+        clubDTO.NetworkingRating = averages.NetworkingRating;
+        clubDTO.SkillsDevelopmentRating = averages.SkillsDevelopmentRating;
+
+        return Ok(clubDTO);
+    }
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GetClubDTO>> GetClub(int id)
+    {
+        var club = await _clubsRepository.GetIndividualClubDetails(id);
+
+        if (club is null)
+            return NotFound();
+
+        var averages = await _clubsRepository.GetCategoryAveragesForClubAsync(club.Id);
+        var clubDTO = _mapper.Map<GetClubDTO>(club);
+
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        Console.WriteLine("THIS IS THE FIREBASE ID");
+        Console.WriteLine(firebaseUid);
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            Console.WriteLine("in null or empty block");
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+            Console.WriteLine("this is the user");
+            Console.WriteLine(user.Id);
+        }
+
+        if (user != null)
+        {
+            clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(club.Id, user.Id);
+        }
+        Console.WriteLine("THE CLUB BOOKMARK STATUS");
+        Console.WriteLine(clubDTO.IsBookmarked);
+
+        if (club.Tags != null && club.Tags.Any())
+        {
+            clubDTO.Tags = club.Tags.Select(t => t.Name).ToList();
+        }
+
+        clubDTO.ReviewCount = await _reviewsRepository.GetReviewCountAsync(club.Id);
+        clubDTO.RatingDistribution = await _clubsRepository.GetRatingDistributionForClub(club.Id);
+        clubDTO.AverageRating = await _clubsRepository.GetAverageRatingForClub(club.Id);
         clubDTO.LeadershipRating = averages.LeadershipRating;
         clubDTO.InclusivityRating = averages.InclusivityRating;
         clubDTO.NetworkingRating = averages.NetworkingRating;
@@ -120,16 +168,24 @@ public class ClubController : ControllerBase
         return Ok(clubDTO);
     }
 
-    [HttpGet("{id}/reviews")]
-    public async Task<ActionResult<PagedResult<GetReviewDTO>>> GetReviewsForClub(int id, int page = 1, int pageSize = 5)
+    [HttpGet("{universitySlug}/clubs/{clubSlug}/reviews")]
+    public async Task<ActionResult<PagedResult<GetReviewDTO>>> GetReviewsForClub(string universitySlug, string clubSlug, int page = 1, int pageSize = 5)
     {
+        var university = await _universityRepository.GetBySlugAsync(universitySlug);
+        if (university == null) return NotFound("University not found");
+        
         var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
         User? user = null;
         if (!string.IsNullOrEmpty(firebaseUid))
         {
             user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
         }
-        var result = await _clubsRepository.GetPaginatedReviewsForClub(id, page, pageSize, user?.Id);
+        var club = await _clubsRepository.GetBySlugAsync(clubSlug);
+        if (club == null)
+        {
+            return NotFound();
+        }
+        var result = await _clubsRepository.GetPaginatedReviewsForClub(club.Id, page, pageSize, user?.Id);
         var reviewDTOs = _mapper.Map<List<GetReviewDTO>>(result.Items);
         foreach (var dto in reviewDTOs)
         {

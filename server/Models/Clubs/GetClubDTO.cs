@@ -5,6 +5,7 @@ namespace RateMyCollegeClub.Models.Clubs;
 public class GetClubDTO : BaseClubDTO
 {
     public int Id { get; set; }
+    public int UniversityId { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public string LogoUrl { get; set; } = string.Empty;

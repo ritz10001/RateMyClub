@@ -12,4 +12,5 @@ public class GetUniversityDTO : BaseUniversityDTO
     public DateTime CreatedAt { get; set; }
     public string Description { get; set; } = string.Empty;
     public string OfficialWebsite { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
 }

@@ -45,13 +45,19 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         .ToListAsync();
     }
 
-    public async Task<Club> GetIndividualClubDetails(int id)
+    public async Task<Club?> GetIndividualClubDetails(int universityId, string slug)
     {
         return await _context.Clubs
         .Include(q => q.Category)
         .Include(q => q.University)
-        // .Include(q => q.Reviews).ThenInclude(r => r.User)
-        // .Include(q => q.Reviews).ThenInclude(r => r.Votes)
+        .Include(q => q.Tags)
+        .FirstOrDefaultAsync(q => q.Slug == slug && q.UniversityId == universityId);
+    }
+    public async Task<Club?> GetIndividualClubDetails(int id)
+    {
+        return await _context.Clubs
+        .Include(q => q.Category)
+        .Include(q => q.University)
         .Include(q => q.Tags)
         .FirstOrDefaultAsync(q => q.Id == id);
     }
@@ -95,8 +101,8 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
     {
         var query = _context.Clubs
         .Where(c => c.UniversityId == universityId)
-        .Include(c => c.Category)   
-        .Include(c => c.Tags)  
+        .Include(c => c.Category)
+        .Include(c => c.Tags)
         .AsQueryable();
 
         if (!string.IsNullOrEmpty(search))
@@ -247,5 +253,21 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         .OrderByDescending(c => c.Reviews.Count)
         .Take(10)
         .ToListAsync();
+    }
+
+    public async Task<Club?> GetBySlugAsync(string slug)
+    {
+        return await _context.Clubs.FirstOrDefaultAsync(u => u.Slug == slug);
+    }
+    public async Task<string> GenerateSlug(string name)
+    {
+        return name.ToLower()
+        .Replace(" ", "-")
+        .Replace(".", "")
+        .Replace(",", "")
+        .Replace("'", "")
+        .Replace("(", "")
+        .Replace(")", "")
+        .Replace("&", "and");
     }
 }

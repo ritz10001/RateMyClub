@@ -22,9 +22,8 @@ import { useDebounce } from 'use-debounce';
 // Mock data for school details
 
 export default function SchoolPage({ params }) {
-  const { schoolId } = useParams();
+  const { schoolSlug } = useParams();
   console.log("params:", params);
-  console.log("universityId:", schoolId);
 
   const [university, setUniversity] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,7 +57,7 @@ export default function SchoolPage({ params }) {
       if (!currentUser) {
         console.log("No user logged in, fetching public data only");
         // Fetch public club data without auth
-        const response = await fetch(`http://localhost:5095/api/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
+        const response = await fetch(`http://localhost:5095/api/University/${schoolSlug}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json"
@@ -77,7 +76,7 @@ export default function SchoolPage({ params }) {
       }
       console.log("User logged in, fetching with auth");
       const idToken = await currentUser.getIdToken(true);
-      const response = await fetch(`http://localhost:5095/api/University/${schoolId}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
+      const response = await fetch(`http://localhost:5095/api/University/${schoolSlug}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +101,7 @@ export default function SchoolPage({ params }) {
     }
   } 
   fetchClubs();
-}, [schoolId, debouncedSearchQuery, page, isInitialized]); // Remove 'user' from dependencies since we're not using it
+}, [schoolSlug, debouncedSearchQuery, page, isInitialized]); // Remove 'user' from dependencies since we're not using it
 
   useEffect(() => {
     updateDisplayedClubs();
@@ -199,7 +198,7 @@ export default function SchoolPage({ params }) {
                   className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-300 dark:hover:border-blue-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                   title="Edit University" 
                   onClick = {() => {
-                    router.push(`http://localhost:3000/admin/school/${schoolId}/edit`);
+                    router.push(`http://localhost:3000/admin/school/${university.id}/edit`);
                   }}
                 >Edit
                   <Pencil className="w-4 h-4" />
@@ -208,7 +207,7 @@ export default function SchoolPage({ params }) {
                   className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                   title="Delete University"
                   onClick={() => {
-                      setUniversityToDelete(schoolId);
+                      setUniversityToDelete(university.id);
                       setIsDeleteOpen(true);
                   }}
                 >Delete
@@ -228,7 +227,7 @@ export default function SchoolPage({ params }) {
             onClick={(e) => {
                 e.preventDefault();
                 if (user) {
-                  router.push(`/school/${schoolId}/club/request/club-request`);
+                  router.push(`/school/${schoolSlug}/club/request/club-request`);
                 } 
                 else {
                   setIsModalOpen(true);
@@ -306,7 +305,7 @@ export default function SchoolPage({ params }) {
         {/* Clubs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredClubs.map((club) => (
-            <Link key={club.id} href={`/school/1/club/${club.id}`} className="group">
+            <Link key={club.id} href={`/school/${schoolSlug}/club/${club.slug}`} className="group">
               <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-blue-100 dark:border-blue-900 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 {/* Club Header */}
                 <div className="mb-4">

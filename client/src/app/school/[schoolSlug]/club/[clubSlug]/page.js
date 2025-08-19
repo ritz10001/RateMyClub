@@ -10,7 +10,7 @@ import { useEffect, useState, useRef } from "react"
 import { use } from "react"; 
 import LoginModal from "@/app/components/login-modal"
 import { useAuth } from "@/app/context/AuthContext"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useClub } from "@/app/context/ClubContext"
 import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
@@ -63,9 +63,9 @@ export default function ClubPage({ params }) {
   const [totalReviewCount, setTotalReviewCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const { schoolId, clubId } = use(params);
+  const { schoolSlug, clubSlug } = useParams();
   const auth = getAuth(app);
-  console.log("Club ID:", clubId);
+  // console.log("Club ID:", clubId);
   console.log("bookmark status", isBookmarked);
   console.log("USER INFORMATION", user);
 
@@ -83,7 +83,7 @@ export default function ClubPage({ params }) {
     if (!currentUser) {
       console.log("No user logged in, fetching public data only");
       // Fetch public club data without auth
-      const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
+      const response = await fetch(`http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json"
@@ -102,7 +102,7 @@ export default function ClubPage({ params }) {
     console.log("User logged in, fetching with auth");
     const idToken = await currentUser.getIdToken(true); // Use currentUser, not user from context
     
-    const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
+    const response = await fetch(`http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -115,9 +115,11 @@ export default function ClubPage({ params }) {
       setClub(data);
       setIsBookmarked(data.isBookmarked || false);
     }
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error fetching club information:", error);
-  } finally {
+  } 
+  finally {
     setIsLoading(false);
   }
 };
@@ -142,7 +144,7 @@ export default function ClubPage({ params }) {
   if (isInitialized) {
     fetchInitialData();
   }
-}, [clubId, user, isInitialized]); // Include all dependencies here
+}, [clubSlug, user, isInitialized]); // Include all dependencies here
 
   const fetchReviewsPage = async (page = 1, pageSize = 5) => {
     try {
@@ -155,7 +157,7 @@ export default function ClubPage({ params }) {
       }
 
       const response = await fetch(
-        `http://localhost:5095/api/Club/${clubId}/reviews?page=${page}&pageSize=${pageSize}`,
+        `http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}/reviews?page=${page}&pageSize=${pageSize}`,
         { method: "GET", headers }
       );
 
@@ -201,18 +203,20 @@ export default function ClubPage({ params }) {
       }
 
       const idToken = await currentUser.getIdToken(true);
+      const clubId = club.id;
+      console.log("THIS IS THE CLUB ID FOR BOOKMARKING", club.id);
 
       const url = `http://localhost:5095/api/SavedClub`;
       const options = !isBookmarked
         ? {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
-            body: JSON.stringify({ clubId }),
+            body: JSON.stringify({clubId}),
           }
         : {
             method: "DELETE",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
-            body: JSON.stringify({ clubId }),
+            body: JSON.stringify({clubId}),
           };
 
       const response = await fetch(url, options);
@@ -366,7 +370,7 @@ export default function ClubPage({ params }) {
                 <div>
                   <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{club.name}</h1>
                   <Link
-                    href={`/school/${schoolId}`}
+                    href={`/school/${schoolSlug}`}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium text-lg underline underline-offset-4"
                   >
                     {club.universityName}
@@ -386,9 +390,9 @@ export default function ClubPage({ params }) {
                 <div className="flex items-center gap-2">
                   <Button 
                     className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-300 dark:hover:border-blue-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
-                    title="Edit University"
+                    title="Edit Club"
                     onClick = {() => {
-                      router.replace(`http://localhost:3000/admin/club/${clubId}/edit`);
+                      router.replace(`http://localhost:3000/admin/club/${club.id}/edit`);
                     }}
                   >Edit
                     <Pencil className="w-4 h-4" />
@@ -398,8 +402,8 @@ export default function ClubPage({ params }) {
                     title="Delete Club"
                     onClick={() => {
                         setIsDeleteOpen(true);
-                        setClubToDelete(clubId);
-                        console.log("this is club id", clubId);
+                        setClubToDelete(club.id);
+                        console.log("this is club id", club.id);
                         setDeleteMode("Club");
                     }}
                   >Delete
@@ -455,7 +459,7 @@ export default function ClubPage({ params }) {
             <Button className="w-full bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 rounded-xl font-semibold flex items-center justify-center"
               onClick={() => {
                 if(user) {
-                  router.replace(`/school/${schoolId}/club/${clubId}/add-review`);
+                  router.replace(`/school/${schoolSlug}/club/${clubSlug}/add-review`);
                 }
                 else{
                   setIsModalOpen(true);
@@ -480,7 +484,6 @@ export default function ClubPage({ params }) {
         </div>
 
         {/* Reviews Section */}
-        {/* {reviews.length > 0 &&} */}
         {reviews.length === 0 && (
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-12 border border-blue-100 dark:border-blue-900 text-center">
             <div className="text-gray-400 dark:text-gray-500 mb-4">
@@ -493,7 +496,7 @@ export default function ClubPage({ params }) {
             <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold"
               onClick={() => {
                 if(user) {
-                  router.replace(`/school/${schoolId}/club/${clubId}/add-review`);
+                  router.replace(`/school/${schoolSlug}/club/${clubSlug}/add-review`);
                 }
                 else{
                   setIsModalOpen(true);
@@ -528,7 +531,7 @@ export default function ClubPage({ params }) {
                                 title="Edit Review"
                                 onClick={() => {
                                   setClubData(review);
-                                  router.replace(`/school/${schoolId}/club/${clubId}/edit-review/${review.id}`);
+                                  router.replace(`/school/${schoolSlug}/club/${clubSlug}/edit-review/${review.id}`);
                                 }}
                               >
                                 Edit
@@ -570,10 +573,6 @@ export default function ClubPage({ params }) {
                       <ArrowBigDown className={`hover:text-red-600 transition-colors ${userVotes[review.id] === -1 ? "fill-red-500" : ""} ${isVoting ? "opacity-50 cursor-not-allowed" : ""}`}/>
                       </button>
                     </div>
-                    {/* <button className="flex items-center gap-2 text-sm hover:text-red-500 font-medium">
-                      <span className="text-black font-bold"></span><Flag className="hover:fill-red-500 transition-colors" />
-                      
-                    </button> */}
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -634,10 +633,10 @@ export default function ClubPage({ params }) {
               setReviews((prevReviews) =>
                 prevReviews.filter((r) => r.id !== reviewToDelete)
               );
-              router.replace(`/school/${schoolId}/club/${clubId}`);
+              router.replace(`/school/${schoolSlug}/club/${clubSlug}`);
             }
             if(deleteMode == "Club"){
-              router.replace(`/school/${schoolId}`);
+              router.replace(`/school/${schoolSlug}`);
             }
             toast.success(`${deleteMode} deleted successfully!`, {
               duration: 5000, // 5 seconds

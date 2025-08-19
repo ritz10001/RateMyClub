@@ -8,7 +8,8 @@ namespace RateMyCollegeClub.Interfaces;
 public interface IClubsRepository : IGenericRepository<Club>
 {
     Task<List<Club>> GetClubDetails();
-    Task<Club> GetIndividualClubDetails(int id);
+    Task<Club> GetIndividualClubDetails(int universityId, string slug);
+    Task<Club?> GetIndividualClubDetails(int id);
     Task SaveChangesAsync();
     Task<HashSet<int>> GetBookmarkedClubIds(string userId);
     Task<List<Club>> GetPagedClubsAsync(int page, int pageSize, int universityId, string? search);
@@ -20,5 +21,7 @@ public interface IClubsRepository : IGenericRepository<Club>
     Task<CategoryAveragesDTO> GetCategoryAveragesForClubAsync(int clubId);
     Task<List<Club>> GetRecommendedClubsAsync(string userId, List<Tag> interests, List<SavedClub> savedClubs, int? schoolId);
     Task<List<Club>> GetPopularClubsAsync();
+    Task<string> GenerateSlug(string name);
+    Task<Club?> GetBySlugAsync(string slug);
 
 }

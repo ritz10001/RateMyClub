@@ -48,6 +48,10 @@ public class UniversityRequestController : ControllerBase
 
         if (user == null)
             return Unauthorized();
+        var roles = await _userManager.GetRolesAsync(user);
+        foreach(var r in roles) {
+            Console.WriteLine(r);
+        }
 
         // You can decide if this endpoint is for everyone logged-in or only admins
         // For "any authenticated user":

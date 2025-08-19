@@ -53,6 +53,13 @@ public class AdminClubController : ControllerBase
             var tags = await _tagsRepository.GetTagsByIdsAsync(createClubDTO.TagIds);
             club.Tags = tags;
         }
+        var slug = await _clubsRepository.GenerateSlug(club.Name);
+        var exists = await _clubsRepository.GetBySlugAsync(slug);
+        if (exists != null)
+        {
+            return Conflict("A club with this slug already exists.");
+        }
+        club.Slug = slug;
         await _clubsRepository.AddAsync(club);
         return Ok();
     }

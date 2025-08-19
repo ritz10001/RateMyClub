@@ -44,6 +44,14 @@ public class AdminUniversityController : ControllerBase
             return Unauthorized();
         }
         var university = _mapper.Map<University>(createUniversityDTO);
+        var slug = await _universityRepository.GenerateSlug(university.Name);
+        // Ensure uniqueness in case of conflicts
+        var exists = await _universityRepository.GetBySlugAsync(slug);
+        if (exists != null)
+        {
+            return Conflict("A university with this slug already exists.");
+        }
+        university.Slug = slug;
         await _universityRepository.AddAsync(university);
         return Ok(university);
     }

@@ -34,16 +34,27 @@ public class ReviewController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Review>> GetReview(int id)
+    [Authorize]
+    public async Task<ActionResult<GetReviewDTO>> GetReview(int id)
     {
+        var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
+        User? user = null;
+        if (!string.IsNullOrEmpty(firebaseUid))
+        {
+            user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
+        }
         Console.WriteLine("ENTERED GET ENDPOINT");
         var review = await _reviewsRepository.GetAsync(id);
-
         if (review is null)
         {
             return NotFound();
         }
-        return Ok(review);
+        var reviewDTO = _mapper.Map<GetReviewDTO>(review);
+        if (reviewDTO.UserId != user.Id && !await IsAdmin(user))
+        {
+            return Forbid();
+        }
+        return Ok(reviewDTO);
     }
 
     [HttpGet("mine")]
@@ -93,7 +104,7 @@ public class ReviewController : ControllerBase
         review.UserId = user?.Id;
 
         review.OverallRating = Math.Round(
-            (review.LeadershipRating + review.InclusivityRating + review.NetworkingRating + review.SkillsDevelopmentRating) / 4.0m, 
+            (review.LeadershipRating + review.InclusivityRating + review.NetworkingRating + review.SkillsDevelopmentRating) / 4.0m,
             2
         );
 
@@ -123,9 +134,8 @@ public class ReviewController : ControllerBase
         {
             return Unauthorized();
         }
-        var isAdmin = GetUserRoles().Contains("Administrator");
 
-        if (review.UserId != user?.Id && !isAdmin)
+        if (review.UserId != user?.Id && !await IsAdmin(user))
         {
             return Forbid();
         }
@@ -156,13 +166,11 @@ public class ReviewController : ControllerBase
             user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
         }
         if (string.IsNullOrEmpty(user?.Id))
-            {
-                return Unauthorized();
-            }
+        {
+            return Unauthorized();
+        }
 
-        var isAdmin = GetUserRoles().Contains("Administrator");
-
-        if (review.UserId != user?.Id && !isAdmin)
+        if (review.UserId != user?.Id && !await IsAdmin(user))
         {
             return Forbid();
         }
@@ -217,9 +225,10 @@ public class ReviewController : ControllerBase
     {
         return User.Claims.FirstOrDefault(c => c.Type == "uid")?.Value;
     }
-    private List<string> GetUserRoles() {
-        var roles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
-        return roles;
+    private async Task<bool> IsAdmin(User? user)
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        return roles.Contains("Administrator");
     }
 
 }

@@ -15,6 +15,7 @@ public class Club {
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string LogoUrl { get; set; } = string.Empty;
     public string ClubLocation { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
     public int CategoryId { get; set; }
     public Category Category { get; set; }
     public int UniversityId { get; set; }

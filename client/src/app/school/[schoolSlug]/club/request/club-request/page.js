@@ -17,20 +17,21 @@ import { app } from "@/app/utils/firebase"
 import AuthRoute from "@/app/components/AuthRoute"
 
 export default function RequestClubPage({ params }){
-  const { schoolId } = useParams();
-  const redirectPath = `/school/${schoolId}`;
+  const { schoolSlug } = useParams();
+  const redirectPath = `/school/${schoolSlug}`;
   return(
     <AuthRoute redirectTo={redirectPath}>
-      <RequestClubContent schoolId={schoolId} />
+      <RequestClubContent schoolSlug={schoolSlug} />
     </AuthRoute>
   );
 }
 
-function RequestClubContent({ schoolId }) {
+function RequestClubContent({ schoolSlug }) {
   const router = useRouter();
   const { user } = useAuth();  
   console.log("USER INFO");
   console.log(user);
+  const [school, setSchool] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingTag, setIsLoadingTag] = useState(true);
@@ -43,7 +44,7 @@ function RequestClubContent({ schoolId }) {
     name: "",
     description: "",
     categoryId: null,
-    universityId: schoolId,
+    universityId: null,
     tagIds: []
   })
 
@@ -53,6 +54,15 @@ function RequestClubContent({ schoolId }) {
       [field]: value,
     }))
   }
+
+  useEffect(() => {
+    const fetchUniversity = async () => {
+      const res = await fetch(`http://localhost:5095/api/University/${schoolSlug}`);
+      const data = await res.json();
+      setSchool(data); // data.id is the numeric clubId
+    };
+    fetchUniversity();
+  }, [schoolSlug]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -143,7 +153,7 @@ function RequestClubContent({ schoolId }) {
           name: clubData.name,
           description: clubData.description,
           categoryId: clubData.categoryId,
-          universityId: schoolId,
+          universityId: school.id,
           tagIds: selectedTags
         })
       });
@@ -154,7 +164,7 @@ function RequestClubContent({ schoolId }) {
         toast.success("Club request submitted! We'll review it shortly.", {
           duration: 5000,
         });
-        router.replace(`/school/${schoolId}`);
+        router.replace(`/school/${schoolSlug}`);
       }
       else{
         const errorData = await response.json();
@@ -187,7 +197,7 @@ function RequestClubContent({ schoolId }) {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/school/${schoolId}`}
+            href={`/school/${schoolSlug}`}
             className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -321,7 +331,7 @@ function RequestClubContent({ schoolId }) {
                   className="border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
-                  <Link href={`/school/${schoolId}`}>Cancel</Link>
+                  <Link href={`/school/${schoolSlug}`}>Cancel</Link>
                 </Button>
                 <Button
                   type="submit"

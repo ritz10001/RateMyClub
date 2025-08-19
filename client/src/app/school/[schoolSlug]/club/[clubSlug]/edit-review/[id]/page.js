@@ -9,25 +9,26 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useClub } from "@/app/context/ClubContext";
-import { useParams, useRouter } from "next/navigation";
+import { forbidden, useParams, useRouter } from "next/navigation";
 import { toast } from 'sonner';
 import { getAuth } from "firebase/auth";
 import { app } from "@/app/utils/firebase";
 import AuthRoute from "@/app/components/AuthRoute";
 
 export default function EditReviewPage({ params }){
-  const { schoolId, clubId, id } = useParams();
+  const { schoolSlug, clubSlug, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
-  const redirectPath = `/school/${schoolId}/club/${clubId}`;
+  const redirectPath = `/school/${schoolSlug}/club/${clubSlug}`;
   return(
     <AuthRoute redirectTo={redirectPath}>
-      <EditReviewContent schoolId={schoolId} clubId={clubId} id={id} />
+      <EditReviewContent schoolSlug={schoolSlug} clubSlug={clubSlug} id={id} />
     </AuthRoute>
   );
 }
 
-function EditReviewContent({ schoolId, clubId, id }) {
+function EditReviewContent({ schoolSlug, clubSlug, id }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
   const { user, isInitialized } = useAuth();
   const { clubData } = useClub();
   const router = useRouter();
@@ -46,8 +47,20 @@ function EditReviewContent({ schoolId, clubId, id }) {
     const fetchReviewData = async () => {
       console.log("ENTERING");
       try {
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
         console.log("tried");
-        const response = await fetch(`http://localhost:5095/api/Review/${id}`);
+        const response = await fetch(`http://localhost:5095/api/Review/${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          }
+        });
+        if (response.status === 403) {
+          setForbidden(true);
+          return;
+        }
         const data = await response.json();
         console.log("fetching complete");
         console.log(data);
@@ -119,7 +132,7 @@ function EditReviewContent({ schoolId, clubId, id }) {
         toast.success("Review edited successfully!", {
           duration: 5000, // 5 seconds
         });
-        router.replace(`/school/${schoolId}/club/${clubId}`);
+        router.replace(`/school/${schoolSlug}/club/${clubSlug}`);
       }
       else{
         const errorData = await response.json(); // Get error details
@@ -169,7 +182,13 @@ function EditReviewContent({ schoolId, clubId, id }) {
     },
   ]
 
-  if(isLoading){
+  useEffect(() => {
+    if (forbidden) {
+      return router.replace("/"); 
+    }
+  }, [forbidden, router]);
+
+  if(isLoading || forbidden){
     return(
       <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
         <div className="text-center">
@@ -187,7 +206,7 @@ function EditReviewContent({ schoolId, clubId, id }) {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/school/${schoolId}/club/${clubId}`}
+            href={`/school/${schoolSlug}/club/${clubSlug}`}
             className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -297,9 +316,9 @@ function EditReviewContent({ schoolId, clubId, id }) {
                   type="button"
                   variant="outline"
                   className="border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold bg-transparent"
-                  asChild
+                  onClick={() => router.replace(`/school/${schoolSlug}/club/${clubSlug}`)}
                 >
-                  <Link href={`/club/${clubId}`}>Cancel</Link>
+                  {/* <Link href={`/school/${schoolSlug}/club/${clubSlug}`}>Cancel</Link> */}Cancel
                 </Button>
                 <Button
                   type="submit"

@@ -17,8 +17,6 @@ import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 
 export default function CreateClubPage({ params }) {
-  const { schoolId } = useParams();
-  console.log("this is school id", schoolId);
   const { user } = useAuth();
   const router = useRouter();
   const [universities, setUniversities] = useState([]);
@@ -67,7 +65,6 @@ export default function CreateClubPage({ params }) {
       const idToken = await currentUser.getIdToken();
       console.log("CLUB DATA");
       console.log(clubData);
-      console.log("this is college id", schoolId);
       const response = await fetch("http://localhost:5095/api/AdminClub", {
         method: "POST",
         headers: {

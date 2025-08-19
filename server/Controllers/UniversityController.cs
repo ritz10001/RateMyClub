@@ -39,7 +39,14 @@ public class UniversityController : ControllerBase
         var universitiesDTO = _mapper.Map<List<GetUniversitiesDTO>>(universities);
         return Ok(universitiesDTO);
     }
-    [HttpGet("{id}")]
+    [HttpGet("{slug}")]
+    public async Task<ActionResult<GetUniversityDTO>> GetUniversityInfo(string slug)
+    {
+        var university = await _universityRepository.GetUniversityBySlug(slug);
+        var result = _mapper.Map<GetUniversityDTO>(university);
+        return Ok(result);
+    }
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<GetUniversityDTO>> GetUniversityInfo(int id)
     {
         var university = await _universityRepository.GetUniversityBasicData(id);
@@ -64,13 +71,13 @@ public class UniversityController : ControllerBase
         };
         return Ok(result);
     }
-    [HttpGet("{id}/clubs")]
-    public async Task<ActionResult<GetUniversityWithPagedClubsDTO>> GetPagedUniversityClubs(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 6, [FromQuery] string? search = null)
+    [HttpGet("{slug}/clubs")]
+    public async Task<ActionResult<GetUniversityWithPagedClubsDTO>> GetPagedUniversityClubs(string slug, [FromQuery] int page = 1, [FromQuery] int pageSize = 6, [FromQuery] string? search = null)
     {
-        var university = await _universityRepository.GetIndividualUniversityDetails(id);
+        var university = await _universityRepository.GetIndividualUniversityDetails(slug);
         if (university is null) return NotFound();
 
-        var pagedClubs = await _clubsRepository.GetPagedClubsForUniversity(id, page, pageSize, search);
+        var pagedClubs = await _clubsRepository.GetPagedClubsForUniversity(university.Id, page, pageSize, search);
         var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
         User? user = null;
         if (!string.IsNullOrEmpty(firebaseUid))

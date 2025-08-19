@@ -162,7 +162,7 @@ export default function DirectoryPage() {
         {/* School Grid */}
         <div className="rounded-xl grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
           {filteredSchools.map((school) => (
-            <Link key={school.id} href={`/school/${school.id}`} className="group">
+            <Link key={school.id} href={`/school/${school.slug}`} className="group">
               <div className="bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-blue-100 dark:border-blue-900 pb-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
                 {/* School Logo */}
                 <div className="flex justify-center mb-4 h-55">
