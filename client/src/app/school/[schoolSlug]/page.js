@@ -4,24 +4,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Users, Star, MapPin, Calendar, Heart, Pencil, Trash2 } from "lucide-react"
+import { Search, Plus, Users, Star, MapPin, Calendar, Heart, Pencil, Trash2, NotebookPen, ClubIcon, University } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { use } from "react"
 import LoginModal from "@/app/components/login-modal"
 import { useAuth } from "@/app/context/AuthContext"
 import { useRouter } from "next/navigation"
 import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
 import PageNav from "@/app/components/PageNav"
-import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 import { useDebounce } from 'use-debounce';
 import { notFound } from 'next/navigation';
 import NotFound from "@/app/not-found"
-// Mock data for school details
 
 export default function SchoolPage({ params }) {
 
@@ -29,10 +26,8 @@ export default function SchoolPage({ params }) {
   // Define the strict regex for a valid slug
   const slugRegex = /^[a-z-]+$/;
   if (!slugRegex.test(schoolSlug)) {
-    console.log(`Invalid slug format: ${schoolSlug}`);
     return notFound();
   }
-  console.log("params:", params);
 
   const [university, setUniversity] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,21 +46,18 @@ export default function SchoolPage({ params }) {
   const [debouncedSearchQuery] = useDebounce(searchQuery, 700);
   const [isNotFound, setIsNotFound] = useState(false);
   const auth = getAuth(app);
-  console.log("USER INFORMATION", user);
   const router = useRouter();
 
   useEffect(() => {
   const fetchClubs = async () => {
     try {
       if (!isInitialized) {
-        console.log("Auth not initialized yet, skipping fetch");
         return;
       }
 
       const currentUser = auth.currentUser;
     
       if (!currentUser) {
-        console.log("No user logged in, fetching public data only");
         // Fetch public club data without auth
         const response = await fetch(`http://localhost:5095/api/University/${schoolSlug}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
           method: "GET",
@@ -75,14 +67,12 @@ export default function SchoolPage({ params }) {
         });
 
         if(response.status === 404){
-          console.log("setting not found status");
           setIsNotFound(true);
           return;
         }
         
         if (response.ok) {
           const data = await response.json();
-          console.log("Fetched clubs:", data);
           setUniversity(data.university);
           setClubs(data.clubs.items || []);
           setFilteredClubs(data.clubs.items || []);
@@ -90,7 +80,6 @@ export default function SchoolPage({ params }) {
         }
         return;
       }
-      console.log("User logged in, fetching with auth");
       const idToken = await currentUser.getIdToken(true);
       const response = await fetch(`http://localhost:5095/api/University/${schoolSlug}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
         method: "GET",
@@ -101,14 +90,12 @@ export default function SchoolPage({ params }) {
       });
 
       if(response.status === 404){
-        console.log("setting not found status");
         setIsNotFound(true);
         return;
       }
       
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched clubs:", data);
         setUniversity(data.university);
         setClubs(data.clubs.items || []);
         setFilteredClubs(data.clubs.items || []);
@@ -189,7 +176,7 @@ export default function SchoolPage({ params }) {
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
             {/* School Logo */}
             <img
-              src={"https://www.texastech.edu/universities/ttu-campus-2022.jpg"}
+              src={"/generic.jpeg"}
               alt={`${university.name} logo`}
               className="w-32 h-32 rounded-full border-4 border-blue-100 dark:border-blue-900"
             />
@@ -327,7 +314,28 @@ export default function SchoolPage({ params }) {
             Showing {filteredClubs.length} of {clubs.length} clubs
           </p>
         </div>
-
+        {clubs.length === 0 && (
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-12 border border-blue-100 dark:border-blue-900 text-center">
+            <div className="text-gray-400 dark:text-gray-500 mb-4">
+              <Users className="w-16 h-16 mx-auto" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Clubs</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              No clubs yet. Be the first one to add one!
+            </p>
+            <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold"
+              onClick={() => {
+                if(user) {
+                  router.replace(`/school/${schoolSlug}/club/request/club-request`);
+                }
+                else{
+                  setIsModalOpen(true);
+                  return;
+                }
+              }}>Request a Club
+            </Button>
+          </div>
+        )}
         {/* Clubs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredClubs.map((club) => (
@@ -387,6 +395,10 @@ export default function SchoolPage({ params }) {
           </div>
         }
       </div>
+      <LoginModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
       {isDeleteOpen &&
         <DeleteModal 
           isOpen={isDeleteOpen}
@@ -406,7 +418,6 @@ export default function SchoolPage({ params }) {
                 }
               });
               if(response.status === 404){
-                console.log("setting not found status");
                 setIsNotFound(true);
                 return;
               }

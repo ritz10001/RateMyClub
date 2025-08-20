@@ -8,7 +8,6 @@ import { Star, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { toast } from 'sonner';
-import { use } from "react"; 
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/app/context/AuthContext"
 import { getAuth } from "firebase/auth"
@@ -39,10 +38,6 @@ function WriteReviewContent({ schoolSlug, clubSlug }) {
   })
   const [error, setError] = useState(false);
   const auth = getAuth(app);
-  // console.log("THIS IS CLUB ID", clubId);
-  useEffect(() => {
-    console.log("HERE IS LATEST REVIEW DATA", reviewData)
-  }, [reviewData]);
 
   useEffect(() => {
     if (error) {
@@ -86,8 +81,6 @@ function WriteReviewContent({ schoolSlug, clubSlug }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try{
-      console.log("TRYING NOW");
-      console.log(reviewData);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
       const response = await fetch("http://localhost:5095/api/Review", {
@@ -114,7 +107,6 @@ function WriteReviewContent({ schoolSlug, clubSlug }) {
         router.replace(`/school/${schoolSlug}/club/${clubSlug}`);
       }
       else{
-        console.log("failed");
         setError(true);
         toast.error(error.message || "Submission failed. Please try again.");
       }

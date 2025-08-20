@@ -1,17 +1,11 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Plus, Info, GraduationCap } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
 import { useParams, useRouter } from "next/navigation"
-import UniversityForm from "@/app/components/Forms/UniversityForm"
 import ClubForm from "@/app/components/Forms/ClubForm"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
@@ -36,7 +30,6 @@ export default function CreateClubPage({ params }) {
     fetch(`http://localhost:5095/api/University/all-colleges`)
       .then(res => res.json())
       .then(data => {
-        console.log("UNIS", data);
         setUniversities(data);
       })
   }, []);
@@ -44,7 +37,6 @@ export default function CreateClubPage({ params }) {
     fetch('http://localhost:5095/api/Categories')
         .then(res => res.json())
         .then(data => {
-          console.log(data);
           setCategories(data);
         });
     }, []);
@@ -52,7 +44,6 @@ export default function CreateClubPage({ params }) {
     fetch('http://localhost:5095/api/Tag')
       .then(res => res.json())
       .then(data => {
-      console.log(data);
       setTags(data);
     });
   }, []);
@@ -63,8 +54,6 @@ export default function CreateClubPage({ params }) {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      console.log("CLUB DATA");
-      console.log(clubData);
       const response = await fetch("http://localhost:5095/api/AdminClub", {
         method: "POST",
         headers: {

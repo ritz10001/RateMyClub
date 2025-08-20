@@ -7,9 +7,6 @@ export default function ProtectedRoute({ children, role }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  
-  console.log("USER");
-  console.log(user);
 
   useEffect(() => {
     if (!isLoading) {

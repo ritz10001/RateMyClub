@@ -7,9 +7,6 @@ export default function GuestRoute({ children, redirectTo = "/" }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  
-  console.log("USER (Guest Route)");
-  console.log(user);
 
   useEffect(() => {
     // If user is already logged in, redirect them away from auth pages

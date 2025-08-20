@@ -9,7 +9,7 @@ const faqs = [
   {
     question: "How do I create an account?",
     answer:
-      "Click the 'Sign Up' button in the top right corner or use the 'Continue with Google' option for quick registration. You'll need to verify your email address to get started.",
+      "Click the 'Sign Up' button in the top right corner or use the 'Continue with Google' option for quick registration. You'll need to verify your email address to get started. However, please note that if you use Google Sign-in, you will need to complete your user profile information by navigating to the user profile page.",
   },
   {
     question: "Can I write anonymous reviews?",
@@ -34,7 +34,7 @@ const faqs = [
   {
     question: "What if my school isn't listed?",
     answer:
-      "You can request to add your school by clicking 'Add School' in the directory. Provide the school information and we'll add it to our database within 3-5 business days.",
+      "You can request to add your school by clicking 'Add School' in the directory. Provide the school information and we'll add it to our database within 2-3 business days.",
   },
   {
     question: "How are club ratings calculated?",
@@ -56,16 +56,16 @@ export default function HelpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-12 px-4 dark:from-zinc-950 dark:to-black">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100 dark:bg-zinc-800 dark:border-zinc-700 dark:shadow-2xl">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <HelpCircle className="w-8 h-8 text-blue-600" />
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 dark:bg-blue-900">
+              <HelpCircle className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Help Center</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 dark:text-gray-100">Help Center</h1>
+            <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto dark:text-gray-400">
               Find answers to common questions and get the help you need.
             </p>
           </div>
@@ -74,7 +74,7 @@ export default function HelpPage() {
           <div className="grid md:grid-cols-3 gap-4 mb-12">
             <Button
               variant="outline"
-              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 p-6 rounded-xl font-semibold bg-transparent h-auto flex-col"
+              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 p-6 rounded-xl font-semibold bg-transparent h-auto flex-col dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900 dark:hover:text-blue-300"
               asChild
             >
               <Link href="/signup">
@@ -84,20 +84,20 @@ export default function HelpPage() {
             </Button>
             <Button
               variant="outline"
-              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 p-6 rounded-xl font-semibold bg-transparent h-auto flex-col"
+              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 p-6 rounded-xl font-semibold bg-transparent h-auto flex-col dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900 dark:hover:text-blue-300"
               asChild
             >
-              <Link href="/directory">
+              <Link href="/all-schools">
                 <HelpCircle className="w-6 h-6 mb-2" />
-                Browse Clubs
+                Browse Schools
               </Link>
             </Button>
             <Button
               variant="outline"
-              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 p-6 rounded-xl font-semibold bg-transparent h-auto flex-col"
+              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 p-6 rounded-xl font-semibold bg-transparent h-auto flex-col dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900 dark:hover:text-blue-300"
               asChild
             >
-              <Link href="mailto:support@ratemycollegeclub.com">
+              <Link href="mailto:ratemycollegeclub@gmail.com">
                 <Mail className="w-6 h-6 mb-2" />
                 Contact Support
               </Link>
@@ -106,24 +106,24 @@ export default function HelpPage() {
 
           {/* FAQ Section */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center dark:text-gray-100">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {faqs.map((faq, index) => (
-                <div key={index} className="border border-gray-200 rounded-xl overflow-hidden">
+                <div key={index} className="border border-gray-200 rounded-xl overflow-hidden dark:border-zinc-700">
                   <button
                     onClick={() => toggleFaq(index)}
-                    className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center"
+                    className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center dark:bg-zinc-700 dark:hover:bg-zinc-600"
                   >
-                    <span className="font-semibold text-gray-900">{faq.question}</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{faq.question}</span>
                     {openFaq === index ? (
-                      <ChevronUp className="w-5 h-5 text-gray-500" />
+                      <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-500" />
+                      <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     )}
                   </button>
                   {openFaq === index && (
-                    <div className="px-6 py-4 bg-white">
-                      <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                    <div className="px-6 py-4 bg-white dark:bg-zinc-800">
+                      <p className="text-gray-700 leading-relaxed dark:text-gray-300">{faq.answer}</p>
                     </div>
                   )}
                 </div>
@@ -132,18 +132,18 @@ export default function HelpPage() {
           </div>
 
           {/* Contact Section */}
-          <div className="bg-blue-50 rounded-xl p-8 border border-blue-100 text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Still Need Help?</h3>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-blue-50 rounded-xl p-8 border border-blue-100 text-center dark:bg-blue-950 dark:border-blue-900">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">Still Need Help?</h3>
+            <p className="text-gray-600 mb-6 dark:text-gray-400">
               Can't find what you're looking for? Our support team is here to help you out.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold" asChild>
-                <Link href="mailto:support@ratemycollegeclub.com">Email Support</Link>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold dark:bg-blue-500 dark:hover:bg-blue-600" asChild>
+                <Link href="mailto:ratemycollegeclub@gmail.com">Email Support</Link>
               </Button>
               <Button
                 variant="outline"
-                className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold bg-transparent"
+                className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold bg-transparent dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900 dark:hover:text-blue-300"
                 asChild
               >
                 <Link href="/">Back to Home</Link>
@@ -153,5 +153,5 @@ export default function HelpPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

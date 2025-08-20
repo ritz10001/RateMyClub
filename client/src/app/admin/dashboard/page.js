@@ -7,7 +7,6 @@ import { Check, X, Eye, Clock, GraduationCap, Users } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from "sonner"
-import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 
@@ -318,7 +317,6 @@ export default function AdminRequestsPage() {
         });
         if(response.ok){
           const data = await response.json();
-          console.log(data);
           setUniversityRequests(data);
         }
       }
@@ -348,7 +346,6 @@ export default function AdminRequestsPage() {
         });
         if(response.ok){
           const data = await response.json();
-          console.log("data of clubs", data);
           setClubRequests(data); 
         }
       } 

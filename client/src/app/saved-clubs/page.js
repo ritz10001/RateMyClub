@@ -30,7 +30,6 @@ function SavedClubsContent() {
   useEffect(() => {
     const fetchSavedClubs = async () => {
       if (!user) {
-        console.log("User not authenticated yet, skipping fetch");
         return;
       }
       try {
@@ -90,7 +89,6 @@ const handleRemoveClub = async (clubId) => {
 
     if (response.ok) {
       const data = await response.json();
-      console.log(data);
       setSavedClubs((prev) => prev.filter((club) => club.clubId !== clubId));
       toast.success("Club removed from saved clubs successfully.");
     } 

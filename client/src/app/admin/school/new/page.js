@@ -1,10 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Plus, Info, GraduationCap } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -30,8 +25,6 @@ export default function EditUniversityPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      console.log("UNIVERSITY DATA");
-      console.log(universityData);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
       const response = await fetch(`http://localhost:5095/api/AdminUniversity`, {

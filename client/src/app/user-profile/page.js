@@ -63,14 +63,16 @@ export default function ProfilePage() {
           });
           setSelectedTags(matchedTagIds);
         }
-      } catch (error) {
+      } 
+      catch (error) {
         console.error("Failed to fetch initial data:", error);
         toast.error("Failed to load profile data.");
-      } finally {
+      } 
+      finally {
         setIsLoading(false);
       }
     };
-    fetchData();
+     fetchData();
   }, []); // Run only once on component mount
 
   const handleInputChange = (field, value) => {
@@ -118,13 +120,20 @@ export default function ProfilePage() {
       const updatedTagNames = tags
         .filter(tag => profileData.tagIds.includes(tag.id))
         .map(tag => tag.name);
-      console.log("Updated tag names:", updatedTagNames);
+
       updateUserData({
         firstName: profileData.firstName,
         lastName: profileData.lastName,
         universityId: parseInt(profileData.universityId),
         tags: updatedTagNames,
       });
+      setProfileData(prevData => ({
+        ...prevData,
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        universityId: parseInt(profileData.universityId),
+        tagIds: profileData.tagIds,
+      }));
       toast.success("Profile updated successfully!", {
         duration: 5000
       });

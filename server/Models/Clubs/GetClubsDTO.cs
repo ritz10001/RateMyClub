@@ -8,6 +8,7 @@ public class GetClubsDTO
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string UniversityName { get; set; } = string.Empty;
+    public string UniversitySlug { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal AverageRating { get; set; }

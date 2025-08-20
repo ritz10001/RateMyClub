@@ -189,7 +189,12 @@ public class AuthService : IAuthService
         // 3) Resolve tags & university
         Console.WriteLine("IN STEP 3, RESOLVING TAGS");
         var tags = await _tagsRepository.GetTagsByIdsAsync(firebaseRegisterDTO.TagIds);
-        var universityName = await _universityRepository.GetUniversityNameByIdAsync(firebaseRegisterDTO.UniversityId ?? 0);
+        string universityName = "Other";
+        if (firebaseRegisterDTO.UniversityId.HasValue)
+        {
+            universityName = await _universityRepository.GetUniversityNameByIdAsync(firebaseRegisterDTO.UniversityId.Value);
+        }
+        // var universityName = await _universityRepository.GetUniversityNameByIdAsync(firebaseRegisterDTO.UniversityId ?? 0);
         // 4) Create SQL user record
         Console.WriteLine("IN STEP 4, CREATING SQL RECORDS");
         var newUser = new User
@@ -199,7 +204,7 @@ public class AuthService : IAuthService
             LastName = firebaseRegisterDTO.LastName,
             Email = firebaseRegisterDTO.Email,
             FireBaseUid = firebaseUid,
-            UniversityId = firebaseRegisterDTO.UniversityId ?? 0,
+            UniversityId = firebaseRegisterDTO.UniversityId,
             Tags = tags,
             SchoolName = universityName
         };

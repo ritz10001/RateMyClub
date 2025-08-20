@@ -1,18 +1,15 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
-import Link from "next/link"
-import { useState, useEffect } from "react"
-import { Users, Star, TrendingUp, Building } from "lucide-react"
-import { useAuth } from "./context/AuthContext"
-import Image from 'next/image';
-import TestModalButton from "./components/test-modal-button"
-import { getAuth } from "firebase/auth"
-import { app } from "./utils/firebase"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Users, Star, TrendingUp, Building } from "lucide-react";
+import { useAuth } from "./context/AuthContext";
+import { getAuth } from "firebase/auth";
+import { app } from "./utils/firebase";
+import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,7 +21,6 @@ export default function HeroSection() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const auth = getAuth(app);
-  console.log("user information", user);
   const features = [
     {
       icon: Users,
@@ -50,9 +46,7 @@ export default function HeroSection() {
           method: "GET",
         });
         if(response.ok){
-          console.log("ok repsonse");
           const data = await response.json();
-          console.log("popular schools", data);
           setPopularSchools(data);
         }
       }
@@ -66,9 +60,7 @@ export default function HeroSection() {
           method: "GET",
         });
         if(response.ok){
-          console.log("ok repsonse");
           const data = await response.json();
-          console.log("popular clubs", data);
           setPopularClubs(data);
         }
       }
@@ -80,7 +72,6 @@ export default function HeroSection() {
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        console.log(idToken);
         const response = await fetch("http://localhost:5095/api/Club/recommended", {
           method: "GET",
           headers: {
@@ -90,7 +81,6 @@ export default function HeroSection() {
         });
         if(response.ok){
           const data = await response.json();
-          console.log("recommended clubs", data);
           setRecommendedClubs(data);
         }
       }
@@ -100,10 +90,10 @@ export default function HeroSection() {
     }
     fetchPopularSchools();
     fetchPopularClubs();
-    // if(user && isInitialized) {
-    //   fetchRecommendedClubs();
-    // }
-    // setIsLoading(false);
+    if(user && isInitialized) {
+      fetchRecommendedClubs();
+    }
+    setIsLoading(false);
   }, [user, isInitialized]);
 
   useEffect(() => {
@@ -174,7 +164,7 @@ export default function HeroSection() {
                   {searchResults.map((university) => (
                     <li
                       key={university.id}
-                      onClick={() => window.location.href = `/school/${university.id}`}
+                      onClick={() => router.push(`/school/${university.slug}`)}
                       className="px-4 py-3 hover:bg-blue-100 dark:hover:bg-zinc-700 cursor-pointer transition-colors border-b border-gray-200 dark:border-zinc-700 last:border-b-0"
                     >
                       <div className="flex items-center justify-start gap-2 md:gap-3">
@@ -205,10 +195,9 @@ export default function HeroSection() {
           <div className="flex items-start gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
             {popularSchools.map((school, index) => {
               return (
-                <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80" onClick={() => router.push(`/school/${school.id}`)}>
+                <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80" onClick={() => router.push(`/school/${school.slug}`)}>
                   <div className="w-full h-50 bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-4 mx-auto">
                     <img
-                      // src="https://www.texastech.edu/universities/ttu-campus-2022.jpg"
                       src={"/generic.jpeg"}
                       className="w-full h-full text-blue-600 rounded-lg"
                     />
@@ -226,7 +215,6 @@ export default function HeroSection() {
                     <Users className="w-4 h-4" />
                     <span>{school.reviewCount} Reviews</span>
                   </div>
-                  {/* <p className="text-gray-600 text-center mb-4 pb-2">{school.reviewCount} Reviews</p> */}
                 </div>
               )
             })}
@@ -237,10 +225,9 @@ export default function HeroSection() {
           <div className="flex items-start gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
             {popularClubs.map((club, index) => {
               return (
-                <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80">
+                <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80" onClick={() => router.push(`/school/${club.universitySlug}/club/${club.slug}`)}>
                   <div className="w-full h-50 bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-4 mx-auto">
                     <img
-                      // src="https://www.texastech.edu/universities/ttu-campus-2022.jpg"
                       src={"/genericclub.jpeg"}
                       className="w-full h-full text-blue-600 rounded-lg"
                     />
@@ -268,7 +255,7 @@ export default function HeroSection() {
             <div className="flex items-start gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
               {recommendedClubs.map((club, index) => {
                 return (
-                  <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80">
+                  <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80" onClick={() => router.push(`/school/${club.universitySlug}/club/${club.slug}`)}>
                     <div className="w-full h-50 bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-4 mx-auto">
                       <img
                         // src="https://www.texastech.edu/universities/ttu-campus-2022.jpg"

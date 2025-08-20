@@ -41,7 +41,6 @@ export default function CityAutocomplete({ value, onChange, placeholder, classNa
         );
 
         const data = await response.json();
-        console.log('API Response:', data); // Debug log
         
         if (data.places) {
           setSuggestions(data.places.map(place => {

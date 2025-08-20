@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Mail, CheckCircle, RefreshCw, ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import Link from "next/link"
 import { useAuth } from "../context/AuthContext"
@@ -18,7 +17,6 @@ export default function EmailConfirmationPage() {
   const [cooldown, setCooldown] = useState(0);
   const { user, isInitialized } = useAuth();
   const router = useRouter();
-  console.log("user informatioon", user);
 
   useEffect(() => {
     if (cooldown === 0) return;

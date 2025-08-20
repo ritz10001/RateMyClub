@@ -8,7 +8,6 @@ import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, ArrowLeft, HeartCrack, Users, NotebookPen, Pencil, Trash2, University, Ban, RotateCcw } from "lucide-react"
 import { toast } from "sonner";
-import { api } from "../utils/axios";
 import WithdrawRequestModal from "../components/withdraw-request-modal";
 import { getAuth } from "firebase/auth";
 import { app } from "../utils/firebase";
@@ -56,8 +55,6 @@ function MyRequestsContent(){
   const { user, isInitialized } = useAuth();
   const toastId = useRef(null);
   const auth = getAuth(app);
-  console.log("USER INFO");
-  console.log(user);
 
   useEffect(() => {
     const fetchUniversityRequests = async () => {
@@ -66,10 +63,7 @@ function MyRequestsContent(){
           throw new Error("User not logged in");
         }
         const currentUser = auth.currentUser;
-        console.log("user is logged in", currentUser);
         const idToken = await currentUser.getIdToken(true);
-        console.log("here is the idtoken");
-        console.log(idToken);
 
         const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
           method: "GET",
@@ -78,14 +72,12 @@ function MyRequestsContent(){
             "Authorization": `Bearer ${idToken}`
           }
         });
-        console.log("COMPLETED RESPONSE");
         if (response.ok) {
           const data = await response.json();
-          console.log("HERE IS THE DATA", data);
           setUniversityRequests(data);
         } 
         else if (response.status === 401) {
-          console.log("Unauthorized - token might be expired or invalid");
+          console.error("Unauthorized - token might be expired or invalid");
         } 
         else {
           toast.error("Failed to fetch university requests.");
@@ -128,7 +120,7 @@ function MyRequestsContent(){
           setClubRequests(data);
         }
         else if (response.status === 401) {
-          console.log("Unauthorized - token might be expired or invalid");
+          console.error("Unauthorized - token might be expired or invalid");
         } 
         else {
           toast.error("Failed to fetch club requests.");
@@ -349,15 +341,6 @@ function MyRequestsContent(){
               </div>
             ))}
           </div>
-          {/* Load More Reviews */}
-          {/* <div className="text-center mt-8">
-            <Button
-              variant="outline"
-              className="border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 px-8 py-3 rounded-xl font-semibold bg-transparent"
-            >
-              Load More Requests
-            </Button>
-          </div> */}
         </div>
       }
       <WithdrawRequestModal 

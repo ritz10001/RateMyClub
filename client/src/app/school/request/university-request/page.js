@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Plus, Info, GraduationCap } from "lucide-react";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
@@ -14,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { getAuth } from "firebase/auth";
 import { app } from "@/app/utils/firebase";
 import AuthRoute from "@/app/components/AuthRoute";
-import Head from "next/head";
 import CityAutocomplete from "@/app/components/CityAutocomplete";
 import Script from "next/script";
 
@@ -38,12 +35,6 @@ function RequestUniversityContent() {
     officialWebsite: "",
     additionalInfo: "",
   })
-  console.log("API Key:", process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY);
-
-  useEffect(() => {
-    console.log("Window.google:", window.google);
-    console.log("Google Maps Places:", window.google?.maps?.places);
-  }, []);
 
   const handleInputChange = (field, value) => {
     setUniversityData((prev) => ({
@@ -55,8 +46,6 @@ function RequestUniversityContent() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      console.log("UNIVERSITY DATA");
-      console.log(universityData);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
       const response = await fetch("http://localhost:5095/api/UniversityRequest", {
@@ -76,7 +65,6 @@ function RequestUniversityContent() {
       })
       if(response.ok){
         const requestResponse = await response.json();
-        console.log(requestResponse);
         toast.success("University request submitted! We'll review it shortly.", {
           duration: 5000, // 5 seconds
         });
@@ -103,13 +91,13 @@ function RequestUniversityContent() {
         <div className="max-w-3xl mx-auto px-4">
           {/* Header */}
           <div className="mb-8">
-            <Link
-              href="/all-schools"
+            <button
+              onClick={() => router.replace("/all-schools")}
               className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Directory
-            </Link>
+            </button>
             <div className="flex items-center gap-3 mb-2">
               <GraduationCap className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">Request a New University</h1>
@@ -231,7 +219,7 @@ function RequestUniversityContent() {
                     className="border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold bg-transparent"
                     asChild
                   >
-                    <Link href="/directory">Cancel</Link>
+                    <button onClick={() => router.replace("/all-schools")}>Cancel</button>
                   </Button>
                   <Button
                     type="submit"

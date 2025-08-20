@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, ArrowLeft, HeartCrack, Users, NotebookPen, Pencil, Trash2 } from "lucide-react"
 import Link from "next/link"
@@ -9,8 +8,6 @@ import { useEffect, useState } from "react"
 import { useAuth } from "../context/AuthContext"
 import { toast } from "sonner"
 import DeleteReviewModal from "@/app/components/delete-modal"
-import LoginModal from "@/app/components/login-modal"
-import { useClub } from "../context/ClubContext"
 import { useRouter } from "next/navigation"
 import { getAuth } from "firebase/auth"
 import { app } from "../utils/firebase"
@@ -53,7 +50,6 @@ function MyReviewsContent() {
   useEffect(() => {
     const fetchReviews = async () => {
       if (!user) {
-        console.log("User not authenticated yet, skipping fetch");
         return;
       }
       try {
@@ -228,7 +224,6 @@ function MyReviewsContent() {
                 try{
                   const currentUser = auth.currentUser;
                   const idToken = await currentUser.getIdToken();
-                  console.log("THIS REVIEW TO DELETE", reviewToDelete);
                   const response = await fetch(`http://localhost:5095/api/Review/${reviewToDelete}`, {
                     method: "DELETE",
                     headers: {

@@ -6,12 +6,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Plus, Info, University } from "lucide-react"
-import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
 import { useParams, useRouter } from "next/navigation"
-import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 import AuthRoute from "@/app/components/AuthRoute"
@@ -29,8 +27,6 @@ export default function RequestClubPage({ params }){
 function RequestClubContent({ schoolSlug }) {
   const router = useRouter();
   const { user } = useAuth();  
-  console.log("USER INFO");
-  console.log(user);
   const [school, setSchool] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,10 +69,8 @@ function RequestClubContent({ schoolSlug }) {
             "Content-Type": "application/json"
           }
         });
-        console.log("FETCHING CATEGORIES");
         if(response.ok){
           const data = await response.json();
-          console.log(data);
           setCategories(data);
           setIsLoading(false);
         }
@@ -111,8 +105,6 @@ function RequestClubContent({ schoolSlug }) {
   }, []);
 
   const handleTagClick = (tagId) => {
-    console.log("SELECTED TAG", tagId);
-    console.log(selectedTags);
     if(selectedTags.includes(tagId)){
       setSelectedTags(selectedTags.filter((id) => id !== tagId));
     }
@@ -137,8 +129,6 @@ function RequestClubContent({ schoolSlug }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      console.log("TRYING NOW");
-      console.log(clubData);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
 
@@ -160,7 +150,6 @@ function RequestClubContent({ schoolSlug }) {
 
       if(response.ok){
         const requestResponse = await response.json();
-        console.log(requestResponse);
         toast.success("Club request submitted! We'll review it shortly.", {
           duration: 5000,
         });
@@ -196,13 +185,13 @@ function RequestClubContent({ schoolSlug }) {
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            href={`/school/${schoolSlug}`}
+          <button
+            onClick={() => router.replace(`/school/${schoolSlug}`)}
             className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to University
-          </Link>
+          </button>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Request a New Club</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Can't find your club? Help us expand our directory by requesting to add your club.
@@ -331,7 +320,7 @@ function RequestClubContent({ schoolSlug }) {
                   className="border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold bg-transparent"
                   asChild
                 >
-                  <Link href={`/school/${schoolSlug}`}>Cancel</Link>
+                  <button onClick={() => router.replace(`/school/${schoolSlug}`)}>Cancel</button>
                 </Button>
                 <Button
                   type="submit"

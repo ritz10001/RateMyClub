@@ -11,4 +11,6 @@ public class GetUniversitiesDTO : BaseUniversityDTO
     public int ClubsCount { get; set; }
     public int ReviewCount { get; set; }
     public string Slug { get; set; } = string.Empty;
+    public string SecondaryName { get; set; } = string.Empty;
+
 }

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Users, Building } from "lucide-react";
+import { Search, Plus, Users, Building, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import PageNav from "../components/PageNav";
@@ -37,14 +37,9 @@ export default function DirectoryPage() {
       })
       if(response.ok){
         const data = await response.json();
-        console.log("Fetched schools:", data);
         setSchools(data.data);
         setFilteredSchools(data.data);
         setTotalPages(Math.ceil(data.total / pageSize));
-      }
-      else{
-        console.log("Failed to fetch schools");
-
       }
     }
     catch (error) {
@@ -167,7 +162,6 @@ export default function DirectoryPage() {
                 {/* School Logo */}
                 <div className="flex justify-center mb-4 h-55">
                   <img
-                    // src={school.logoUrl} 
                     src={"/generic.jpeg"}
                     alt={`${school.name} logo`}
                     className="h-full w-full"

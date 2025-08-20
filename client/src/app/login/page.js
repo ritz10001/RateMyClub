@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../utils/firebase";
-import GuestRoute from "../components/GuestRoute";
 import { toast } from "sonner";
 
 export default function LoginContent() {
@@ -127,7 +126,7 @@ export default function LoginContent() {
             firstName: firebaseUser.displayName?.split(" ")[0] || "",
             lastName: firebaseUser.displayName?.split(" ")[1] || "",
             email: firebaseUser.email,
-            universityId: 1, // default university
+            universityId: null, // default university
             isSSO: true
           })
         });
@@ -182,13 +181,13 @@ export default function LoginContent() {
 };
 
 useEffect(() => {
-  if (isInitialized && user && user?.emailVerified && !isLoggingIn) {
+  if (isInitialized && !isLoading && user && user?.emailVerified && !isLoggingIn) {
     router.replace("/");
   }
-}, [isInitialized, user, router, isLoggingIn]);
+}, [isInitialized, user, router, isLoggingIn, isLoading]);
 
 // Modified loading condition - don't show loading for unverified users during login
-if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerified && !isLoggingIn)) {
+if (!isInitialized || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
   return (
     <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
       <div className="text-center">
@@ -236,7 +235,7 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && user?.emailVerifie
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Sign in with Google
+              Sign in with Google (Recommended)
             </Button>
           </div>
 

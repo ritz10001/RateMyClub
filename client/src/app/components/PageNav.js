@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function PageNav({ current, total, onChange }) {
-  console.log("total", total);
   return(
     <div className="flex gap-2 mt-4 justify-center">
       <Button variant="outline" className="border-blue-200 text-blue-600" disabled={current === 1} onClick={() => onChange(current - 1)}><ArrowLeft /></Button>

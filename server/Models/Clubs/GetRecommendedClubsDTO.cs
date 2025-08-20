@@ -6,7 +6,9 @@ public class GetRecommendedClubsDTO
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
     public string UniversityName { get; set; } = string.Empty;
+    public string UniversitySlug { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
     public decimal AverageRating { get; set; }
     public int ReviewCount { get; set; }

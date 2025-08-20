@@ -128,7 +128,8 @@ public class UniversityController : ControllerBase
         {
             Id = u.Id,
             Name = u.Name,
-            Location = u.Location
+            Location = u.Location,
+            Slug = u.Slug
         }).ToList();
 
         return Ok(results);

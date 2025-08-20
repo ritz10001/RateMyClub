@@ -97,7 +97,6 @@ export const AuthProvider = ({ children }) => {
   // Custom logout function
   const logout = async () => {
     try {
-      console.log("trying to log out");
       await auth.signOut();
       setUser(null);
       sessionStorage.removeItem('combinedUserData'); // Clear stored data
@@ -117,7 +116,6 @@ export const AuthProvider = ({ children }) => {
         
         if (storedSqlData) {
           // We have stored data, combine it with fresh Firebase data
-          console.log("Using sessionStorage SQL data, no API call needed");
           setUser({
             ...firebaseUser,
             firstName: storedSqlData.firstName,
@@ -130,7 +128,6 @@ export const AuthProvider = ({ children }) => {
         } 
         else {
           // No stored data, fetch from SQL (only happens on first login or new session)
-          console.log("Fetching fresh SQL data");
           const combinedUser = await fetchSqlUserData(firebaseUser);
           setUser(combinedUser);
         }

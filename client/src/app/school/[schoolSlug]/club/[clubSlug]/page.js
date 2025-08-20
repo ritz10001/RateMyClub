@@ -2,8 +2,6 @@
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, Heart, Users, Calendar, MapPin, Plus, Pencil, Trash2, ArrowBigUp, ArrowBigDown, Flag, NotebookPen } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
@@ -14,8 +12,6 @@ import { useParams, useRouter } from "next/navigation"
 import { useClub } from "@/app/context/ClubContext"
 import DeleteModal from "@/app/components/delete-modal"
 import { toast } from 'sonner';
-import { Elsie_Swash_Caps } from "next/font/google"
-import { api } from "@/app/utils/axios"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -41,7 +37,6 @@ export default function ClubPage({ params }) {
   const { schoolSlug, clubSlug } = useParams();
   const slugRegex = /^[a-z-]+$/;
   if (!slugRegex.test(clubSlug)) {
-    console.log(`Invalid slug format: ${clubSlug}`);
     return notFound();
   }
   const { user, isInitialized } = useAuth();
@@ -73,23 +68,18 @@ export default function ClubPage({ params }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const auth = getAuth(app);
-  // console.log("Club ID:", clubId);
-  console.log("bookmark status", isBookmarked);
-  console.log("USER INFORMATION", user);
 
   useEffect(() => {}, [reviewToDelete])
 
   const fetchClubDetails = async () => {
   try {
     if (!isInitialized) {
-      console.log("Auth not initialized yet, skipping fetch");
       return;
     }
     // Always use Firebase auth directly for token operations
     const currentUser = auth.currentUser;
     
     if (!currentUser) {
-      console.log("No user logged in, fetching public data only");
       // Fetch public club data without auth
       const response = await fetch(`http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}`, {
         method: "GET",
@@ -98,7 +88,6 @@ export default function ClubPage({ params }) {
         }
       });
       if(response.status === 404){
-        console.log("setting not found status");
         setIsNotFound(true);
         return;
       }
@@ -112,7 +101,6 @@ export default function ClubPage({ params }) {
     }
 
     // User is logged in, get token from Firebase directly
-    console.log("User logged in, fetching with auth");
     const idToken = await currentUser.getIdToken(true); // Use currentUser, not user from context
     
     const response = await fetch(`http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}`, {
@@ -123,7 +111,6 @@ export default function ClubPage({ params }) {
       }
     });
     if(response.status === 404){
-      console.log("setting not found status");
       setIsNotFound(true);
       return;
     }
@@ -145,7 +132,6 @@ export default function ClubPage({ params }) {
   useEffect(() => {
   const fetchInitialData = async () => {
     try {
-      console.log("TRYING TO FETCH DATA");
       setIsLoading(true);
       await fetchClubDetails();
       await fetchReviewsPage();
@@ -180,7 +166,6 @@ export default function ClubPage({ params }) {
       );
 
       if(response.status === 404){
-        console.log("setting not found status");
         setIsNotFound(true);
         return;
       }
@@ -190,7 +175,6 @@ export default function ClubPage({ params }) {
       }
 
       const data = await response.json();
-      console.log("Review details", data);
 
       setReviews(prev => page === 1 ? data.items : [...prev, ...data.items]);
       setTotalReviewCount(data.totalCount);
@@ -228,7 +212,6 @@ export default function ClubPage({ params }) {
 
       const idToken = await currentUser.getIdToken(true);
       const clubId = club.id;
-      console.log("THIS IS THE CLUB ID FOR BOOKMARKING", club.id);
 
       const url = `http://localhost:5095/api/SavedClub`;
       const options = !isBookmarked
@@ -317,10 +300,9 @@ export default function ClubPage({ params }) {
 };
 
   const handleSubmitReview = (e) => {
-    e.preventDefault()
-    console.log("New review:", newReview)
-    setShowReviewForm(false)
-    setNewReview({ rating: 5, reviewText: "" })
+    e.preventDefault();
+    setShowReviewForm(false);
+    setNewReview({ rating: 5, reviewText: "" });
   }
 
   const renderStars = (rating, size = "w-4 h-4") => {
@@ -428,7 +410,6 @@ export default function ClubPage({ params }) {
                     onClick={() => {
                         setIsDeleteOpen(true);
                         setClubToDelete(club.id);
-                        console.log("this is club id", club.id);
                         setDeleteMode("Club");
                     }}
                   >Delete
@@ -446,7 +427,7 @@ export default function ClubPage({ params }) {
                 ))}
               </div>
 
-              <p className="text-gray-700 dark:text-gray-300 mb-6 text-md md:text-lg leading-relaxed">Just a description</p>
+              <p className="text-gray-700 dark:text-gray-300 mb-6 text-md md:text-lg leading-relaxed">{club.description}</p>
 
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <MapPin className="w-4 h-4" />
@@ -538,8 +519,14 @@ export default function ClubPage({ params }) {
             <div className="space-y-6 border-t border-gray-500 dark:border-zinc-700 p-4">
               {reviews.map((review) => (
                 <div key={review.id} className="border-b border-gray-200 dark:border-zinc-800 pb-6 last:border-b-0">
-                  <p>{console.log("REVIEW USER ID", review.userId)}</p>
-                  {user && review.userId === user.sqlUserId && <p className="font-bold dark:text-gray-300">(MY REVIEW)</p>}
+                  <div className="flex items-center gap-2">
+                    {/* The rest of your review content */}
+                    {user && review.userId === user.sqlUserId && (
+                      <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
+                        MY REVIEW
+                      </span>
+                    )}
+                  </div>
                   <div className="flex justify-between mb-3">
                     <div>
                       <div className="flex items-center justify-center gap-2 mt-1 w-full">
@@ -559,7 +546,7 @@ export default function ClubPage({ params }) {
                                   router.replace(`/school/${schoolSlug}/club/${clubSlug}/edit-review/${review.id}`);
                                 }}
                               >
-                                Edit
+                                
                                 <Pencil className="w-4 h-4" />
                               </Button>
                             )}
@@ -575,7 +562,7 @@ export default function ClubPage({ params }) {
                                   setIsDeleteOpen(true);
                                 }}
                               >
-                                Delete
+                                
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             )}
@@ -639,11 +626,9 @@ export default function ClubPage({ params }) {
             return;
           }
           try {
-            console.log("club id is", clubToDelete);
             const url = deleteMode === "Review" 
               ? `/Review/${reviewToDelete}` 
               : `/AdminClub/${clubToDelete}`;
-            console.log(url);
             const currentUser = auth.currentUser;
             const idToken = await currentUser.getIdToken(true);
             

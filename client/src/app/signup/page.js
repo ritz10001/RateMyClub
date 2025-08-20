@@ -11,9 +11,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../utils/firebase";
-import axios from "axios";
-import GuestRoute from "../components/GuestRoute";
-import ProfileCompletionToast from "../components/profile-completion";
 
 export default function SignUpContent() {
   const router = useRouter();
@@ -41,9 +38,6 @@ export default function SignUpContent() {
   const [errorMessage, setErrorMessage] = useState("");
   const [universities, setUniversities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -62,7 +56,6 @@ export default function SignUpContent() {
         if(response.ok){
           const data = await response.json();
           setUniversities(data);
-          console.log(data);
         }
         else{
           console.error("Error fetching univerisities");
@@ -86,7 +79,6 @@ export default function SignUpContent() {
           const data = await response.json();
           setTags(data);
           setIsLoadingTag(false);
-          console.log("HERE ARE THE TAGS", data);
         }
         else{
           console.error("Error fetching tags");
@@ -100,8 +92,6 @@ export default function SignUpContent() {
   }, []);
   
   const handleTagClick = (tagId) => {
-    console.log("SELECTED TAG", tagId);
-    console.log(selectedTags);
     if(selectedTags.includes(tagId)){
       setSelectedTags(selectedTags.filter((id) => id !== tagId));
     }
@@ -130,13 +120,13 @@ export default function SignUpContent() {
     setIsRegistering(false);
     return;
   }
-  
+  let firebaseUser;
   let idToken;
   // Register in Firebase
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-    const fbUser = userCredential.user;
-    idToken = await fbUser.getIdToken();
+    firebaseUser = userCredential.user;
+    idToken = await firebaseUser.getIdToken();
     
     // Sign out immediately and clear user state
     await auth.signOut();
@@ -183,8 +173,6 @@ export default function SignUpContent() {
 
     if (response.ok) {
       const { confirmationUrl, ...authResponse } = await response.json();
-      console.log("Sign up successful:", authResponse);
-      console.log("confirmationurl", confirmationUrl);
 
       if (confirmationUrl) {
         // Clear all states immediately before redirect
@@ -202,7 +190,6 @@ export default function SignUpContent() {
     } 
     else if (response.status === 400) {
       const errorData = await response.json();
-      console.log("Sign up failed: Invalid data");
       setError(true);
       if (errorData?.type) {
         setErrorMessage(errorData.errors?.Password?.[0] ?? "Invalid input.");
@@ -217,14 +204,38 @@ export default function SignUpContent() {
       setIsRegistering(false);
     } 
     else {
-      throw new Error(`Unexpected backend response: ${response.status}`);
+      setErrorMessage("An error occurred. Please try again later.");
+      try {
+        if (firebaseUser) {
+          await firebaseUser.delete();
+        } 
+      } 
+      catch (deleteError) {
+        if (err.code === "auth/user-token-expired") {
+          console.error("Token expired, but user likely deleted already.");
+        } 
+        else {
+          console.error("Failed to delete user:", err);
+        }
+      }
     }
   } 
-  catch (networkError) {
-    console.error("Network/backend error:", networkError);
+  catch (error) {
+    console.error("Network/backend error:", error);
     setError(true);
-    setErrorMessage("A network error occurred. Please try again.");
+    setErrorMessage("An error occurred. Please try again later.");
     setIsRegistering(false);
+    try 
+    {
+      if(firebaseUser){
+        await firebaseUser.getIdToken(true);
+        await firebaseUser.delete(); // Delete dangling Firebase user
+      }
+    } 
+    catch (deleteError) {
+      console.error("Failed to delete Firebase user:", deleteError);
+    }
+    throw error; 
   }
   finally {
     setIsSubmitting(false);
@@ -238,7 +249,6 @@ export default function SignUpContent() {
     return firstName.trim() && 
            lastName.trim() &&
            isEmailValid(email) &&
-           universityId != null && 
            password.trim() != "" && 
            confirmPassword.trim() != "" &&
            password === confirmPassword
@@ -264,7 +274,6 @@ export default function SignUpContent() {
 
     // Step 5: If user not found, register
     if (response.status === 401) {
-      console.log("User not found, registering...");
       try {
         response = await fetch(`http://localhost:5095/api/Account/firebase-register`, {
           method: "POST",
@@ -274,24 +283,20 @@ export default function SignUpContent() {
             firstName: firebaseUser.displayName?.split(" ")[0] || "",
             lastName: firebaseUser.displayName?.split(" ")[1] || "",
             email: firebaseUser.email,
-            universityId: 1, // default university
+            universityId: null, // default university
             isSSO: true
           })
         });
 
         if (!response.ok) {
           const errText = await response.text();
-          throw new Error("SSO registration failed: " + errText);
-        }
-        else{
-          console.log("SSO REGISTRATION COMPLETE");
+          throw new Error("SSO registration failed");
         }
       } 
       catch (sqlError) {
         console.error("SQL registration failed, deleting Firebase user...", sqlError);
         try {
           await firebaseUser.delete(); // Delete dangling Firebase user
-          console.log("Firebase user deleted due to SQL failure");
         } catch (deleteError) {
           console.error("Failed to delete Firebase user:", deleteError);
         }
@@ -301,7 +306,6 @@ export default function SignUpContent() {
 
     // Step 6: Parse backend response
     const authResponse = await response.json();
-    console.log("THE AUTHRESPONSE FROM SSO", authResponse);
 
     // Step 7: Merge Firebase + SQL data and store in session
     const combinedUser = {
@@ -384,7 +388,7 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Sign in with Google
+              Sign in with Google (Recommended)
             </Button>
           </div>
 
@@ -448,9 +452,9 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
             {/* School Selection */}
             <div>
               <Label htmlFor="school" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                Select your school <span className="text-red-400">*</span>
+                Select your school (Optional)
               </Label>
-              <Select onValueChange={(value) => handleInputChange("universityId", parseInt(value))}>
+              <Select onValueChange={(value) => handleInputChange("universityId", value === "null" ? null : parseInt(value))}>
                 <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Choose your school..." />
                 </SelectTrigger>
@@ -469,6 +473,14 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
                       autoFocus
                     />
                   </div>
+                  {/* "Other" option always visible */}
+                  {/* <SelectItem 
+                    key="other-option" 
+                    value="null"
+                    className="hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer"
+                  >
+                    Other (School not listed)
+                  </SelectItem> */}
                   {universities
                     .filter(university => 
                       !schoolSearchTerm || 
@@ -490,7 +502,7 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
             {!isLoadingTag && 
               <div className="flex flex-wrap gap-2">
                 <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Select a few interests (tags) to help us recommend clubs you'll love!
+                  Select a few interests (tags) to help us recommend clubs you'll love! (Optional)
                 </Label>
                 <div className="space-y-2 space-x-2">
                   {tags.map((tag) => (

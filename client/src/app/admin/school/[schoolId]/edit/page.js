@@ -1,10 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Plus, Info, GraduationCap } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -17,7 +12,6 @@ import { app } from "@/app/utils/firebase"
 
 export default function EditUniversityPage({ params }) {
   const { schoolId } = useParams();
-  console.log("this is school id", schoolId);
   const { user } = useAuth();
   const router = useRouter();
   const [universityData, setUniversityData] = useState({
@@ -44,7 +38,6 @@ export default function EditUniversityPage({ params }) {
         });
         if(response.ok){
           const data = await response.json();
-          console.log(data);
           setUniversityData(data);
         }
       }
@@ -61,9 +54,6 @@ export default function EditUniversityPage({ params }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      console.log("UNIVERSITY DATA");
-      console.log(universityData);
-      console.log("this is college id", schoolId);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
       const response = await fetch(`http://localhost:5095/api/AdminUniversity/${schoolId}`, {

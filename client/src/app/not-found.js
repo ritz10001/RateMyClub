@@ -7,7 +7,7 @@ import Link from "next/link"
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center py-12 px-4 dark:from-zinc-950 dark:to-black">
-      <div className="max-w-md w-full text-center">
+      <div className="max-w-2xl w-full text-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100 dark:bg-zinc-800 dark:border-zinc-700 dark:shadow-2xl">
           {/* 404 Icon */}
           <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 dark:bg-blue-900">

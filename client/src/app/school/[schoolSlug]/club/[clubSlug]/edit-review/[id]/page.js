@@ -48,14 +48,11 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
   })
   const [error, setError] = useState(false);
   const auth = getAuth(app);
-  console.log("THIS IS REVIEW ID", id);
   useEffect(() => {
     const fetchReviewData = async () => {
-      console.log("ENTERING");
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        console.log("tried");
         const response = await fetch(`http://localhost:5095/api/Review/${id}`, {
           method: "GET",
           headers: {
@@ -64,7 +61,6 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
           }
         });
         if(response.status === 404){
-          console.log("setting not found status");
           setIsNotFound(true);
           return;
         }
@@ -73,8 +69,6 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
           return;
         }
         const data = await response.json();
-        console.log("fetching complete");
-        console.log(data);
         setReviewData(data);
       } 
       catch (error) {
@@ -120,8 +114,6 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
       return; // stop submission!
     }
     try{
-      console.log("TRYING NOW");
-      console.log(reviewData);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
       const response = await fetch(`http://localhost:5095/api/Review/${id}`, {
@@ -147,8 +139,6 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
       }
       else{
         const errorData = await response.json(); // Get error details
-        console.error('Backend error:', errorData);
-        console.log("failed");
         setError(true);
         toast.error(errorData.message || "Submission failed. Please try again.");
         throw new Error(errorData.message || 'Update failed');
@@ -195,7 +185,6 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
 
   useEffect(() => {
     if (forbidden) {
-      console.log("FORBIDDEN REDIRECTING BACK");
       router.replace("/"); 
     }
   }, [forbidden, router]);

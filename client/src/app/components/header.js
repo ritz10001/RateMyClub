@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
 import { Sun, Moon } from "lucide-react";
+import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,17 +42,20 @@ export default function Header() {
     }
   }
 
-  // Debug logging
-  console.log("Header render - isInitialized:", isInitialized, "user:", user);
-
   if (!isInitialized) {
     return (
       <header className="border-b border-blue-100 dark:border-blue-900 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">RC</span>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                <Image 
+                  src="/ratemycollegeclub.png" 
+                  alt="Rate My College Club Logo" 
+                  width={40} 
+                  height={40} 
+                  priority 
+                />
               </div>
               <span className="font-bold text-xl text-gray-800 dark:text-gray-200">RateMyCollegeClub</span>
             </Link>
@@ -68,8 +72,14 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">RC</span>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center">
+              <Image 
+                src="/ratemycollegeclub.png" 
+                alt="Rate My College Club Logo" 
+                width={40} 
+                height={40} 
+                priority 
+              />
             </div>
             <span className="font-bold text-xl text-gray-800 dark:text-gray-200">RateMyCollegeClub</span>
           </Link>
@@ -83,7 +93,7 @@ export default function Header() {
               <Link href="/about" className=" hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 About
               </Link>
-              <Link href="/help" className=" hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/help-center" className=" hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Help
               </Link>
               {!user &&
@@ -280,7 +290,7 @@ export default function Header() {
               <span>About</span>
             </Link>
             <Link
-              href="/help"
+              href="/help-center"
               onClick={() => setIsMenuOpen(false)}
               className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-zinc-800 rounded transition-colors"
             >

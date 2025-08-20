@@ -1,16 +1,17 @@
 import Link from "next/link"
+import Image from "next/image"
 
 const footerLinks = {
   quickLinks: [
     { href: "/all-schools", label: "School Directory" },
     { href: "/about", label: "About Us" },
-    { href: "/help", label: "Help Center" },
+    { href: "/help-center", label: "Help Center" },
     { href: "/contact", label: "Contact" },
   ],
   legal: [
-    { href: "/privacy", label: "Privacy Policy" },
-    { href: "/terms", label: "Terms of Service" },
-    { href: "/guidelines", label: "Community Guidelines" },
+    { href: "/privacy-policy", label: "Privacy Policy" },
+    { href: "/terms-and-conditions", label: "Terms and Conditions" },
+    { href: "/community-guidelines", label: "Community Guidelines" },
   ],
 }
 
@@ -24,8 +25,14 @@ export default function Footer() {
           {/* Logo and Description */}
           <div className="md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">RC</span>
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image 
+                  src="/ratemycollegeclub.png" 
+                  alt="Rate My College Club Logo" 
+                  width={40} 
+                  height={40} 
+                  priority 
+                />
               </div>
               <span className="font-bold text-lg">RateMyCollegeClub™</span>
             </div>

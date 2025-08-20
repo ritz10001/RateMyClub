@@ -1,17 +1,11 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Plus, Info, GraduationCap } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from 'sonner';
 import { useParams, useRouter } from "next/navigation"
-import UniversityForm from "@/app/components/Forms/UniversityForm"
 import ClubForm from "@/app/components/Forms/ClubForm"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
@@ -30,7 +24,6 @@ export default function EditClubPage({ params }) {
   useEffect(() => {
     const fetchClub = async () => {
       try {
-        console.log("trying");
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
         const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
@@ -40,10 +33,8 @@ export default function EditClubPage({ params }) {
           }
         });
         if(response.ok){
-          console.log("in the ok now");
           const data = await response.json();
           setClubData(data);
-          console.log("DATA", data);
           setSelectedTags(data.tagIds || []);
           setClubData({
             name: data.name,
