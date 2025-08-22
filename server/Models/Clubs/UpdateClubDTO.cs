@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Identity.Client;
 
 namespace RateMyCollegeClub.Models.Clubs;
 

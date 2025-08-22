@@ -108,9 +108,9 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         if (!string.IsNullOrEmpty(search))
         {
             query = query.Where(c =>
-                c.Name.Contains(search) ||                                  // club name
-                c.Category.Name.Contains(search) ||                         // category name
-                c.Tags.Any(t => t.Name.Contains(search))                    // any tag name
+                EF.Functions.ILike(c.Name, $"%{search}%") ||                 // club name
+                EF.Functions.ILike(c.Category.Name, $"%{search}%") ||        // category name
+                c.Tags.Any(t => EF.Functions.ILike(t.Name, $"%{search}%"))   // tag name
             );
         }
 

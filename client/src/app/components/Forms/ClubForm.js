@@ -16,7 +16,7 @@ export default function ClubForm({ clubData, setClubData, handleSubmit, submitLa
         ...prev,
         [field]: value,
     }));
-    };
+  };
   const handleTagClick = (tagId) => {
     let updatedTags;
     if (selectedTags.includes(tagId)) {

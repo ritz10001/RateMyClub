@@ -38,11 +38,15 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
     public async Task<List<University>> SearchByNameAsync(string query)
     {
         return await _context.Universities
-        .Where(u => u.Name.Contains(query) || u.Location.Contains(query) || u.SecondaryName.Contains(query))
-        .OrderBy(u => u.Name)
-        .Take(10)
-        .ToListAsync();
+            .Where(u =>
+                EF.Functions.ILike(u.Name, $"%{query}%") ||
+                EF.Functions.ILike(u.Location, $"%{query}%") ||
+                EF.Functions.ILike(u.SecondaryName, $"%{query}%"))
+            .OrderBy(u => u.Name)
+            .Take(10)
+            .ToListAsync();
     }
+
 
     public async Task<List<University>> GetPagedUniversitiesAsync(int page, int pageSize, string? search = null)
     {
@@ -52,7 +56,11 @@ public class UniversityRepository : GenericRepository<University>, IUniversityRe
 
         if (!string.IsNullOrEmpty(search))
         {
-            query = query.Where(u => u.Name.Contains(search) || u.Location.Contains(search) || u.SecondaryName.Contains(search));
+            query = query.Where(u =>
+                EF.Functions.ILike(u.Name, $"%{search}%") ||
+                EF.Functions.ILike(u.Location, $"%{search}%") ||
+                EF.Functions.ILike(u.SecondaryName, $"%{search}%")
+            );
         }
 
         return await query

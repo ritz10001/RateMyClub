@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using RateMyCollegeClub.Data;
 using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models.Users;
-using Azure;
 using FirebaseAdmin.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -214,24 +213,24 @@ public class AuthService : IAuthService
         {
             return (null, result.Errors, null);
         }
-
-        await _userManager.AddToRoleAsync(newUser, "User");
+        await _userManager.AddToRoleAsync(newUser, role);
         var roles = await _userManager.GetRolesAsync(newUser);
 
-        var verificationLink = await FirebaseAuth.DefaultInstance.GenerateEmailVerificationLinkAsync(email);
-
-        // 4.6) Send via your custom service
-        var emailSent = await _emailService.SendVerificationEmailAsync(email, newUser.FirstName, verificationLink);
-        if (!emailSent)
+        if (!firebaseRegisterDTO.IsSSO)
         {
-            // Consider removing the user if email fails
-            await _userManager.DeleteAsync(newUser);
-            return (null, new List<IdentityError>
+            var verificationLink = await FirebaseAuth.DefaultInstance.GenerateEmailVerificationLinkAsync(email);   
+            // 4.6) Send via your custom service
+            var emailSent = await _emailService.SendVerificationEmailAsync(email, newUser.FirstName, verificationLink);
+            if (!emailSent)
             {
-                new IdentityError { Code = "EmailFailed", Description = "Failed to send verification email." }
-            }, null);
+                // Consider removing the user if email fails
+                await _userManager.DeleteAsync(newUser);
+                return (null, new List<IdentityError>
+                {
+                    new IdentityError { Code = "EmailFailed", Description = "Failed to send verification email." }
+                }, null);
+            }
         }
-
         // 5) Return auth response & link
         string confirmationUrl = $"http://localhost:3000/email-confirmation?uid={WebUtility.UrlEncode(firebaseUid)}";
         Console.WriteLine("IN STEP 5, RETURNING AUTH RESPONSE");
@@ -245,7 +244,6 @@ public class AuthService : IAuthService
             Message = "Registration Successful - Please verify your email.",
             Tags = tags.Select(t => t.Name).ToList()
         };
-
         return (authResponse, null, confirmationUrl);
     }
 

@@ -185,9 +185,9 @@ const handleRemoveClub = async (clubId) => {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               You haven't saved any clubs yet. Start exploring and bookmark clubs you're interested in!
             </p>
-            <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold" asChild>
+            {/* <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold" asChild>
               <Link href="/directory">Explore Clubs</Link>
-            </Button>
+            </Button> */}
           </div>
         )}
 
@@ -267,7 +267,7 @@ const handleRemoveClub = async (clubId) => {
         )}
 
         {/* Action Buttons */}
-        {savedClubs.length > 0 && (
+        {/* {savedClubs.length > 0 && (
           <div className="mt-8 text-center">
             <Button
               variant="outline"
@@ -277,7 +277,7 @@ const handleRemoveClub = async (clubId) => {
               <Link href="/directory">Explore More Clubs</Link>
             </Button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   )

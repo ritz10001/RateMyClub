@@ -23,12 +23,15 @@ public class AccountController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly FirebaseAuthService _firebaseAuthService;
     private readonly ITagsRepository _tagsRepository;
-    public AccountController(IAuthService authService, UserManager<User> userManager, FirebaseAuthService firebaseAuthService, ITagsRepository tagsRepository)
+    private readonly RoleManager<IdentityRole> _roleManager;
+    public AccountController(IAuthService authService, UserManager<User> userManager,
+    FirebaseAuthService firebaseAuthService, ITagsRepository tagsRepository, RoleManager<IdentityRole> roleManager)
     {
         _authService = authService;
         _userManager = userManager;
         _firebaseAuthService = firebaseAuthService;
         _tagsRepository = tagsRepository;
+        _roleManager = roleManager;
     }
     [HttpPost("resend-verification")]
     public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequestDTO request)
@@ -61,7 +64,7 @@ public class AccountController : ControllerBase
         return BadRequest("Email Confirmation Failed");
     }
     [HttpPost("firebase-register")]
-    public async Task<IActionResult> FirebaseRegister([FromBody] FirebaseRegisterDTO firebaseRegisterDTO, [FromQuery] string role = "User")
+    public async Task<IActionResult> FirebaseRegister([FromBody] FirebaseRegisterDTO firebaseRegisterDTO, string role = "User")
     {
         var (authResponse, errors, confirmationUrl) = await _authService.FirebaseRegister(firebaseRegisterDTO, role);
 

@@ -83,7 +83,7 @@ export default function LoginContent() {
     }
     catch (err) {
       console.error("❌ Firebase login error:", err);
-      if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
+      if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
         setError("Invalid email or password.");
       } 
       else {
@@ -171,9 +171,14 @@ export default function LoginContent() {
     router.replace("/");
   } 
   catch (error) {
-    console.error("SSO error:", error);
-    toast.error("Google SSO failed. Please try again");
-    setError("Google SSO failed. Please try again.");
+    if(error.code === "auth/popup-closed-by-user"){
+      toast.error("Popup closed by user!");
+    }
+    else{
+      console.error("SSO error:", error);
+      toast.error("Google signup failed. Please try again");
+      setError("Google signup failed. Please try again");
+    }
   } 
   finally {
     setIsLoading(false);
@@ -252,7 +257,7 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
           {/* Form */}
           {error && (
             <div className="mb-4 text-red-600 dark:text-red-400 text-sm">
-              Invalid email or password. Please try again.
+              {error}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">

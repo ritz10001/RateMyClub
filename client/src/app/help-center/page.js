@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronUp, HelpCircle, Mail, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+import { useAuth } from "../context/AuthContext"
 
 const faqs = [
   {
     question: "How do I create an account?",
     answer:
-      "Click the 'Sign Up' button in the top right corner or use the 'Continue with Google' option for quick registration. You'll need to verify your email address to get started. However, please note that if you use Google Sign-in, you will need to complete your user profile information by navigating to the user profile page.",
+      `Click the 'Sign Up' button in the top right corner or use the 'Continue with Google' option for quick registration. 
+      However, if you choose to register normally, you will need to verify your email address to get started. That being said, please note that if you use Google Sign-in, you will need to complete your user profile information by navigating to the user profile page.`,
   },
   {
     question: "Can I write anonymous reviews?",
@@ -19,7 +21,7 @@ const faqs = [
   {
     question: "How do I add my club to the platform?",
     answer:
-      "Go to your school's page and click 'Add Your Club' or use the 'Request Club' button. Fill out the club information form and our team will review and approve it within 2-3 business days.",
+      "Go to your school's page and click 'Add Your Club' or use the 'Request Club' button. Fill out the club information form and we will review and approve it within 2-3 business days.",
   },
   {
     question: "Can I edit or delete my reviews?",
@@ -49,7 +51,8 @@ const faqs = [
 ]
 
 export default function HelpPage() {
-  const [openFaq, setOpenFaq] = useState(null)
+  const [openFaq, setOpenFaq] = useState(null);
+  const { user } = useAuth();
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index)
@@ -71,7 +74,8 @@ export default function HelpPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid md:grid-cols-3 gap-4 mb-12">
+          <div className={`grid ${user ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-4 mb-12`}>
+            {!user && 
             <Button
               variant="outline"
               className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 p-6 rounded-xl font-semibold bg-transparent h-auto flex-col dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900 dark:hover:text-blue-300"
@@ -81,7 +85,7 @@ export default function HelpPage() {
                 <MessageCircle className="w-6 h-6 mb-2" />
                 Getting Started
               </Link>
-            </Button>
+            </Button>}
             <Button
               variant="outline"
               className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 p-6 rounded-xl font-semibold bg-transparent h-auto flex-col dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900 dark:hover:text-blue-300"

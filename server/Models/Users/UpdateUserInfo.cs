@@ -1,5 +1,3 @@
-using Microsoft.Identity.Client;
-
 namespace RateMyCollegeClub.Models.Users;
 
 public class UpdateUserInfoDTO

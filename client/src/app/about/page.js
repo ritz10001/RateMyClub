@@ -37,7 +37,7 @@ export default function AboutPage() {
             </div>
             <p className="text-gray-700 text-lg leading-relaxed mb-6 dark:text-gray-300">
               We believe every student deserves to find their place on campus. RateMyCollegeClub connects students with
-              clubs and organizations that match their interests, passions, and goals through authentic peer reviews.
+              clubs and organizations that match their interests, passions, and goals through student reviews.
             </p>
             <p className="text-gray-700 text-lg leading-relaxed dark:text-gray-300">
               Whether you're looking for academic clubs, social organizations, or volunteer opportunities, we help you
@@ -58,11 +58,11 @@ export default function AboutPage() {
               </div>
               <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 dark:bg-blue-950 dark:border-blue-900">
                 <h3 className="font-semibold text-gray-900 mb-2 dark:text-gray-100">🤝 Community First</h3>
-                <p className="text-gray-700 dark:text-gray-300">Building connections and helping students find their tribe.</p>
+                <p className="text-gray-700 dark:text-gray-300">Building connections and helping students find their group.</p>
               </div>
               <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 dark:bg-blue-950 dark:border-blue-900">
                 <h3 className="font-semibold text-gray-900 mb-2 dark:text-gray-100">🔒 Privacy Focused</h3>
-                <p className="text-gray-700 dark:text-gray-300">Your reviews can be anonymous, your data stays protected.</p>
+                <p className="text-gray-700 dark:text-gray-300">Your reviews are anonymous, and your data stays protected.</p>
               </div>
               <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 dark:bg-blue-950 dark:border-blue-900">
                 <h3 className="font-semibold text-gray-900 mb-2 dark:text-gray-100">📈 Continuous Growth</h3>

@@ -12,9 +12,8 @@ public class ClubConfiguration : IEntityTypeConfiguration<Club>
         builder.HasData(
             new Club 
             {
-                Id = 1, 
-                Name = "Tech Robotics Association", 
-                Description = "Robotics Club", 
+                Name = "Association for Computing Machinery", 
+                Description = "", 
                 IsActive = true,
                 ClubLocation = "Engineering Center Basement, Room 100",
                 CategoryId = 1,
@@ -22,8 +21,7 @@ public class ClubConfiguration : IEntityTypeConfiguration<Club>
             },
             new Club 
             {
-                Id = 2, 
-                Name = "Google Development Student Club", 
+                Name = "Society of Women Engineers", 
                 Description = "Software Engineering Club", 
                 IsActive = true,
                 ClubLocation = "Livermore Center, Room 101",
@@ -32,7 +30,6 @@ public class ClubConfiguration : IEntityTypeConfiguration<Club>
             },
             new Club 
             {
-                Id = 3, 
                 Name = "Chess Club", 
                 Description = "A club for playing chess", 
                 IsActive = true,

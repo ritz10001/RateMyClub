@@ -14,6 +14,7 @@ using RateMyCollegeClub.Interfaces;
 using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 var firebaseApp = FirebaseApp.Create(new AppOptions()
@@ -24,9 +25,10 @@ var firebaseApp = FirebaseApp.Create(new AppOptions()
 // Add services to the container.
 
 var connectionString = builder.Configuration.GetConnectionString("CollegeClubsDbConnectionString");
-builder.Services.AddDbContext<CollegeClubsDbContext>(options => {
-    options.UseSqlServer(connectionString);
-});
+builder.Services.AddDbContext<CollegeClubsDbContext>(options =>
+{
+    options.UseNpgsql(connectionString);
+}); 
 
 builder.Services.AddIdentityCore<User>(options =>
 {
@@ -126,6 +128,23 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        // Log the full exception details here
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(exception, "An unhandled exception occurred during the request.");
+
+        // Return a generic error response to the client
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("An unexpected error occurred.");
+    });
+});
 
 using (var scope = app.Services.CreateScope())
 {

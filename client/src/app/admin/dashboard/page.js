@@ -3,12 +3,14 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Check, X, Eye, Clock, GraduationCap, Users } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/app/context/AuthContext"
 import { toast } from "sonner"
 import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
+import { Label } from "@radix-ui/react-dropdown-menu"
 
 const ConfirmationModal = ({ 
   isOpen, 
@@ -25,9 +27,17 @@ const ConfirmationModal = ({
   setUniversityData,
   clubData,
   setClubData,
+  tags,
+  setTags,
+  categories,
+  setCategories,
+  selectedTags,
+  setSelectedTags,
+  handleTagClick,
   clubRequests,
   modalState,
-  isProcessing
+  isProcessing,
+  handleInputChange
 }) => {
   if (!isOpen) return null;
 
@@ -64,6 +74,17 @@ const ConfirmationModal = ({
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-100 dark:focus:ring-blue-400 dark:focus:border-blue-400"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
+                Secondary Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={universityData?.secondaryName || ''}
+                onChange={(e) => setUniversityData(prev => ({ ...prev, secondaryName: e.target.value }))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-100 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+              />
+            </div>
             {/* Location */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
@@ -95,7 +116,7 @@ const ConfirmationModal = ({
               </label>
               <textarea
                 value={universityData?.description || ''}
-                onChange={(e) => setClubData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => setUniversityData(prev => ({ ...prev, description: e.target.value }))}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                 rows={4}
               />
@@ -103,7 +124,7 @@ const ConfirmationModal = ({
             {/* Logo URL for approval only */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
-                University Logo URL <span className="text-red-500">*</span>
+                University Logo URL
               </label>
               <input
                 type="url"
@@ -207,7 +228,48 @@ const ConfirmationModal = ({
                 </div>
               </div>
             </div>
+            {/* Tags */}
+            <div className="w-full mb-5">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
+                Tags
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <Button
+                    key={tag.id}
+                    type="button"
+                    variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                    onClick={() => handleTagClick(tag.id)}
+                    className={`rounded-full px-4 py-2 min-w-[80px] text-sm font-medium transition-colors ${
+                      selectedTags.includes(tag.id)
+                        ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                        : "border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900"
+                    }`}
+                  >
+                    {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="category" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                Category <span className="text-red-500">*</span>
+              </Label>
+              <Select value={clubData.categoryId.toString()} onValueChange={(value) => handleInputChange("categoryId", value)}>
+                <SelectTrigger className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-100 dark:focus:border-blue-400">
+                  <SelectValue placeholder="Select a category for your club..." />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-zinc-800 dark:border-zinc-700">
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()} className="dark:text-gray-100 dark:hover:bg-zinc-700">
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          
         )}
         {isReject && (
           <div className="mb-4">
@@ -243,7 +305,7 @@ const ConfirmationModal = ({
               isProcessing ||
               (isReject && !rejectionReason.trim()) ||
               (isUniversityApproval && (
-                !logoUrl.trim() ||
+                // !logoUrl.trim() ||
                 !universityData.universityName.trim() ||
                 !universityData.location.trim()
               )) ||
@@ -279,15 +341,21 @@ export default function AdminRequestsPage() {
   const [isUniversityLoading, setIsUniversityLoading] = useState(true);
   const [isClubLoading, setIsClubLoading] = useState(true);
   const [logoUrl, setLogoUrl] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [universityData, setUniversityData] = useState({
     universityName: '',
+    secondaryName: '',
     location: '',
     officialWebsite: '',
     description: ''
   });
   const [clubData, setClubData] = useState({
     name: '',
-    description: ''
+    description: '',
+    categoryId: null,
+    tagIds: []
   });
   const { user, isInitialized } = useAuth();
 
@@ -302,6 +370,24 @@ export default function AdminRequestsPage() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const auth = getAuth(app);
+
+  const handleInputChange = (field, value) => {
+    setClubData((prev) => ({
+        ...prev,
+        [field]: value,
+    }));
+  };
+  useEffect(() => {
+    console.log(clubData)
+  }, [clubData]);
+  useEffect(() => {
+  if (modalState.isOpen && modalState.requestType === 'club' && modalState.requestId) {
+    const currentClubRequest = clubRequests.find(c => c.id === modalState.requestId);
+    if (currentClubRequest?.tags) {
+      setSelectedTags(currentClubRequest.tags.map(tag => tag.id));
+    }
+  }
+}, [modalState.isOpen, modalState.requestId, modalState.requestType, clubRequests]);
 
   useEffect(() => {
     const fetchUniversityRequests = async () => {
@@ -362,6 +448,18 @@ export default function AdminRequestsPage() {
     }
   }, [user, isInitialized]);
 
+  useEffect(() => {
+    const fetchMeta = async () => {
+      const [categoriesRes, tagsRes] = await Promise.all([
+        fetch('http://localhost:5095/api/Categories'),
+        fetch('http://localhost:5095/api/Tag')
+      ]);
+      setCategories(await categoriesRes.json());
+      setTags(await tagsRes.json());
+    };
+    fetchMeta();
+  }, []);
+
   const openModal = (type, requestType, requestId, requestName) => {
     if (requestType === 'university') {
       const request = universityRequests.find(req => req.id === requestId);
@@ -384,6 +482,7 @@ export default function AdminRequestsPage() {
           categoryId: request.categoryId,
           tagIds: request.tags
         });
+        setSelectedTags(request.tags.map(tag => tag.id));
       }
     }
     setModalState({
@@ -408,11 +507,32 @@ export default function AdminRequestsPage() {
     });
     setRejectionReason('');
     setLogoUrl('');
+    setSelectedTags([]);
     setUniversityData({ // Reset university data
       universityName: '',
       location: '',
       officialWebsite: ''
     });
+  };
+
+  const handleTagClick = (tagId) => {
+    let updatedTags;
+    let updatedTagObjects;
+    if (selectedTags.includes(tagId)) {
+        updatedTags = selectedTags.filter((id) => id !== tagId);
+        updatedTagObjects = clubData.tagIds.filter((tag) => tag.id !== tagId);
+    } 
+    else {
+      if (selectedTags.length >= 3) {
+        toast.error("You can select up to 3 tags only.");
+        return;
+      }
+      updatedTags = [...selectedTags, tagId];
+      const tagObject = tags.find(tag => tag.id === tagId);
+      updatedTagObjects = [...clubData.tagIds, tagObject];
+    }
+    setSelectedTags(updatedTags);
+    setClubData({ ...clubData, tagIds: updatedTagObjects });
   };
 
   const handleUniversityAction = async () => {
@@ -456,6 +576,7 @@ export default function AdminRequestsPage() {
           },
           body: JSON.stringify({
             name: universityData.universityName,
+            secondaryName: universityData.secondaryName,
             location: universityData.location,
             officialWebsite: universityData.officialWebsite,
             logoUrl: logoUrl
@@ -816,9 +937,17 @@ export default function AdminRequestsPage() {
           setUniversityData={setUniversityData}
           clubData={clubData}
           setClubData={setClubData}
+          tags={tags}
+          setTags={setTags}
+          categories={categories}
+          setCategories={setCategories}
+          selectedTags={selectedTags}
+          setSelectedTags={setSelectedTags}
+          handleTagClick={handleTagClick}
           clubRequests={clubRequests}
           modalState={modalState}
           isProcessing={isProcessing}
+          handleInputChange={handleInputChange}
         />
       </div>
     </div>

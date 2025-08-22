@@ -119,10 +119,9 @@ function RequestClubContent({ schoolSlug }) {
   }
 
   const isFormValid = () => {
-    const { name, description, categoryId } = clubData;
+    const { name, categoryId } = clubData;
 
     return name.trim().length > 3 && 
-            description.trim().length >= 20 &&
             categoryId;
     };
 
@@ -262,7 +261,7 @@ function RequestClubContent({ schoolSlug }) {
                 </Label>
                 <Textarea
                   id="shortDescription"
-                  placeholder="Provide a brief description of what your club does..."
+                  placeholder="Provide a brief description of what the club does..."
                   value={clubData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
                   className="min-h-24 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"

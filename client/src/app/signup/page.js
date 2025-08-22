@@ -264,6 +264,7 @@ export default function SignUpContent() {
 
     // Step 3: Get Firebase ID token
     const idToken = await firebaseUser.getIdToken();
+    console.log(idToken);
 
     // Step 4: Try backend login
     let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
@@ -275,6 +276,7 @@ export default function SignUpContent() {
     // Step 5: If user not found, register
     if (response.status === 401) {
       try {
+        console.log("trying to send API CALL");
         response = await fetch(`http://localhost:5095/api/Account/firebase-register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -290,6 +292,7 @@ export default function SignUpContent() {
 
         if (!response.ok) {
           const errText = await response.text();
+          console.log(errText);
           throw new Error("SSO registration failed");
         }
       } 
@@ -297,7 +300,8 @@ export default function SignUpContent() {
         console.error("SQL registration failed, deleting Firebase user...", sqlError);
         try {
           await firebaseUser.delete(); // Delete dangling Firebase user
-        } catch (deleteError) {
+        } 
+        catch (deleteError) {
           console.error("Failed to delete Firebase user:", deleteError);
         }
         throw sqlError; // propagate error
