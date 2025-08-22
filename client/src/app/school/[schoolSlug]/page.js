@@ -364,7 +364,7 @@ export default function SchoolPage({ params }) {
                   <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                     {club.name}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">{club.description}</p>
+                  <p className="text-gray-600 h-10 dark:text-gray-400 text-sm mb-3 line-clamp-2">{club.description}</p>
                 </div>
 
                 {/* Club Stats */}

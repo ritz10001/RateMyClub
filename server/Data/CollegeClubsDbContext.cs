@@ -40,10 +40,10 @@ public class CollegeClubsDbContext : IdentityDbContext<User> {
         .HasOne(sc => sc.Club)
         .WithMany()
         .HasForeignKey(sc => sc.ClubId);
-        modelBuilder.ApplyConfiguration(new RoleConfiguration());
+        // modelBuilder.ApplyConfiguration(new RoleConfiguration());
         // modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         // modelBuilder.ApplyConfiguration(new ReviewConfiguration());
-        // modelBuilder.ApplyConfiguration(new ClubConfiguration());
+        modelBuilder.ApplyConfiguration(new ClubConfiguration());
         // modelBuilder.ApplyConfiguration(new UniversityConfiguration());
     } 
 
