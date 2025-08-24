@@ -69,3 +69,7 @@ node_modules/
 .dataconnect
 
 certificates
+
+# Next.js build output
+.next
+out
