@@ -34,11 +34,6 @@ const monthNumbers = {
 }
 
 export default function ClubPage({ params }) {
-  const { schoolSlug, clubSlug } = useParams();
-  const slugRegex = /^[a-z-]+$/;
-  if (!slugRegex.test(clubSlug)) {
-    return notFound();
-  }
   const { user, isInitialized } = useAuth();
   const { setClubData } = useClub();
   const router = useRouter();
@@ -68,8 +63,6 @@ export default function ClubPage({ params }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const auth = getAuth(app);
-
-  useEffect(() => {}, [reviewToDelete])
 
   const fetchClubDetails = async () => {
   try {
@@ -130,25 +123,25 @@ export default function ClubPage({ params }) {
 };
 
   useEffect(() => {
-  const fetchInitialData = async () => {
-    try {
-      setIsLoading(true);
-      await fetchClubDetails();
-      await fetchReviewsPage();
-    } 
-    catch (error) {
-      console.error("Error fetching initial data:", error);
-    } 
-    finally {
-      setIsLoading(false);
-    }
-  };
+    const fetchInitialData = async () => {
+      try {
+        setIsLoading(true);
+        await fetchClubDetails();
+        await fetchReviewsPage();
+      } 
+      catch (error) {
+        console.error("Error fetching initial data:", error);
+      } 
+      finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Only fetch when auth is initialized
-  if (isInitialized) {
-    fetchInitialData();
-  }
-}, [clubSlug, user, isInitialized]); // Include all dependencies here
+    // Only fetch when auth is initialized
+    if (isInitialized) {
+      fetchInitialData();
+    }
+  }, [user, isInitialized]); // Include all dependencies here
 
   const fetchReviewsPage = async (page = 1, pageSize = 5) => {
     try {
@@ -338,6 +331,12 @@ export default function ClubPage({ params }) {
         </div>
       </div>
     )
+  }
+
+  const { schoolSlug, clubSlug } = useParams();
+  const slugRegex = /^[a-z-]+$/;
+  if (!slugRegex.test(clubSlug)) {
+    return notFound();
   }
 
   if (isNotFound) {

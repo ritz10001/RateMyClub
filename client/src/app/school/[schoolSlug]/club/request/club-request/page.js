@@ -193,7 +193,7 @@ function RequestClubContent({ schoolSlug }) {
           </button>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Request a New Club</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Can't find your club? Help us expand our directory by requesting to add your club.
+            Can&apos;t find your club? Help us expand our directory by requesting to add your club.
           </p>
         </div>
 
@@ -204,10 +204,10 @@ function RequestClubContent({ schoolSlug }) {
             <div className="text-sm text-blue-800 dark:text-blue-200">
               <p className="font-semibold mb-2">Before you submit:</p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>Make sure your club isn't already listed</li>
+                <li>Make sure your club isn&apos;t already listed</li>
                 <li>Provide accurate and complete information</li>
                 <li>Your request will be reviewed by our team within 2-3 business days</li>
-                <li>You'll receive an email confirmation once your club is approved</li>
+                <li>You&apos;ll receive an email confirmation once your club is approved</li>
               </ul>
             </div>
           </div>
@@ -302,7 +302,7 @@ function RequestClubContent({ schoolSlug }) {
               <p>• Our team will review your club request within 2-3 business days</p>
               <p>• We may reach out for additional information if needed</p>
               <p>• Once approved, your club will be added to the directory</p>
-              <p>• You'll receive an email confirmation with next steps</p>
+              <p>• You&apos;ll receive an email confirmation with next steps</p>
             </div>
           </div>
 

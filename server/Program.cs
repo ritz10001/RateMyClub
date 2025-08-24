@@ -48,9 +48,6 @@ builder.Services.AddIdentityCore<User>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// builder.Services.AddCors(options => {
-//     options.AddPolicy("AllowAll", b => b.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
-// });
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -146,43 +143,87 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+//     var userManager = services.GetRequiredService<UserManager<User>>();
+
+//     string[] roles = { "Administrator", "User" };
+//     foreach (var role in roles)
+//     {
+//         var roleExists = await roleManager.RoleExistsAsync(role);
+//         if (!roleExists)
+//         {
+//             await roleManager.CreateAsync(new IdentityRole(role));
+//         }
+//     }
+//     var allUsers = userManager.Users.ToList();
+//     foreach (var user in allUsers)
+//     {
+//         if (!await userManager.IsInRoleAsync(user, "User"))
+//         {
+//             await userManager.AddToRoleAsync(user, "User");
+//         }
+//     }
+//     var adminEmail = "ratemycollegeclub@gmail.com";
+//     var adminUser = await userManager.FindByEmailAsync(adminEmail);
+//     Console.WriteLine("in the admin now");
+//     Console.WriteLine(adminUser);
+//     if (adminUser != null)
+//     {
+//         if (!await userManager.IsInRoleAsync(adminUser, "Administrator"))
+//         {
+//             Console.WriteLine("adding admin role");
+//             await userManager.AddToRoleAsync(adminUser, "Administrator");
+//         }
+//     }
+// }
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<CollegeClubsDbContext>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<User>>();
 
+    // Retry loop for Docker DB startup
+    var retries = 10;
+    while (retries > 0)
+    {
+        try
+        {
+            context.Database.Migrate(); // Apply migrations
+            break;
+        }
+        catch
+        {
+            retries--;
+            Console.WriteLine("Database not ready yet, retrying in 2s...");
+            Thread.Sleep(2000);
+        }
+    }
+
+    // Seed roles
     string[] roles = { "Administrator", "User" };
     foreach (var role in roles)
     {
-        var roleExists = await roleManager.RoleExistsAsync(role);
-        if (!roleExists)
-        {
+        if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
-        }
     }
-    var allUsers = userManager.Users.ToList();
-    foreach (var user in allUsers)
+
+    // Seed default 'User' role for existing users
+    foreach (var user in userManager.Users.ToList())
     {
         if (!await userManager.IsInRoleAsync(user, "User"))
-        {
             await userManager.AddToRoleAsync(user, "User");
-        }
     }
+
+    // Seed admin user
     var adminEmail = "ratemycollegeclub@gmail.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    Console.WriteLine("in the admin now");
-    Console.WriteLine(adminUser);
-    if (adminUser != null)
-    {
-        if (!await userManager.IsInRoleAsync(adminUser, "Administrator"))
-        {
-            Console.WriteLine("adding admin role");
-            await userManager.AddToRoleAsync(adminUser, "Administrator");
-        }
-    }
+    if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Administrator"))
+        await userManager.AddToRoleAsync(adminUser, "Administrator");
 }
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

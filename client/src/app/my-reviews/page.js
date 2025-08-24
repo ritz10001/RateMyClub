@@ -156,7 +156,7 @@ function MyReviewsContent() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Reviews</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                You haven't made any reviews yet. Start exploring and reviewing clubs!
+                You haven&apos;t made any reviews yet. Start exploring and reviewing clubs!
               </p>
               <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold" asChild>
                 <Link href="/directory">Explore Clubs</Link>

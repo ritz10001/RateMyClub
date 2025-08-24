@@ -16,7 +16,7 @@ export default function ContactPage() {
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 dark:text-gray-100">Contact Us</h1>
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed dark:text-gray-400">
-              Have a question, suggestion, or need help? We'd love to hear from you.
+              Have a question, suggestion, or need help? We&apos;d love to hear from you.
             </p>
           </div>
 

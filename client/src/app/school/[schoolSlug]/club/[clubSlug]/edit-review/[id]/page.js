@@ -18,11 +18,11 @@ import { notFound } from "next/navigation";
 import NotFound from "@/app/not-found";
 
 export default function EditReviewPage({ params }){
+  const [isLoading, setIsLoading] = useState(true);
   const { schoolSlug, clubSlug, id } = useParams();
   if (isNaN(id)) {
     notFound(); // Redirects to your custom 404 page
   }
-  const [isLoading, setIsLoading] = useState(true);
   const redirectPath = `/school/${schoolSlug}/club/${clubSlug}`;
   return(
     <AuthRoute redirectTo={redirectPath}>
@@ -81,7 +81,7 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
     if(isInitialized){
       fetchReviewData();
     }
-  }, [id, user]);
+  }, [id, user, auth.currentUser]);
 
   const isFormValid = () => {
     const { comment, leadershipRating, inclusivityRating, networkingRating, skillsDevelopmentRating, recommendation } = reviewData;

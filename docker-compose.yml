@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rmcc_network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: dockerfile
+    container_name: dotnet_api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 5095
+      CollegeClubsDbConnectionString: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      EmailSettings__SenderName: ${EMAIL_SENDER_NAME}
+      EmailSettings__SenderEmail: ${EMAIL_SENDER_EMAIL}
+      EmailSettings__SmtpServer: ${EMAIL_SMTP_SERVER}
+      EmailSettings__SmtpPort: ${EMAIL_SMTP_PORT}
+      EmailSettings__SenderPassword: ${EMAIL_SENDER_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - "5095:5095"
+    networks:
+      - rmcc_network
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: dockerfile
+    container_name: nextjs_app
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_BACKEND_URL: "http://backend:5095"
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
+      NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}
+      NEXT_PUBLIC_GOOGLE_PLACES_API_KEY: ${NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - rmcc_network
+
+volumes:
+  postgres_data:
+
+networks:
+  rmcc_network:
+    driver: bridge

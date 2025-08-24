@@ -19,7 +19,7 @@ export default function NotFound() {
 
           {/* Description */}
           <p className="text-gray-600 mb-8 dark:text-gray-400">
-            Oops! The page you're looking for doesn't exist. It might have been moved, deleted, or you entered the wrong
+            Oops! The page you&apos;re looking for doesn&apos;t exist. It might have been moved, deleted, or you entered the wrong
             URL.
           </p>
 
@@ -67,7 +67,7 @@ export default function NotFound() {
 
         {/* Fun Message */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">🎓 Lost? Don't worry, even the best students get lost sometimes!</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">🎓 Lost? Don&apos;t worry, even the best students get lost sometimes!</p>
         </div>
       </div>
     </div>

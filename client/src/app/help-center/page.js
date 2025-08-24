@@ -139,7 +139,7 @@ export default function HelpPage() {
           <div className="bg-blue-50 rounded-xl p-8 border border-blue-100 text-center dark:bg-blue-950 dark:border-blue-900">
             <h3 className="text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">Still Need Help?</h3>
             <p className="text-gray-600 mb-6 dark:text-gray-400">
-              Can't find what you're looking for? Our support team is here to help you out.
+              Can&apos;t find what you&apos;re looking for? Our support team is here to help you out.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold dark:bg-blue-500 dark:hover:bg-blue-600" asChild>

@@ -126,7 +126,8 @@ export default function SignUpContent() {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
     firebaseUser = userCredential.user;
-    idToken = await firebaseUser.getIdToken();
+    idToken = await firebaseUser.getIdToken(true);
+    console.log("HERE IS ID TOKEN", idToken);
     
     // Sign out immediately and clear user state
     await auth.signOut();
@@ -167,7 +168,8 @@ export default function SignUpContent() {
         firstName: formData.firstName,
         lastName: formData.lastName,
         universityId: formData.universityId,
-        tagIds: selectedTags
+        tagIds: selectedTags,
+        isSSO: false
       })
     });
 
@@ -188,19 +190,24 @@ export default function SignUpContent() {
         setIsRegistering(false);
       }
     } 
+    
     else if (response.status === 400) {
-      const errorData = await response.json();
+      console.log("WE ARE IN 400");
+      // const errorData = await response.json();
+      const errorText = await response.text();
+      console.log("Error message: ", errorText);
       setError(true);
-      if (errorData?.type) {
-        setErrorMessage(errorData.errors?.Password?.[0] ?? "Invalid input.");
-      } 
-      else {
+      // if (errorData?.type) {
+      //   console.log("some password error type");
+      //   setErrorMessage(errorData.errors?.Password?.[0] ?? "Invalid input.");
+      // } 
+      // else {
         setErrorMessage(
           Object.values(errorData)
             .map(arr => arr[0])
             .join("\n")
         );
-      }
+      // }
       setIsRegistering(false);
     } 
     else {
@@ -211,11 +218,11 @@ export default function SignUpContent() {
         } 
       } 
       catch (deleteError) {
-        if (err.code === "auth/user-token-expired") {
+        if (deleteError.code === "auth/user-token-expired") {
           console.error("Token expired, but user likely deleted already.");
         } 
         else {
-          console.error("Failed to delete user:", err);
+          console.error("Failed to delete user:", deleteError);
         }
       }
     }
@@ -506,7 +513,7 @@ if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering))
             {!isLoadingTag && 
               <div className="flex flex-wrap gap-2">
                 <Label htmlFor="shortDescription" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Select a few interests (tags) to help us recommend clubs you'll love! (Optional)
+                  Select a few interests (tags) to help us recommend clubs you&apos;ll love! (Optional)
                 </Label>
                 <div className="space-y-2 space-x-2">
                   {tags.map((tag) => (

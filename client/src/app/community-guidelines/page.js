@@ -56,16 +56,16 @@ export default function GuidelinesPage() {
                 <h3 className="font-semibold text-green-800 mb-2 dark:text-green-300">✅ Do:</h3>
                 <ul className="list-disc list-inside text-green-700 space-y-1 ml-4 dark:text-green-200">
                   <li>Write about your genuine experience with the club</li>
-                  <li>Be specific about what you liked or didn't like</li>
+                  <li>Be specific about what you liked or didn&apos;t like</li>
                   <li>Provide constructive feedback that could help the club improve</li>
-                  <li>Focus on the club's activities, leadership, and community</li>
+                  <li>Focus on the club&apos;s activities, leadership, and community</li>
                   <li>Be respectful even when sharing negative experiences</li>
                 </ul>
               </div>
               <div className="bg-red-50 border border-red-200 rounded-xl p-4 dark:bg-red-950 dark:border-red-800">
-                <h3 className="font-semibold text-red-800 mb-2 dark:text-red-300">❌ Don't:</h3>
+                <h3 className="font-semibold text-red-800 mb-2 dark:text-red-300">❌ Don&apos;t:</h3>
                 <ul className="list-disc list-inside text-red-700 space-y-1 ml-4 dark:text-red-200">
-                  <li>Write fake reviews or reviews for clubs you haven't joined</li>
+                  <li>Write fake reviews or reviews for clubs you haven&apos;t joined</li>
                   <li>Include personal attacks or harassment of individuals</li>
                   <li>Share private or confidential information</li>
                   <li>Use offensive language or discriminatory remarks</li>
@@ -78,7 +78,7 @@ export default function GuidelinesPage() {
             <section className="mb-8">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">2. Respectful Communication</h2>
               <p className="text-gray-700 leading-relaxed mb-4 dark:text-gray-300">
-                We're all here to help each other succeed in college.
+                We&apos;re all here to help each other succeed in college.
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 dark:text-gray-300">
                 <li>Treat all community members with respect and kindness</li>
@@ -93,13 +93,13 @@ export default function GuidelinesPage() {
             <section className="mb-8">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">3. Privacy and Safety</h2>
               <p className="text-gray-700 leading-relaxed mb-4 dark:text-gray-300">
-                Protect your privacy and respect others' privacy too.
+                Protect your privacy and respect others&apos; privacy too.
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 dark:text-gray-300">
-                <li>Don't share personal contact information in reviews</li>
-                <li>Don't post photos of people without their permission</li>
+                <li>Don&apos;t share personal contact information in reviews</li>
+                <li>Don&apos;t post photos of people without their permission</li>
                 <li>Report any content that makes you feel unsafe</li>
-                <li>Don't attempt to identify anonymous reviewers</li>
+                <li>Don&apos;t attempt to identify anonymous reviewers</li>
                 <li>Keep club meeting details general, not specific locations/times</li>
               </ul>
             </section>
@@ -129,10 +129,10 @@ export default function GuidelinesPage() {
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 dark:text-gray-300">
                 <li>Keep your account information accurate and up-to-date</li>
-                <li>Don't share your account with others</li>
-                <li>Don't create multiple accounts to manipulate ratings</li>
+                <li>Don&apos;t share your account with others</li>
+                <li>Don&apos;t create multiple accounts to manipulate ratings</li>
                 <li>Report any unauthorized use of your account</li>
-                <li>You're responsible for all content posted from your account</li>
+                <li>You&apos;re responsible for all content posted from your account</li>
               </ul>
             </section>
 
@@ -176,8 +176,8 @@ export default function GuidelinesPage() {
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white text-center dark:from-blue-800 dark:to-blue-900">
                 <h3 className="text-xl font-bold mb-3">Thank You! 🎓</h3>
                 <p className="text-blue-100 leading-relaxed dark:text-blue-200">
-                  By following these guidelines, you're helping create a supportive community where students can
-                  discover amazing clubs and organizations. Together, we're making college experiences better for
+                  By following these guidelines, you&apos;re helping create a supportive community where students can
+                  discover amazing clubs and organizations. Together, we&apos;re making college experiences better for
                   everyone!
                 </p>
               </div>

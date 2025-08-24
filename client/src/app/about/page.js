@@ -40,7 +40,7 @@ export default function AboutPage() {
               clubs and organizations that match their interests, passions, and goals through student reviews.
             </p>
             <p className="text-gray-700 text-lg leading-relaxed dark:text-gray-300">
-              Whether you're looking for academic clubs, social organizations, or volunteer opportunities, we help you
+              Whether you&apos;re looking for academic clubs, social organizations, or volunteer opportunities, we help you
               make informed decisions about where to invest your time and energy.
             </p>
           </div>

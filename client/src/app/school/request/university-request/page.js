@@ -103,7 +103,7 @@ function RequestUniversityContent() {
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">Request a New University</h1>
             </div>
             <p className="text-gray-600 dark:text-gray-400">
-              Can't find your school? Help us expand our directory by requesting to add your university.
+              Can&apos;t find your school? Help us expand our directory by requesting to add your university.
             </p>
           </div>
 
@@ -114,10 +114,10 @@ function RequestUniversityContent() {
               <div className="text-sm text-blue-800 dark:text-blue-200">
                 <p className="font-semibold mb-2">Before you submit:</p>
                 <ul className="space-y-1 list-disc list-inside">
-                  <li>Make sure your university isn't already listed in our directory</li>
+                  <li>Make sure your university isn&apos;t already listed in our directory</li>
                   <li>Provide accurate and complete information</li>
                   <li>Your request will be reviewed by our team within 3-5 business days</li>
-                  <li>You'll receive an email confirmation once your university is approved</li>
+                  <li>You&apos;ll receive an email confirmation once your university is approved</li>
                 </ul>
               </div>
             </div>
@@ -202,7 +202,7 @@ function RequestUniversityContent() {
                 <p>• We may reach out for additional verification if needed</p>
                 <p>• Once approved, the university will be added to our directory</p>
                 <p>• Students can then start adding clubs and writing reviews</p>
-                <p>• You'll receive an email confirmation with the university's new page link</p>
+                <p>• You&apos;ll receive an email confirmation with the university&apos;s new page link</p>
               </div>
             </div>
 

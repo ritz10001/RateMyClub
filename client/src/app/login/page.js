@@ -326,7 +326,7 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <p className="text-gray-600 dark:text-gray-400">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
                 className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium underline underline-offset-4"

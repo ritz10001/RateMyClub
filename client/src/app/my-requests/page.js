@@ -288,7 +288,7 @@ function MyRequestsContent(){
             </div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">No {requestType === "university" ? "University" : "Clubs"}</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              You haven't made any {requestType} requests yet. Feel free to request addition of your {requestType}!
+              You haven&apos;t made any {requestType} requests yet. Feel free to request addition of your {requestType}!
             </p>
             <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold" asChild>
               <Link href={`/all-schools`}>Explore {requestType === "university" ? "Universities" : "Clubs"}</Link>

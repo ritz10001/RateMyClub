@@ -183,11 +183,8 @@ const handleRemoveClub = async (clubId) => {
             </div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Saved Clubs</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              You haven't saved any clubs yet. Start exploring and bookmark clubs you're interested in!
+              You haven&apos;t saved any clubs yet. Start exploring and bookmark clubs you&apos;re interested in!
             </p>
-            {/* <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold" asChild>
-              <Link href="/directory">Explore Clubs</Link>
-            </Button> */}
           </div>
         )}
 

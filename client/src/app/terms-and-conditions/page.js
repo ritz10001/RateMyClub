@@ -37,7 +37,7 @@ export default function TermsPage() {
             <section className="mb-8">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">1. Acceptance of Terms</h2>
                 <p className="text-gray-700 leading-relaxed mb-4 dark:text-gray-300">
-                By accessing and using RateMyCollegeClub ("the Service"), you accept and agree to be bound by the terms
+                By accessing and using RateMyCollegeClub (&quot;the Service&quot;), you accept and agree to be bound by the terms
                 and provision of this agreement.
                 </p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 dark:text-gray-300">
@@ -67,7 +67,7 @@ export default function TermsPage() {
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">3. User Content and Reviews</h2>
                 <p className="text-gray-700 leading-relaxed mb-4 dark:text-gray-300">
                 Our service allows you to post, link, store, share and otherwise make available certain information,
-                text, graphics, or other material ("Content").
+                text, graphics, or other material (&quot;Content&quot;).
                 </p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 dark:text-gray-300">
                 <li>You retain rights to any content you submit, post or display</li>
@@ -137,7 +137,7 @@ export default function TermsPage() {
             <section className="mb-8">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">7. Disclaimer</h2>
                 <p className="text-gray-700 leading-relaxed mb-4 dark:text-gray-300">
-                The information on this service is provided on an "as is" basis.
+                The information on this service is provided on an &quot;as is&quot; basis.
                 </p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 dark:text-gray-300">
                 <li>We make no representations or warranties of any kind, express or implied</li>

@@ -151,6 +151,7 @@ public class AuthService : IAuthService
         try
         {
             decodedToken = await _firebaseAuthService.VerifyIdTokenAsync(firebaseRegisterDTO.FirebaseIdToken);
+            Console.WriteLine("decoded token" + decodedToken);
         }
         catch
         {
@@ -163,6 +164,7 @@ public class AuthService : IAuthService
         var firebaseUid = decodedToken.Uid;
         var emailFromToken = decodedToken.Claims.TryGetValue("email", out var emailObj) ? emailObj?.ToString() : null;
         var email = emailFromToken ?? firebaseRegisterDTO.Email;
+        Console.WriteLine("THIS IS THE EMAIL " + email);
 
         // 2) Prevent duplicate registrations
         Console.WriteLine("IN STEP 2, PREVENTING DUPLICATIONS");
@@ -218,9 +220,12 @@ public class AuthService : IAuthService
 
         if (!firebaseRegisterDTO.IsSSO)
         {
-            var verificationLink = await FirebaseAuth.DefaultInstance.GenerateEmailVerificationLinkAsync(email);   
+            Console.WriteLine("THIS IS THE EMAIL FOR SECOND TIME " + email);
+            var verificationLink = await FirebaseAuth.DefaultInstance.GenerateEmailVerificationLinkAsync(email);
+            Console.WriteLine("Verification link" + verificationLink);
             // 4.6) Send via your custom service
             var emailSent = await _emailService.SendVerificationEmailAsync(email, newUser.FirstName, verificationLink);
+            Console.WriteLine(emailSent);
             if (!emailSent)
             {
                 // Consider removing the user if email fails

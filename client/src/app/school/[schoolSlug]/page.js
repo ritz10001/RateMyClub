@@ -22,13 +22,6 @@ import NotFound from "@/app/not-found"
 
 export default function SchoolPage({ params }) {
 
-  const { schoolSlug } = useParams();
-  // Define the strict regex for a valid slug
-  const slugRegex = /^[a-z-]+$/;
-  if (!slugRegex.test(schoolSlug)) {
-    return notFound();
-  }
-
   const [university, setUniversity] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clubs, setClubs] = useState([]);
@@ -110,7 +103,7 @@ export default function SchoolPage({ params }) {
     }
   } 
   fetchClubs();
-}, [schoolSlug, debouncedSearchQuery, page, isInitialized]); // Remove 'user' from dependencies since we're not using it
+}, [debouncedSearchQuery, page, isInitialized]); // Remove 'user' from dependencies since we're not using it
 
   useEffect(() => {
     updateDisplayedClubs();
@@ -152,6 +145,13 @@ export default function SchoolPage({ params }) {
   }
 
   const categories = ["all", ...new Set(clubs.map(club => club.categoryName.toLowerCase()))];
+
+  const { schoolSlug } = useParams();
+  // Define the strict regex for a valid slug
+  const slugRegex = /^[a-z-]+$/;
+  if (!slugRegex.test(schoolSlug)) {
+    return notFound();
+  }
 
   if (isNotFound) {
     return <NotFound />;
@@ -234,7 +234,7 @@ export default function SchoolPage({ params }) {
         {/* Can't Find Your Club Section */}
         {user && !user.roles.includes("Administrator") && 
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 rounded-2xl p-6 mb-8 text-white text-center">
-            <h2 className="text-xl md:text-2xl font-bold mb-2">Can't find your club?</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-2">Can&apos;t find your club?</h2>
             <p className="text-blue-100 mb-4 dark:text-blue-300">Add yours today and help other students discover your community!</p>
             <Button className="bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-zinc-700 px-6 py-3 rounded-xl font-semibold"
             onClick={(e) => {
