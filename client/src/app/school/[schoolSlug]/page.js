@@ -311,7 +311,7 @@ export default function SchoolPage({ params }) {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-600 dark:text-gray-400">
-            Showing {filteredClubs.length} of {clubs.length} clubs
+            Showing {filteredClubs.length} of {clubs.clubsCount} clubs
           </p>
         </div>
         {clubs.length === 0 && (

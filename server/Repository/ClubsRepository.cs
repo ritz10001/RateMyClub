@@ -97,7 +97,10 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
         return await query.CountAsync();
     }
 
-    public async Task<PagedResult<Club>> GetPagedClubsForUniversity(int universityId, int page, int pageSize, string? search)
+    public async Task<PagedResult<Club>> GetPagedClubsForUniversity(int universityId,
+    int page,
+    int pageSize,
+    string? search)
     {
         var query = _context.Clubs
         .Where(c => c.UniversityId == universityId)
@@ -113,6 +116,14 @@ public class ClubsRepository : GenericRepository<Club>, IClubsRepository
                 c.Tags.Any(t => EF.Functions.ILike(t.Name, $"%{search}%"))   // tag name
             );
         }
+
+        // query = sortBy switch
+        // {
+        //     "name" => query.OrderBy(c => c.Name),
+        //     "reviews" => query.OrderByDescending(c => c.Reviews.Count),
+        //     "rating" => query.OrderByDescending(c => c.),
+        //     _ => query.OrderBy(c => c.Name)
+        // };
 
         var total = await query.CountAsync();
 

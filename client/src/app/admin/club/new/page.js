@@ -74,8 +74,7 @@ export default function CreateClubPage({ params }) {
       }
     }
     catch(error){
-      toast.error("Network error. Please check your connection.");
-      console.error("Update Submission failed");
+      toast.error("Error: ", error.message);
     }
   }
 

@@ -72,7 +72,8 @@ public class UniversityController : ControllerBase
         return Ok(result);
     }
     [HttpGet("{slug}/clubs")]
-    public async Task<ActionResult<GetUniversityWithPagedClubsDTO>> GetPagedUniversityClubs(string slug, [FromQuery] int page = 1, [FromQuery] int pageSize = 6, [FromQuery] string? search = null)
+    public async Task<ActionResult<GetUniversityWithPagedClubsDTO>> GetPagedUniversityClubs(string slug, [FromQuery] int page = 1, [FromQuery] int pageSize = 6,
+    [FromQuery] string? search = null, [FromQuery] string? sortBy = "name")
     {
         var university = await _universityRepository.GetIndividualUniversityDetails(slug);
         if (university is null) return NotFound();
