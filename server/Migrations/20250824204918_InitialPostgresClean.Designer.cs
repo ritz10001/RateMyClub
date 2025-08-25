@@ -12,8 +12,8 @@ using RateMyCollegeClub.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(CollegeClubsDbContext))]
-    [Migration("20250820174827_InitialPostgres")]
-    partial class InitialPostgres
+    [Migration("20250824204918_InitialPostgresClean")]
+    partial class InitialPostgresClean
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,20 +64,6 @@ namespace server.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "fd5051bd-d6f3-4b72-ad14-c245a1cf2ad1",
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
-                        },
-                        new
-                        {
-                            Id = "dd6738bf-4381-47c4-bd0b-7192a5ab1ccc",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -299,22 +285,6 @@ namespace server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Clubs related to technology. Includes Computer Science, Computer and Electrical Engineering.",
-                            Name = "Technology",
-                            isActive = false
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Clubs related to Sports. Includes physical and mental sports.",
-                            Name = "Sports",
-                            isActive = false
-                        });
                 });
 
             modelBuilder.Entity("RateMyCollegeClub.Models.Club", b =>
@@ -365,47 +335,6 @@ namespace server.Migrations
                     b.HasIndex("UniversityId");
 
                     b.ToTable("Clubs");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CategoryId = 1,
-                            ClubLocation = "Engineering Center Basement, Room 100",
-                            CreatedAt = new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2843),
-                            Description = "Robotics Club",
-                            IsActive = true,
-                            LogoUrl = "",
-                            Name = "Tech Robotics Association",
-                            Slug = "",
-                            UniversityId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoryId = 1,
-                            ClubLocation = "Livermore Center, Room 101",
-                            CreatedAt = new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2866),
-                            Description = "Software Engineering Club",
-                            IsActive = true,
-                            LogoUrl = "",
-                            Name = "Google Development Student Club",
-                            Slug = "",
-                            UniversityId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryId = 2,
-                            ClubLocation = "The SUB, Second floor, Room 237.",
-                            CreatedAt = new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2869),
-                            Description = "A club for playing chess",
-                            IsActive = true,
-                            LogoUrl = "",
-                            Name = "Chess Club",
-                            Slug = "",
-                            UniversityId = 1
-                        });
                 });
 
             modelBuilder.Entity("RateMyCollegeClub.Models.ClubRequest", b =>
@@ -510,50 +439,6 @@ namespace server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ClubId = 1,
-                            Comment = "It's a good club overall. Friendly people in general.",
-                            CreatedAt = new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2611),
-                            InclusivityRating = 4,
-                            LeadershipRating = 2,
-                            NetScore = 0,
-                            NetworkingRating = 3,
-                            OverallRating = 0m,
-                            Recommendation = "",
-                            SkillsDevelopmentRating = 5
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ClubId = 1,
-                            Comment = "Plenty of volunteering opportunities. One of the highlights about the club is the annual VEX U competitions.",
-                            CreatedAt = new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2621),
-                            InclusivityRating = 5,
-                            LeadershipRating = 4,
-                            NetScore = 0,
-                            NetworkingRating = 2,
-                            OverallRating = 0m,
-                            Recommendation = "",
-                            SkillsDevelopmentRating = 4
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ClubId = 2,
-                            Comment = "The GDSC club has its ups and downs. Networking is one of its prime benefits.",
-                            CreatedAt = new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2624),
-                            InclusivityRating = 2,
-                            LeadershipRating = 4,
-                            NetScore = 0,
-                            NetworkingRating = 5,
-                            OverallRating = 0m,
-                            Recommendation = "",
-                            SkillsDevelopmentRating = 3
-                        });
                 });
 
             modelBuilder.Entity("RateMyCollegeClub.Models.ReviewFlag", b =>
@@ -679,32 +564,6 @@ namespace server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Universities");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(3080),
-                            Description = "",
-                            Location = "Lubbock, TX",
-                            LogoUrl = "",
-                            Name = "Texas Tech University",
-                            OfficialWebsite = "",
-                            SecondaryName = "",
-                            Slug = ""
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(3090),
-                            Description = "",
-                            Location = "Dallas, TX",
-                            LogoUrl = "",
-                            Name = "University of Texas at Dallas",
-                            OfficialWebsite = "",
-                            SecondaryName = "",
-                            Slug = ""
-                        });
                 });
 
             modelBuilder.Entity("RateMyCollegeClub.Models.UniversityRequest", b =>

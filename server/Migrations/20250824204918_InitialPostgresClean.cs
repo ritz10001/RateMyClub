@@ -4,12 +4,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace server.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialPostgres : Migration
+    public partial class InitialPostgresClean : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -485,53 +483,6 @@ namespace server.Migrations
                         principalTable: "Reviews",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[,]
-                {
-                    { "dd6738bf-4381-47c4-bd0b-7192a5ab1ccc", null, "User", "USER" },
-                    { "fd5051bd-d6f3-4b72-ad14-c245a1cf2ad1", null, "Administrator", "ADMINISTRATOR" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Categories",
-                columns: new[] { "Id", "Description", "Name", "isActive" },
-                values: new object[,]
-                {
-                    { 1, "Clubs related to technology. Includes Computer Science, Computer and Electrical Engineering.", "Technology", false },
-                    { 2, "Clubs related to Sports. Includes physical and mental sports.", "Sports", false }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Universities",
-                columns: new[] { "Id", "CreatedAt", "Description", "Location", "LogoUrl", "Name", "OfficialWebsite", "SecondaryName", "Slug" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(3080), "", "Lubbock, TX", "", "Texas Tech University", "", "", "" },
-                    { 2, new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(3090), "", "Dallas, TX", "", "University of Texas at Dallas", "", "", "" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Clubs",
-                columns: new[] { "Id", "CategoryId", "ClubLocation", "CreatedAt", "Description", "IsActive", "LogoUrl", "Name", "Slug", "UniversityId" },
-                values: new object[,]
-                {
-                    { 1, 1, "Engineering Center Basement, Room 100", new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2843), "Robotics Club", true, "", "Tech Robotics Association", "", 1 },
-                    { 2, 1, "Livermore Center, Room 101", new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2866), "Software Engineering Club", true, "", "Google Development Student Club", "", 1 },
-                    { 3, 2, "The SUB, Second floor, Room 237.", new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2869), "A club for playing chess", true, "", "Chess Club", "", 1 }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Reviews",
-                columns: new[] { "Id", "ClubId", "Comment", "CreatedAt", "InclusivityRating", "LeadershipRating", "NetScore", "NetworkingRating", "OverallRating", "Recommendation", "SkillsDevelopmentRating", "UserId" },
-                values: new object[,]
-                {
-                    { 1, 1, "It's a good club overall. Friendly people in general.", new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2611), 4, 2, 0, 3, 0m, "", 5, null },
-                    { 2, 1, "Plenty of volunteering opportunities. One of the highlights about the club is the annual VEX U competitions.", new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2621), 5, 4, 0, 2, 0m, "", 4, null },
-                    { 3, 2, "The GDSC club has its ups and downs. Networking is one of its prime benefits.", new DateTime(2025, 8, 20, 17, 48, 26, 799, DateTimeKind.Utc).AddTicks(2624), 2, 4, 0, 5, 0m, "", 3, null }
                 });
 
             migrationBuilder.CreateIndex(
