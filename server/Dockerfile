@@ -4,10 +4,9 @@ WORKDIR /src
 
 # Restore for caching
 COPY ["server/server.csproj", "."]
-RUN dotnet restore "server/server.csproj"
+RUN dotnet restore "server.csproj"
 
-# Copy the rest of the source code
-# Build and publish the project
+# Copy the rest of the source code from server directory
 COPY server/ .
 RUN dotnet publish "server.csproj" -c Release -o /app/publish
 
