@@ -89,23 +89,16 @@ public class ClubController : ControllerBase
         var clubDTO = _mapper.Map<GetClubDTO>(club);
 
         var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
-        Console.WriteLine("THIS IS THE FIREBASE ID");
-        Console.WriteLine(firebaseUid);
         User? user = null;
         if (!string.IsNullOrEmpty(firebaseUid))
         {
-            Console.WriteLine("in null or empty block");
             user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
-            Console.WriteLine("this is the user");
-            Console.WriteLine(user.Id);
         }
 
         if (user != null)
         {
             clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(club.Id, user.Id);
         }
-        Console.WriteLine("THE CLUB BOOKMARK STATUS");
-        Console.WriteLine(clubDTO.IsBookmarked);
 
         if (club.Tags != null && club.Tags.Any())
         {
@@ -134,23 +127,16 @@ public class ClubController : ControllerBase
         var clubDTO = _mapper.Map<GetClubDTO>(club);
 
         var firebaseUid = HttpContext.Items["FirebaseUid"] as string;
-        Console.WriteLine("THIS IS THE FIREBASE ID");
-        Console.WriteLine(firebaseUid);
         User? user = null;
         if (!string.IsNullOrEmpty(firebaseUid))
         {
-            Console.WriteLine("in null or empty block");
             user = await _userManager.Users.FirstOrDefaultAsync(u => u.FireBaseUid == firebaseUid);
-            Console.WriteLine("this is the user");
-            Console.WriteLine(user.Id);
         }
 
         if (user != null)
         {
             clubDTO.IsBookmarked = await _savedClubsRepository.IsBookmarked(club.Id, user.Id);
         }
-        Console.WriteLine("THE CLUB BOOKMARK STATUS");
-        Console.WriteLine(clubDTO.IsBookmarked);
 
         if (club.Tags != null && club.Tags.Any())
         {

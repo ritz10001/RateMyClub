@@ -17,6 +17,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 var firebaseApp = FirebaseApp.Create(new AppOptions()
 {
     Credential = GoogleCredential.FromFile("Configurations/firebase-key.json")
@@ -143,42 +147,6 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-// using (var scope = app.Services.CreateScope())
-// {
-//     var services = scope.ServiceProvider;
-//     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-//     var userManager = services.GetRequiredService<UserManager<User>>();
-
-//     string[] roles = { "Administrator", "User" };
-//     foreach (var role in roles)
-//     {
-//         var roleExists = await roleManager.RoleExistsAsync(role);
-//         if (!roleExists)
-//         {
-//             await roleManager.CreateAsync(new IdentityRole(role));
-//         }
-//     }
-//     var allUsers = userManager.Users.ToList();
-//     foreach (var user in allUsers)
-//     {
-//         if (!await userManager.IsInRoleAsync(user, "User"))
-//         {
-//             await userManager.AddToRoleAsync(user, "User");
-//         }
-//     }
-//     var adminEmail = "ratemycollegeclub@gmail.com";
-//     var adminUser = await userManager.FindByEmailAsync(adminEmail);
-//     Console.WriteLine("in the admin now");
-//     Console.WriteLine(adminUser);
-//     if (adminUser != null)
-//     {
-//         if (!await userManager.IsInRoleAsync(adminUser, "Administrator"))
-//         {
-//             Console.WriteLine("adding admin role");
-//             await userManager.AddToRoleAsync(adminUser, "Administrator");
-//         }
-//     }
-// }
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

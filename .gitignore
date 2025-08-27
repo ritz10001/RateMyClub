@@ -58,3 +58,6 @@ Thumbs.db
 
 # Docker files
 .dockerignore
+
+# Sql backup files
+*.sql
