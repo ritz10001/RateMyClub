@@ -3,12 +3,12 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Restore for caching
-COPY ["server.csproj", "."]
-RUN dotnet restore "server.csproj"
+COPY ["server/server.csproj", "."]
+RUN dotnet restore "server/server.csproj"
 
 # Copy the rest of the source code
 # Build and publish the project
-COPY . .
+COPY server/ .
 RUN dotnet publish "server.csproj" -c Release -o /app/publish
 
 # Run stage
