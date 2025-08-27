@@ -61,7 +61,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("post
 builder.Services.AddDbContext<CollegeClubsDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
-}); 
+});
 
 builder.Services.AddIdentityCore<User>(options =>
 {
@@ -76,7 +76,9 @@ builder.Services.AddIdentityCore<User>(options =>
 .AddTokenProvider<DataProtectorTokenProvider<User>>("RateMyCollegeClub")
 .AddEntityFrameworkStores<CollegeClubsDbContext>()
 .AddDefaultTokenProviders();
-                
+
+builder.Services.AddDataProtection();
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -110,7 +112,6 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<FirebaseAuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUserVoteResolver>();
-builder.Services.AddHttpContextAccessor();
 
 // builder.Services.AddAuthentication(options => {
 //     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
