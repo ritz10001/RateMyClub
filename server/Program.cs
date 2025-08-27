@@ -48,6 +48,14 @@ if (string.IsNullOrEmpty(connectionString))
     // For local testing, fall back to reading from appsettings.json or a default value.
     connectionString = builder.Configuration.GetConnectionString("CollegeClubsDbConnectionString");
 }
+if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgresql://"))
+{
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    var password = userInfo.Length > 1 ? userInfo[1] : null;
+
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};";
+}
 
 // var connectionString = builder.Configuration.GetConnectionString("CollegeClubsDbConnectionString");
 builder.Services.AddDbContext<CollegeClubsDbContext>(options =>
