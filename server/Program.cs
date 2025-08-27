@@ -21,10 +21,23 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-var firebaseApp = FirebaseApp.Create(new AppOptions()
+GoogleCredential credential;
+var firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_SERVICE_ACCOUNT_JSON");
+if (!string.IsNullOrEmpty(firebaseJson))
 {
-    Credential = GoogleCredential.FromFile("Configurations/firebase-key.json")
-});
+    // Production: Use environment variable
+    credential = GoogleCredential.FromJson(firebaseJson);
+}
+else
+{
+    // Development: Use file
+    credential = GoogleCredential.FromFile("Configurations/firebase-key.json");
+}
+
+// var firebaseApp = FirebaseApp.Create(new AppOptions()
+// {
+//     Credential = GoogleCredential.FromFile("Configurations/firebase-key.json")
+// });
 
 // Add services to the container.
 
