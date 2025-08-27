@@ -41,7 +41,15 @@ else
 
 // Add services to the container.
 
-var connectionString = builder.Configuration.GetConnectionString("CollegeClubsDbConnectionString");
+var connectionString = Environment.GetEnvironmentVariable("CollegeClubsDbConnectionString");
+// Check if the connection string was found
+if (string.IsNullOrEmpty(connectionString))
+{
+    // For local testing, fall back to reading from appsettings.json or a default value.
+    connectionString = builder.Configuration.GetConnectionString("CollegeClubsDbConnectionString");
+}
+
+// var connectionString = builder.Configuration.GetConnectionString("CollegeClubsDbConnectionString");
 builder.Services.AddDbContext<CollegeClubsDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
@@ -168,7 +176,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = services.GetRequiredService<UserManager<User>>();
 
     // Retry loop for Docker DB startup
-    var retries = 10;
+    var retries = 2;
     while (retries > 0)
     {
         try
