@@ -21,6 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
+Console.WriteLine("attempting to fetch firebase stuff");
 GoogleCredential credential;
 var firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_SERVICE_ACCOUNT_JSON");
 Console.WriteLine($"Firebase env var length: {firebaseJson?.Length ?? 0}");
@@ -38,6 +39,7 @@ if (!string.IsNullOrEmpty(firebaseJson))
 }
 else
 {
+    Console.WriteLine("firebase stuff is not available");
     // Development: Use file
     credential = GoogleCredential.FromFile("Configurations/firebase-key.json");
 }
