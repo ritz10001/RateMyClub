@@ -191,65 +191,69 @@ export default function HeroSection() {
     </section>
     <section className="container mx-auto px-4 mb-16 md:mb-24">
       <div className="mx-auto">
-        <div className="mb-20">
-          <p className="text-xl md:text-2xl text-gray-900 dark:text-gray-100 mb-6 max-w-2xl">Popular Schools</p>
-          <div className="flex items-start gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
-            {popularSchools.map((school, index) => {
-              return (
-                <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80" onClick={() => router.push(`/school/${school.slug}`)}>
-                  <div className="w-full h-50 bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-4 mx-auto">
-                    <img
-                      src={"/generic.jpeg"}
-                      className="w-full h-full text-blue-600 rounded-lg"
-                    />
+        {popularSchools.length > 0 && 
+          <div className="mb-20">
+            <p className="text-xl md:text-2xl text-gray-900 dark:text-gray-100 mb-6 max-w-2xl">Popular Schools</p>
+            <div className="flex items-start gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
+              {popularSchools.map((school, index) => {
+                return (
+                  <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80" onClick={() => router.push(`/school/${school.slug}`)}>
+                    <div className="w-full h-50 bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-4 mx-auto">
+                      <img
+                        src={"/generic.jpeg"}
+                        className="w-full h-full text-blue-600 rounded-lg"
+                      />
+                    </div>
+                    <div className="h-10 flex items-center justify-center px-4">
+                      <h3 className="text-lg text-center font-semibold text-gray-800 dark:text-gray-200 line-clamp-1 leading-tight max-w-full">
+                        {school.name}
+                      </h3>
+                    </div>
+                    <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 pb-2">
+                      <Building className="w-4 h-4" />
+                      <span>{school.clubsCount} Clubs</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-4 pb-2">
+                      <Users className="w-4 h-4" />
+                      <span>{school.reviewCount} Reviews</span>
+                    </div>
                   </div>
-                  <div className="h-10 flex items-center justify-center px-4">
-                    <h3 className="text-lg text-center font-semibold text-gray-800 dark:text-gray-200 line-clamp-1 leading-tight max-w-full">
-                      {school.name}
-                    </h3>
-                  </div>
-                  <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 pb-2">
-                    <Building className="w-4 h-4" />
-                    <span>{school.clubsCount} Clubs</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400 mb-4 pb-2">
-                    <Users className="w-4 h-4" />
-                    <span>{school.reviewCount} Reviews</span>
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </div>
-        <div className="mb-20">
-          <p className="text-xl md:text-2xl text-gray-900 dark:text-gray-100 mb-6 max-w-2xl">Popular Clubs</p>
-          <div className="flex items-start gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
-            {popularClubs.map((club, index) => {
-              return (
-                <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80" onClick={() => router.push(`/school/${club.universitySlug}/club/${club.slug}`)}>
-                  <div className="w-full h-50 bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-4 mx-auto">
-                    <img
-                      src={"/genericclub.jpeg"}
-                      className="w-full h-full text-blue-600 rounded-lg"
-                    />
+        }
+        {popularClubs.length > 0 && 
+          <div className="mb-20">
+            <p className="text-xl md:text-2xl text-gray-900 dark:text-gray-100 mb-6 max-w-2xl">Popular Clubs</p>
+            <div className="flex items-start gap-4 overflow-x-auto pb-4 scrollbar-hide cursor-pointer">
+              {popularClubs.map((club, index) => {
+                return (
+                  <div key={index} className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-blue-100 dark:border-blue-900 flex-shrink-0 w-80" onClick={() => router.push(`/school/${club.universitySlug}/club/${club.slug}`)}>
+                    <div className="w-full h-50 bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-4 mx-auto">
+                      <img
+                        src={"/genericclub.jpeg"}
+                        className="w-full h-full text-blue-600 rounded-lg"
+                      />
+                    </div>
+                    <div className="h-15 flex flex-col items-center justify-center mb-2 px-4">
+                      <h3 className="text-lg text-center font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 leading-tight max-w-full">
+                        {club.name}
+                      </h3>
+                      <p className="text-md text-center text-gray-600 dark:text-gray-400 mt-1">
+                        {club.universityName}
+                      </p>
+                    </div>
+                    <div className="flex justify-center gap-1 mb-2">
+                      {renderStars(Math.round(club.averageRating), "w-4 h-4")}
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 text-center mb-4 pb-2">{club.reviewCount}{club.reviewCount === 1 ? " Review" : " Reviews"}</p>
                   </div>
-                  <div className="h-15 flex flex-col items-center justify-center mb-2 px-4">
-                    <h3 className="text-lg text-center font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 leading-tight max-w-full">
-                      {club.name}
-                    </h3>
-                    <p className="text-md text-center text-gray-600 dark:text-gray-400 mt-1">
-                      {club.universityName}
-                    </p>
-                  </div>
-                  <div className="flex justify-center gap-1 mb-2">
-                    {renderStars(Math.round(club.averageRating), "w-4 h-4")}
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400 text-center mb-4 pb-2">{club.reviewCount}{club.reviewCount === 1 ? " Review" : " Reviews"}</p>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </div>
+        }
         {user && recommendedClubs.length > 0 &&
           <div>
             <p className="text-xl md:text-2xl text-gray-900 dark:text-gray-100 mb-6 max-w-2xl">Recommended for you</p>
