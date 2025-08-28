@@ -34,6 +34,7 @@ const monthNumbers = {
 }
 
 export default function ClubPage({ params }) {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { user, isInitialized } = useAuth();
   const { setClubData } = useClub();
   const router = useRouter();
@@ -74,7 +75,7 @@ export default function ClubPage({ params }) {
     
     if (!currentUser) {
       // Fetch public club data without auth
-      const response = await fetch(`http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}`, {
+      const response = await fetch(`${backendUrl}/api/Club/${schoolSlug}/clubs/${clubSlug}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json"
@@ -96,7 +97,7 @@ export default function ClubPage({ params }) {
     // User is logged in, get token from Firebase directly
     const idToken = await currentUser.getIdToken(true); // Use currentUser, not user from context
     
-    const response = await fetch(`http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}`, {
+    const response = await fetch(`${backendUrl}/api/Club/${schoolSlug}/clubs/${clubSlug}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -154,7 +155,7 @@ export default function ClubPage({ params }) {
       }
 
       const response = await fetch(
-        `http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}/reviews?page=${page}&pageSize=${pageSize}`,
+        `${backendUrl}/api/Club/${schoolSlug}/clubs/${clubSlug}/reviews?page=${page}&pageSize=${pageSize}`,
         { method: "GET", headers }
       );
 
@@ -206,7 +207,7 @@ export default function ClubPage({ params }) {
       const idToken = await currentUser.getIdToken(true);
       const clubId = club.id;
 
-      const url = `http://localhost:5095/api/SavedClub`;
+      const url = `${backendUrl}/api/SavedClub`;
       const options = !isBookmarked
         ? {
             method: "POST",
@@ -248,7 +249,7 @@ export default function ClubPage({ params }) {
     const currentVote = userVotes[reviewId] || 0;
     const sendValue = currentVote === newValue ? 0 : newValue;
 
-    const response = await fetch("http://localhost:5095/api/ReviewVote", {
+    const response = await fetch(`${backendUrl}/api/ReviewVote`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -631,7 +632,7 @@ export default function ClubPage({ params }) {
             const currentUser = auth.currentUser;
             const idToken = await currentUser.getIdToken(true);
             
-            const response = await fetch(`http://localhost:5095/api${url}`, {
+            const response = await fetch(`${backendUrl}/api${url}`, {
               method: "DELETE" ,
               headers: {
                 "Authorization": `Bearer ${idToken}`

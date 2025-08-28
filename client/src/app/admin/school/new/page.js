@@ -11,6 +11,7 @@ import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 
 export default function EditUniversityPage() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { user } = useAuth();
   const router = useRouter();
   const [universityData, setUniversityData] = useState({
@@ -27,7 +28,7 @@ export default function EditUniversityPage() {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch(`http://localhost:5095/api/AdminUniversity`, {
+      const response = await fetch(`${backendUrl}/api/AdminUniversity`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

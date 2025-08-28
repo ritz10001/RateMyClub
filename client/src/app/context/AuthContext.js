@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [user, setUser] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const fetchSqlUserData = async (firebaseUser) => {
     try {
       const idToken = await firebaseUser.getIdToken();
-      const response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+      const response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

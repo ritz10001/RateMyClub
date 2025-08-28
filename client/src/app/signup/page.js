@@ -13,6 +13,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthPro
 import { app } from "../utils/firebase";
 
 export default function SignUpContent() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const router = useRouter();
   const auth = getAuth(app);
   const { user, isInitialized, setUser, login } = useAuth();
@@ -48,7 +49,7 @@ export default function SignUpContent() {
   useEffect(() => {
     const fetchUniversities = async () => {
       try {
-        const response = await fetch("http://localhost:5095/api/University/all-colleges", {
+        const response = await fetch(`${backendUrl}/api/University/all-colleges`, {
           headers: {
             "Content-Type": "application/json"
           }
@@ -74,7 +75,7 @@ export default function SignUpContent() {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch("http://localhost:5095/api/Tag");
+        const response = await fetch(`${backendUrl}/api/Tag`);
         if(response.ok){
           const data = await response.json();
           setTags(data);
@@ -156,7 +157,7 @@ export default function SignUpContent() {
   
   // Sync with backend (SQL)
   try {
-    const response = await fetch("http://localhost:5095/api/Account/firebase-register", {
+    const response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -274,7 +275,7 @@ export default function SignUpContent() {
     console.log(idToken);
 
     // Step 4: Try backend login
-    let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+    let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(idToken)
@@ -284,7 +285,7 @@ export default function SignUpContent() {
     if (response.status === 401) {
       try {
         console.log("trying to send API CALL");
-        response = await fetch(`http://localhost:5095/api/Account/firebase-register`, {
+        response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

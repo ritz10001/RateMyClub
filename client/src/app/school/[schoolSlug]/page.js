@@ -21,7 +21,7 @@ import { notFound } from 'next/navigation';
 import NotFound from "@/app/not-found"
 
 export default function SchoolPage({ params }) {
-
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [university, setUniversity] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clubs, setClubs] = useState([]);
@@ -52,7 +52,7 @@ export default function SchoolPage({ params }) {
     
       if (!currentUser) {
         // Fetch public club data without auth
-        const response = await fetch(`http://localhost:5095/api/University/${schoolSlug}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
+        const response = await fetch(`${backendUrl}/api/University/${schoolSlug}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json"
@@ -74,7 +74,7 @@ export default function SchoolPage({ params }) {
         return;
       }
       const idToken = await currentUser.getIdToken(true);
-      const response = await fetch(`http://localhost:5095/api/University/${schoolSlug}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
+      const response = await fetch(`${backendUrl}/api/University/${schoolSlug}/clubs?page=${page}&pageSize=${pageSize}&search=${searchQuery}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -411,7 +411,7 @@ export default function SchoolPage({ params }) {
             try{
               const currentUser = auth.currentUser;
               const idToken = await currentUser.getIdToken(true);
-              const response = await fetch(`http://localhost:5095/api/AdminUniversity/${universityToDelete}`, {
+              const response = await fetch(`${backendUrl}/api/AdminUniversity/${universityToDelete}`, {
                 method: "DELETE",
                 headers: {
                   "Authorization": `Bearer ${idToken}`

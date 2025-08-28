@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext"
 import { useRouter } from "next/navigation"
 
 export default function EmailConfirmationContent() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "your email";
   const [isResending, setIsResending] = useState(false);
@@ -45,7 +46,7 @@ export default function EmailConfirmationContent() {
     if(cooldown > 0) return;
     setIsResending(true);
     try {
-      const response = await fetch("http://localhost:5095/api/Account/resend-verification", {
+      const response = await fetch(`${backendUrl}/api/Account/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

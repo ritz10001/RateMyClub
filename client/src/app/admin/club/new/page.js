@@ -11,6 +11,7 @@ import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 
 export default function CreateClubPage({ params }) {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { user } = useAuth();
   const router = useRouter();
   const [universities, setUniversities] = useState([]);
@@ -27,7 +28,7 @@ export default function CreateClubPage({ params }) {
   });
   const auth = getAuth(app);
   useEffect(() => {
-    fetch(`http://localhost:5095/api/University/all-colleges`)
+    fetch(`${backendUrl}/api/University/all-colleges`)
       .then(res => res.json())
       .then(data => {
         setUniversities(data);
@@ -54,7 +55,7 @@ export default function CreateClubPage({ params }) {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch("http://localhost:5095/api/AdminClub", {
+      const response = await fetch(`${backendUrl}/api/AdminClub`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

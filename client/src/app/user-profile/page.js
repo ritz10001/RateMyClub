@@ -14,6 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import Link from "next/link";
 
 export default function ProfilePage() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const [profileData, setProfileData] = useState({
@@ -101,7 +102,7 @@ export default function ProfilePage() {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch(`http://localhost:5095/api/Account/update-profile`, {
+      const response = await fetch(`${backendUrl}/api/Account/update-profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

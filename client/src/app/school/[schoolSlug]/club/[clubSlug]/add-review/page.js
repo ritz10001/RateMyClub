@@ -25,6 +25,7 @@ export default function WriteReviewPage({ params }){
 }
 
 function WriteReviewContent({ schoolSlug, clubSlug }) {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const router = useRouter();
   const { user, isInitialized } = useAuth();
   const [club, setClub] = useState(null);
@@ -46,7 +47,7 @@ function WriteReviewContent({ schoolSlug, clubSlug }) {
   }, [error]);
   useEffect(() => {
     const fetchClub = async () => {
-      const res = await fetch(`http://localhost:5095/api/Club/${schoolSlug}/clubs/${clubSlug}`);
+      const res = await fetch(`${backendUrl}/api/Club/${schoolSlug}/clubs/${clubSlug}`);
       const data = await res.json();
       setClub(data); // data.id is the numeric clubId
     };
@@ -83,7 +84,7 @@ function WriteReviewContent({ schoolSlug, clubSlug }) {
     try{
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch("http://localhost:5095/api/Review", {
+      const response = await fetch(`${backendUrl}/api/Review`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

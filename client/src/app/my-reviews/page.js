@@ -37,6 +37,7 @@ export default function MyReviewsPage(){
 }
 
 function MyReviewsContent() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [reviews, setReviews] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +56,7 @@ function MyReviewsContent() {
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const response = await fetch("http://localhost:5095/api/Review/mine", {
+        const response = await fetch(`${backendUrl}/api/Review/mine`, {
           method: "GET",
           headers:{
             "Content-Type": "application/json",
@@ -224,7 +225,7 @@ function MyReviewsContent() {
                 try{
                   const currentUser = auth.currentUser;
                   const idToken = await currentUser.getIdToken();
-                  const response = await fetch(`http://localhost:5095/api/Review/${reviewToDelete}`, {
+                  const response = await fetch(`${backendUrl}/api/Review/${reviewToDelete}`, {
                     method: "DELETE",
                     headers: {
                       "Authorization": `Bearer ${idToken}`

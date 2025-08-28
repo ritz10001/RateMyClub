@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useDebounce } from 'use-debounce';
 
 export default function DirectoryPage() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [filteredSchools, setFilteredSchools] = useState([]);
@@ -29,7 +30,7 @@ export default function DirectoryPage() {
   const fetchSchools = async () => {
     try{
       const effectivePage = searchQuery ? 1 : page;
-      const response = await fetch(`http://localhost:5095/api/University/paged?page=${effectivePage}&pageSize=${pageSize}&search=${searchQuery}`, {
+      const response = await fetch(`${backendUrl}/api/University/paged?page=${effectivePage}&pageSize=${pageSize}&search=${searchQuery}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

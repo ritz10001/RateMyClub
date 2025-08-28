@@ -25,6 +25,7 @@ export default function RequestClubPage({ params }){
 }
 
 function RequestClubContent({ schoolSlug }) {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const router = useRouter();
   const { user } = useAuth();  
   const [school, setSchool] = useState(null);
@@ -53,7 +54,7 @@ function RequestClubContent({ schoolSlug }) {
 
   useEffect(() => {
     const fetchUniversity = async () => {
-      const res = await fetch(`http://localhost:5095/api/University/${schoolSlug}`);
+      const res = await fetch(`${backendUrl}/api/University/${schoolSlug}`);
       const data = await res.json();
       setSchool(data); // data.id is the numeric clubId
     };
@@ -63,7 +64,7 @@ function RequestClubContent({ schoolSlug }) {
   useEffect(() => {
     const fetchCategories = async () => {
       try{
-        const response = await fetch("http://localhost:5095/api/Categories", {
+        const response = await fetch(`${backendUrl}/api/Categories`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json"
@@ -85,7 +86,7 @@ function RequestClubContent({ schoolSlug }) {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch("http://localhost:5095/api/Tag", {
+        const response = await fetch(`${backendUrl}/api/Tag`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json"
@@ -131,7 +132,7 @@ function RequestClubContent({ schoolSlug }) {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
 
-      const response = await fetch("http://localhost:5095/api/ClubRequest", {
+      const response = await fetch(`${backendUrl}/api/ClubRequest`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

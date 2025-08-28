@@ -21,6 +21,7 @@ export default function SavedClubsPage(){
   );
 }
 function SavedClubsContent() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [savedClubs, setSavedClubs] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true)
@@ -37,7 +38,7 @@ function SavedClubsContent() {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
 
-        const response = await fetch("http://localhost:5095/api/SavedClub", {
+        const response = await fetch(`${backendUrl}/api/SavedClub`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -78,7 +79,7 @@ const handleRemoveClub = async (clubId) => {
     const currentUser = auth.currentUser;
     const idToken = await currentUser.getIdToken();
 
-    const response = await fetch(`http://localhost:5095/api/SavedClub/`, {
+    const response = await fetch(`${backendUrl}/api/SavedClub/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

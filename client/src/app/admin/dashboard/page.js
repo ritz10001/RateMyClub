@@ -336,6 +336,7 @@ const ConfirmationModal = ({
 };
 
 export default function AdminRequestsPage() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [universityRequests, setUniversityRequests] = useState([]);
   const [clubRequests, setClubRequests] = useState([]);
   const [isUniversityLoading, setIsUniversityLoading] = useState(true);
@@ -394,7 +395,7 @@ export default function AdminRequestsPage() {
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const response = await fetch("http://localhost:5095/api/AdminUniversityRequest", {
+        const response = await fetch(`${backendUrl}/api/AdminUniversityRequest`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -423,7 +424,7 @@ export default function AdminRequestsPage() {
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const response = await fetch("http://localhost:5095/api/AdminClubRequest", {
+        const response = await fetch(`${backendUrl}/api/AdminClubRequest`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -451,8 +452,8 @@ export default function AdminRequestsPage() {
   useEffect(() => {
     const fetchMeta = async () => {
       const [categoriesRes, tagsRes] = await Promise.all([
-        fetch('http://localhost:5095/api/Categories'),
-        fetch('http://localhost:5095/api/Tag')
+        fetch(`${backendUrl}/api/Categories`),
+        fetch(`${backendUrl}/api/Tag`)
       ]);
       setCategories(await categoriesRes.json());
       setTags(await tagsRes.json());
@@ -543,7 +544,7 @@ export default function AdminRequestsPage() {
       const idToken = await currentUser.getIdToken();
       if (type === "approve") {
         // STEP 1: Apply admin's changes to the request
-        await fetch(`http://localhost:5095/api/AdminUniversityRequest/edit-request/${requestId}`, {
+        await fetch(`${backendUrl}/api/AdminUniversityRequest/edit-request/${requestId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -556,7 +557,7 @@ export default function AdminRequestsPage() {
           })
         });
         // STEP 2: Mark request as approved
-        await fetch(`http://localhost:5095/api/AdminUniversityRequest/${requestId}/status`, {
+        await fetch(`${backendUrl}/api/AdminUniversityRequest/${requestId}/status`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -568,7 +569,7 @@ export default function AdminRequestsPage() {
           })
         });
         // STEP 3: Add final university to DB
-        await fetch("http://localhost:5095/api/AdminUniversity", {
+        await fetch(`${backendUrl}/api/AdminUniversity`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -585,7 +586,7 @@ export default function AdminRequestsPage() {
       }
       else if(type === "reject"){ 
         // Only update status with rejection reason
-        await fetch(`http://localhost:5095/api/AdminUniversityRequest/${requestId}/status`, {
+        await fetch(`${backendUrl}/api/AdminUniversityRequest/${requestId}/status`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -627,7 +628,7 @@ export default function AdminRequestsPage() {
       const idToken = await currentUser.getIdToken();
       if (type === "approve") {
         // STEP 1: Apply admin's changes to the request
-        await fetch(`http://localhost:5095/api/AdminClubRequest/edit-request/${requestId}`, {
+        await fetch(`${backendUrl}/api/AdminClubRequest/edit-request/${requestId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -640,7 +641,7 @@ export default function AdminRequestsPage() {
           })
         });
         // STEP 2: Mark request as approved
-        await fetch(`http://localhost:5095/api/AdminClubRequest/${requestId}/status`, {
+        await fetch(`${backendUrl}/api/AdminClubRequest/${requestId}/status`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -652,7 +653,7 @@ export default function AdminRequestsPage() {
           })
         });
         // STEP 3: Add final club to DB
-        const res = await fetch("http://localhost:5095/api/AdminClub", {
+        const res = await fetch(`${backendUrl}/api/AdminClub`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -670,7 +671,7 @@ export default function AdminRequestsPage() {
       }
       else if(type === "reject"){
         // Only update status with rejection reason
-        const response = await fetch(`http://localhost:5095/api/AdminClubRequest/${requestId}/status`, {
+        const response = await fetch(`${backendUrl}/api/AdminClubRequest/${requestId}/status`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

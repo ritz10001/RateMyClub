@@ -11,6 +11,7 @@ import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 
 export default function EditUniversityPage({ params }) {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { schoolId } = useParams();
   const { user } = useAuth();
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function EditUniversityPage({ params }) {
       try{
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const response = await fetch(`http://localhost:5095/api/University/${schoolId}`, {
+        const response = await fetch(`${backendUrl}/api/University/${schoolId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -56,7 +57,7 @@ export default function EditUniversityPage({ params }) {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch(`http://localhost:5095/api/AdminUniversity/${schoolId}`, {
+      const response = await fetch(`${backendUrl}/api/AdminUniversity/${schoolId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

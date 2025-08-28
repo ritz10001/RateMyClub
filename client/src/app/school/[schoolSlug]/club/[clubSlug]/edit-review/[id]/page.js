@@ -32,6 +32,7 @@ export default function EditReviewPage({ params }){
 }
 
 function EditReviewContent({ schoolSlug, clubSlug, id }) {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isLoading, setIsLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
   const { user, isInitialized } = useAuth();
@@ -53,7 +54,7 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const response = await fetch(`http://localhost:5095/api/Review/${id}`, {
+        const response = await fetch(`${backendUrl}/api/Review/${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -116,7 +117,7 @@ function EditReviewContent({ schoolSlug, clubSlug, id }) {
     try{
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch(`http://localhost:5095/api/Review/${id}`, {
+      const response = await fetch(`${backendUrl}/api/Review/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

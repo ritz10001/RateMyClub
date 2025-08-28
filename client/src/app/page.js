@@ -12,6 +12,7 @@ import { app } from "./utils/firebase";
 import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [popularSchools, setPopularSchools] = useState([]);
@@ -42,7 +43,7 @@ export default function HeroSection() {
   useEffect(() => {
     const fetchPopularSchools = async () => {
       try {
-        const response = await fetch("http://localhost:5095/api/University/popular-schools", {
+        const response = await fetch(`${backendUrl}/api/University/popular-schools`, {
           method: "GET",
         });
         if(response.ok){
@@ -56,7 +57,7 @@ export default function HeroSection() {
     }
     const fetchPopularClubs = async () => {
       try {
-        const response = await fetch("http://localhost:5095/api/Club/popular-clubs", {
+        const response = await fetch(`${backendUrl}/api/Club/popular-clubs`, {
           method: "GET",
         });
         if(response.ok){
@@ -72,7 +73,7 @@ export default function HeroSection() {
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const response = await fetch("http://localhost:5095/api/Club/recommended", {
+        const response = await fetch(`${backendUrl}/api/Club/recommended`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -104,7 +105,7 @@ export default function HeroSection() {
       }
 
       const fetchResults = async () => {
-        const res = await fetch(`http://localhost:5095/api/University/search?query=${encodeURIComponent(searchQuery)}`);
+        const res = await fetch(`${backendUrl}/api/University/search?query=${encodeURIComponent(searchQuery)}`);
         const data = await res.json();
         setSearchResults(data);
       };

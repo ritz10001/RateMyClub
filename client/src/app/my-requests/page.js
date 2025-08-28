@@ -42,6 +42,7 @@ export default function MyRequestsPage(){
 }
 
 function MyRequestsContent(){
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [universityRequests, setUniversityRequests] = useState([]);
   const [clubRequests, setClubRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +66,7 @@ function MyRequestsContent(){
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken(true);
 
-        const response = await fetch("http://localhost:5095/api/UniversityRequest/my-university-requests", {
+        const response = await fetch(`${backendUrl}/api/UniversityRequest/my-university-requests`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -108,7 +109,7 @@ function MyRequestsContent(){
         }
         const currentUser = auth.currentUser; // or wherever you get your Firebase user
         const idToken = await currentUser.getIdToken(true);
-        const response = await fetch("http://localhost:5095/api/ClubRequest/my-club-requests", {
+        const response = await fetch(`${backendUrl}/api/ClubRequest/my-club-requests`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -149,7 +150,7 @@ function MyRequestsContent(){
       // toastId.current = toast.success(message, { duration: 1000 });
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken(true);
-      const response = await fetch(`http://localhost:5095/api${endpoint}`, {
+      const response = await fetch(`${backendUrl}/api${endpoint}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

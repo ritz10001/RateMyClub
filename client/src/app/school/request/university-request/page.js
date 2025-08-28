@@ -24,6 +24,7 @@ export default function RequestUniversityPage(){
   );
 }
 function RequestUniversityContent() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { user } = useAuth();
   const auth = getAuth(app);
   const router = useRouter();
@@ -48,7 +49,7 @@ function RequestUniversityContent() {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch("http://localhost:5095/api/UniversityRequest", {
+      const response = await fetch(`${backendUrl}/api/UniversityRequest`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

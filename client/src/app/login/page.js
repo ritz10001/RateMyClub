@@ -12,6 +12,7 @@ import { app } from "../utils/firebase";
 import { toast } from "sonner";
 
 export default function LoginContent() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isLoading, setIsLoading] = useState(false);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
@@ -42,7 +43,7 @@ export default function LoginContent() {
       const idToken = await user.getIdToken(true);
 
       // Call backend login to verify user and get roles, etc.
-      const response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+      const response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +109,7 @@ export default function LoginContent() {
     const idToken = await firebaseUser.getIdToken(true);
 
     // Step 4: Try backend login
-    let response = await fetch("http://localhost:5095/api/Account/firebase-login", {
+    let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(idToken)
@@ -118,7 +119,7 @@ export default function LoginContent() {
     if (response.status === 401) {
       console.log("User not found, registering...");
       try {
-        response = await fetch(`http://localhost:5095/api/Account/firebase-register`, {
+        response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
