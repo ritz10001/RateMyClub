@@ -17,7 +17,7 @@ export default function LoginContent() {
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const router = useRouter();
-  const { user, isInitialized, login } = useAuth();
+  const { user, isInitialized, login, logout } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -177,6 +177,7 @@ export default function LoginContent() {
     }
     else{
       console.error("SSO error:", error);
+      await logout();
       toast.error("Google signup failed. Please try again");
       setError("Google signup failed. Please try again");
     }
