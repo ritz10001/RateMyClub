@@ -7,13 +7,13 @@ public class FirebaseAuthService
     private readonly FirebaseAuth _auth;
     private readonly FirebaseAuth _firebaseAuth = FirebaseAuth.DefaultInstance;
 
-    public FirebaseAuthService()
+    public FirebaseAuthService(GoogleCredential credential)
     {
         if (FirebaseApp.DefaultInstance == null)
         {
             FirebaseApp.Create(new AppOptions()
             {
-                Credential = GoogleCredential.FromFile("Configurations/firebase-key.json")
+                Credential = credential
             });
         }
         _auth = FirebaseAuth.DefaultInstance;
