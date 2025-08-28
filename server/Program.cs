@@ -23,8 +23,16 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 GoogleCredential credential;
 var firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_SERVICE_ACCOUNT_JSON");
+Console.WriteLine($"Firebase env var length: {firebaseJson?.Length ?? 0}");
 if (!string.IsNullOrEmpty(firebaseJson))
 {
+    Console.WriteLine("Firebase env var length: " + firebaseJson.Length);
+
+    // For debugging: print first and last 50 chars only
+    Console.WriteLine("Firebase JSON preview: " 
+        + firebaseJson.Substring(0, Math.Min(50, firebaseJson.Length)) 
+        + " ... " 
+        + firebaseJson.Substring(Math.Max(0, firebaseJson.Length - 50)));
     // Production: Use environment variable
     credential = GoogleCredential.FromJson(firebaseJson);
 }
