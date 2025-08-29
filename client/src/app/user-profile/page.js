@@ -15,6 +15,8 @@ import Link from "next/link";
 
 export default function ProfilePage() {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  console.log("this is the backend URL");
+  console.log(backendUrl);
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const [profileData, setProfileData] = useState({
