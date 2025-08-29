@@ -183,7 +183,9 @@ export default function SignUpContent() {
         setIsRegistering(false);
         
         // Use Next.js router for SPA navigation
-        router.push(`/email-confirmation?email=${encodeURIComponent(formData.email)}`);
+        const redirectPath = `/email-confirmation?email=${encodeURIComponent(formData.email)}`;
+        console.log("DEBUG: Attempting to redirect to:", redirectPath);
+        router.push(redirectPath);
         return; // Exit early
       } 
       else {
