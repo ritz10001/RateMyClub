@@ -4,45 +4,49 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react"; // Added useCallback
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "firebase/auth"; // getRedirectResult import
 import { app } from "../utils/firebase";
 import { toast } from "sonner";
 
 export default function LoginContent() {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const [isLoading, setIsLoading] = useState(false);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const router = useRouter();
-  const { user, setUser, isInitialized, login, logout } = useAuth();
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { user, setUser, isInitialized, login, logout } = useAuth(); // Assuming logout handles setUser(null) and auth.signOut()
+
+  const [isLoading, setIsLoading] = useState(false); // General loading state for all async operations
+  const [isLoggingIn, setIsLoggingIn] = useState(false); // Specific for login actions
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(""); // Changed to empty string for initial state
 
-  const handleInputChange = (field, value) => {
+  // Memoize handleInputChange to prevent unnecessary re-renders (good practice)
+  const handleInputChange = useCallback((field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-  }
+    }));
+  }, []);
+
+  // --- Regular Email/Password Login ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoggingIn(true);
     setIsLoading(true);
-    setError(false);
-    try{
+    setError(""); // Clear previous errors
+    try {
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
-      console.log("✅ Firebase login successful:", user);
-      const idToken = await user.getIdToken(true);
+      const firebaseUser = userCredential.user;
+      console.log("✅ Firebase login successful:", firebaseUser);
 
-      // Call backend login to verify user and get roles, etc.
+      const idToken = await firebaseUser.getIdToken(true);
+
       const response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
         method: "POST",
         headers: {
@@ -53,235 +57,18 @@ export default function LoginContent() {
       });
 
       if (!response.ok) {
+        const errorText = await response.text(); // Get specific error from backend
         if (response.status === 401) {
           setError("Email not verified or user not registered.");
-        } 
-        else {
-          setError("Backend login failed. Please try again.");
+        } else {
+          setError(`Backend login failed: ${errorText || 'Unknown error'}. Please try again.`);
         }
-        await auth.signOut(); // Sign out on backend login failure
-        setIsLoading(false);
+        await auth.signOut(); // Sign out Firebase user if backend login fails
         return;
       }
+
       const authResponse = await response.json();
       console.log("THIS IS THE AUTHRESPONSE", authResponse);
-
-      // Merge Firebase + SQL info
-      const combinedUser = {
-        ...user, // keeps Firebase properties (uid, email, etc.)
-        firstName: authResponse.firstName,
-        lastName: authResponse.lastName,
-        sqlUserId: authResponse.userId,
-        roles: authResponse.roles,
-        tags: authResponse.tags,
-        universityId: authResponse.universityId
-      };
-
-      if(login){
-        login(combinedUser);
-      }
-      router.replace("/");
-    }
-    catch (err) {
-      console.error("❌ Firebase login error:", err);
-      if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
-        setError("Invalid email or password.");
-      } 
-      else {
-        setError("An unexpected error occurred. Please try again.");
-      }
-    } 
-    finally {
-      setIsLoading(false);
-      setIsLoggingIn(false);
-    }
-  } 
-//   const handleGoogleLogin = async () => {
-//   try {
-//     // Step 1: Sign in with Firebase popup
-//     const result = await signInWithPopup(auth, provider);
-//     const firebaseUser = result.user;
-
-//     // Step 2: Show loading AFTER user selects account
-//     setIsLoading(true);
-
-//     // Step 3: Get Firebase ID token
-//     const idToken = await firebaseUser.getIdToken(true);
-
-//     // Step 4: Try backend login
-//     let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(idToken)
-//     });
-
-//     // Step 5: If user not found, register
-//     if (response.status === 401) {
-//       console.log("User not found, registering...");
-//       try {
-//         response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify({
-//             firebaseIdToken: idToken,
-//             firstName: firebaseUser.displayName?.split(" ")[0] || "",
-//             lastName: firebaseUser.displayName?.split(" ")[1] || "",
-//             email: firebaseUser.email,
-//             universityId: null, // default university
-//             isSSO: true
-//           })
-//         });
-
-//         if (!response.ok) {
-//           const errText = await response.text();
-//           throw new Error("SSO registration failed: " + errText);
-//         }
-//         else{
-//           console.log("SSO REGISTRATION COMPLETE");
-//         }
-//       } 
-//       catch (sqlError) {
-//         console.error("SQL registration failed, deleting Firebase user...", sqlError);
-//         try {
-//           await firebaseUser.delete(); // Delete dangling Firebase user
-//           console.log("Firebase user deleted due to SQL failure");
-//         } catch (deleteError) {
-//           console.error("Failed to delete Firebase user:", deleteError);
-//         }
-//         throw sqlError; // propagate error
-//       }
-//     }
-
-//     // Step 6: Parse backend response
-//     const authResponse = await response.json();
-//     console.log("THE AUTHRESPONSE FROM SSO", authResponse);
-
-//     // Step 7: Merge Firebase + SQL data and store in session
-//     const combinedUser = {
-//       ...firebaseUser,
-//       firstName: authResponse.firstName,
-//       lastName: authResponse.lastName,
-//       sqlUserId: authResponse.userId,
-//       roles: authResponse.roles,
-//       tags: authResponse.tags,
-//       universityId: authResponse.universityId
-//     };
-//     console.log("HERE IS THE USER DATA AFTER LOGIN");
-//     console.log(combinedUser);
-//     login(combinedUser); // updates AuthContext + sessionStorage immediately
-//     router.replace("/");
-//   } 
-//   catch (error) {
-//     // if(error.code === "auth/popup-closed-by-user"){
-//     //   toast.error("Popup closed by user!");
-//     // }
-//     // else{
-//     //   console.error("SSO error:", error);
-//     //   await logout();
-//     //   toast.error("Google signup failed. Please try again");
-//     //   setError("Google signup failed. Please try again");
-//     // }
-//     console.error("SSO error (Caught in handleGoogleLogin):", error); // Log the full error
-
-//     // **CRITICAL CHANGE HERE:** Be more selective about `logout()` and toasts
-//     if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
-//       // User likely closed the popup or mobile browser interrupted it.
-//       // Do NOT show a "failed" toast or call logout(), as the user might retry or Firebase might recover.
-//       toast.info("Google login interrupted."); // Informational toast
-//     } else if (error.message && error.message.includes("Backend login/register failed")) {
-//         // This is an error from our backend call
-//         toast.error("Google signup failed due to backend issue. Please try again.");
-//         await auth.signOut(); // Logout if backend specifically failed
-//         setUser(null);
-//     }
-//     else {
-//       // Generic error handling for truly unexpected or unrecoverable errors
-//       // toast.error("Google signup failed. Please try again");
-//       await auth.signOut(); // Default to logging out for safety in unknown error cases
-//       setUser(null);
-//     }
-//     // setError("Google signup failed. Please try again"); // Update error state for display if needed
-//   } 
-//   finally {
-//     setIsLoading(false);
-//   }
-// };
-const handleGoogleLogin = async () => {
-  try {
-    // This will redirect the user away from your page
-    await signInWithRedirect(auth, provider); 
-    // The code AFTER this line will NOT execute immediately, 
-    // as the page has redirected.
-    // The user will return to your app AFTER authentication.
-  } catch (error) {
-    console.error("Error initiating Google redirect:", error);
-    // Handle errors that occur *before* the redirect happens (e.g., network issues)
-    toast.error("Failed to initiate Google login. Please try again.");
-    setIsLoading(false); // Make sure to turn off loading if the initiation failed
-  }
-};
-useEffect(() => {
-  const processRedirectResult = async () => {
-    // This function checks if the user just returned from a redirect flow
-    const result = await getRedirectResult(auth); 
-
-    if (result) {
-      // User successfully signed in via redirect
-      const firebaseUser = result.user;
-      console.log("Redirect result user:", firebaseUser);
-
-      // --- Start of your existing backend/login logic ---
-      setIsLoading(true); // Start loading after Firebase result is obtained
-
-      const idToken = await firebaseUser.getIdToken(true);
-
-      let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(idToken)
-      });
-
-      if (response.status === 401) {
-        console.log("User not found, registering...");
-        try {
-          response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              firebaseIdToken: idToken,
-              firstName: firebaseUser.displayName?.split(" ")[0] || "",
-              lastName: firebaseUser.displayName?.split(" ")[1] || "",
-              email: firebaseUser.email,
-              universityId: null, // default university
-              isSSO: true
-            })
-          });
-
-          if (!response.ok) {
-            const errText = await response.text();
-            throw new Error("SSO registration failed: " + errText);
-          } else {
-            console.log("SSO REGISTRATION COMPLETE");
-          }
-        } catch (sqlError) {
-          console.error("SQL registration failed, deleting Firebase user...", sqlError);
-          try {
-            await firebaseUser.delete();
-            console.log("Firebase user deleted due to SQL failure");
-          } catch (deleteError) {
-            console.error("Failed to delete Firebase user:", deleteError);
-          }
-          throw sqlError; // Re-throw to propagate to the main catch block
-        }
-      }
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Backend login/register failed: ${response.status} - ${errorData}`);
-      }
-
-      const authResponse = await response.json();
-      console.log("THE AUTHRESPONSE FROM SSO", authResponse);
 
       const combinedUser = {
         ...firebaseUser,
@@ -292,61 +79,185 @@ useEffect(() => {
         tags: authResponse.tags,
         universityId: authResponse.universityId
       };
-      console.log("HERE IS THE USER DATA AFTER LOGIN");
-      console.log(combinedUser);
-      login(combinedUser); // updates AuthContext + sessionStorage immediately
-      router.replace("/");
-      // --- End of your existing backend/login logic ---
 
-    } else {
-      // No redirect result, maybe a direct load or initial render.
-      // Ensure loading is off if no redirect processing is needed.
-      // This is crucial to prevent perpetual loading spinner if the component is always checking.
-      // setIsLoading(false); // Only if you manage loading state globally for the auth flow
+      if (login) {
+        login(combinedUser); // updates AuthContext + sessionStorage
+      }
+      router.replace("/"); // Redirect to home on successful login
+    } catch (err) {
+      console.error("❌ Firebase login error:", err);
+      if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+        setError("Invalid email or password.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
-  // Run this once when the component mounts
-  processRedirectResult().catch(error => {
-    console.error("SSO redirect processing error:", error);
-    // Handle errors that occur *after* the redirect (e.g., backend issues)
-    if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
-        toast.info("Google login interrupted.");
-    } else if (error.message && error.message.includes("Backend login/register failed")) {
-        toast.error("Google signup failed due to backend issue. Please try again.");
-        auth.signOut();
-        setUser(null);
-    } else {
-        toast.error("An unexpected error occurred after redirect. Please try again.");
-        auth.signOut();
-        setUser(null);
+  // --- Google SSO Login (Initiation) ---
+  const handleGoogleLogin = async () => {
+    setIsLoggingIn(true); // Indicate a login process has started
+    setIsLoading(true); // Show loading spinner
+    setError(""); // Clear previous errors
+    try {
+      await signInWithRedirect(auth, provider);
+      // This line will typically not be reached as the page redirects.
+      // If it is, it means the redirect itself failed client-side.
+    } catch (error) {
+      console.error("Error initiating Google redirect:", error);
+      toast.error("Failed to initiate Google login. Please try again.");
+      setIsLoading(false);
+      setIsLoggingIn(false);
+      setError("Failed to initiate Google login."); // Set error for display
     }
-  }).finally(() => {
-      setIsLoading(false); // Ensure loading is off after processing or error
-  });
+  };
 
-}, [auth, backendUrl, login, router, setUser]);
+  // --- Google SSO Login (Result Handling after Redirect) ---
+  useEffect(() => {
+    // Only proceed if Firebase Auth is initialized and no user is currently authenticated
+    // and we're not already actively trying to log in (to avoid race conditions)
+    if (isInitialized && !user && !isLoggingIn) { // Add !user and !isLoggingIn to prevent unnecessary re-runs
+      const processRedirectResult = async () => {
+        setIsLoading(true); // Show loading spinner immediately on component mount after redirect
+        setIsLoggingIn(true); // Keep login state active during processing
+        setError(""); // Clear any previous errors
 
-useEffect(() => {
-  if (isInitialized && !isLoading && user && user?.emailVerified && !isLoggingIn) {
-    router.replace("/");
-  }
-}, [isInitialized, user, router, isLoggingIn, isLoading]);
+        try {
+          const result = await getRedirectResult(auth);
 
-// Modified loading condition - don't show loading for unverified users during login
-if (!isInitialized || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
-  return (
-    <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-        <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
+          if (result) {
+            const firebaseUser = result.user;
+            console.log("Redirect result user:", firebaseUser);
+
+            const idToken = await firebaseUser.getIdToken(true);
+
+            let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(idToken)
+            });
+
+            if (response.status === 401) {
+              console.log("User not found, registering...");
+              try {
+                response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    firebaseIdToken: idToken,
+                    firstName: firebaseUser.displayName?.split(" ")[0] || "",
+                    lastName: firebaseUser.displayName?.split(" ")[1] || "",
+                    email: firebaseUser.email,
+                    universityId: null, // default university
+                    isSSO: true
+                  })
+                });
+
+                if (!response.ok) {
+                  const errText = await response.text();
+                  throw new Error("SSO registration failed: " + errText);
+                } else {
+                  console.log("SSO REGISTRATION COMPLETE");
+                }
+              } catch (sqlError) {
+                console.error("SQL registration failed, deleting Firebase user...", sqlError);
+                try {
+                  await firebaseUser.delete(); // Delete dangling Firebase user
+                  console.log("Firebase user deleted due to SQL failure");
+                } catch (deleteError) {
+                  console.error("Failed to delete Firebase user:", deleteError);
+                }
+                throw sqlError; // Re-throw to propagate to the main catch block
+              }
+            }
+
+            if (!response.ok) {
+              const errorData = await response.text();
+              throw new Error(`Backend login/register failed: ${response.status} - ${errorData}`);
+            }
+
+            const authResponse = await response.json();
+            console.log("THE AUTHRESPONSE FROM SSO", authResponse);
+
+            const combinedUser = {
+              ...firebaseUser,
+              firstName: authResponse.firstName,
+              lastName: authResponse.lastName,
+              sqlUserId: authResponse.userId,
+              roles: authResponse.roles,
+              tags: authResponse.tags,
+              universityId: authResponse.universityId
+            };
+            console.log("HERE IS THE USER DATA AFTER LOGIN");
+            console.log(combinedUser);
+            login(combinedUser); // updates AuthContext + sessionStorage immediately
+            router.replace("/"); // Redirect to home on successful login
+          } else {
+            // No redirect result. This happens on initial load when no redirect occurred.
+            // Ensure loading states are off if no processing happened.
+            setIsLoading(false);
+            setIsLoggingIn(false);
+          }
+        } catch (error) {
+          console.error("SSO redirect processing error:", error); // Keep this detailed log
+          
+          if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request" || error.code === "auth/redirect-cancelled-by-user") {
+            toast.info("Google login interrupted or cancelled.");
+            setError("Google login interrupted."); // Set error for display
+            await logout(); // Clear any partial Firebase session
+          } else if (error.message && error.message.includes("Backend login/register failed")) {
+            toast.error("Google signup/login failed due to backend issue. Please try again.");
+            setError(error.message); // Display specific backend error
+            await logout(); // Clear any partial Firebase session
+          } else {
+            toast.error("An unexpected error occurred during Google login. Please try again.");
+            setError("An unexpected error occurred during Google login."); // Generic error for display
+            await logout(); // Clear any partial Firebase session
+          }
+        } finally {
+          setIsLoading(false);
+          setIsLoggingIn(false);
+        }
+      };
+
+      processRedirectResult();
+    }
+  }, [auth, backendUrl, isInitialized, isLoggingIn, login, logout, router, user]); // Added isInitialized, isLoggingIn, logout as dependencies
+
+  // --- Existing Redirection Logic ---
+  useEffect(() => {
+    // This effect should only trigger if the user object *is* already valid and verified,
+    // and we're not currently in the middle of an active login process.
+    if (isInitialized && user && user?.emailVerified && !isLoading && !isLoggingIn) {
+      router.replace("/");
+    }
+  }, [isInitialized, user, router, isLoading, isLoggingIn]); // Removed isProcessingRedirect
+
+  // --- Loading Screen Logic ---
+  // Show loading if Firebase is not initialized, OR a login process (any type) is active,
+  // OR the user is valid but hasn't had their email verified yet (implies in a pending state
+  // after registration, where they might be waiting for email verification).
+  if (!isInitialized || isLoggingIn || (user && !user?.emailVerified)) {
+    return (
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
+        </div>
       </div>
-    </div>
-  );
-}
-  if (user?.emailVerified) {
-    return null; // or just `return null`
+    );
   }
+
+  // If we reach here, and user is already email verified, component should not render login form.
+  // This typically means they are logged in and verified, and should have been redirected by the above useEffect.
+  // This return null acts as a failsafe if the redirection is somehow delayed or missed.
+  if (user?.emailVerified) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
@@ -356,13 +267,14 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
             <h1 className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">Welcome back</h1>
             <p className="text-gray-600 dark:text-gray-400">Sign in to your account</p>
           </div>
-          
+
           {/* Google SSO Button */}
           <div className="mb-6">
             <Button
               onClick={handleGoogleLogin}
               variant="outline"
               className="w-full border-2 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 py-3 px-4 rounded-xl font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-900 transition-colors flex items-center justify-center gap-3"
+              disabled={isLoading || isLoggingIn} // Disable button if any login process is active
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -416,6 +328,7 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
+                disabled={isLoading || isLoggingIn}
               />
             </div>
 
@@ -432,26 +345,17 @@ if (!isInitialized || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 required
+                disabled={isLoading || isLoggingIn}
               />
             </div>
-
-            {/* Forgot Password Link */}
-            {/* <div className="text-right">
-              <Link
-                href="/forgot-password"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium underline underline-offset-4"
-              >
-                Forgot Password?
-              </Link>
-            </div> */}
 
             {/* Submit Button */}
             <Button
               type="submit"
               className="w-full bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center mb-5"
-              disabled={isLoading}
+              disabled={isLoading || isLoggingIn}
             >
-              {isLoading ? (
+              {isLoading || isLoggingIn ? (
                 <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
