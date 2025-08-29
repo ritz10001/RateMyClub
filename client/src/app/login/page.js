@@ -96,117 +96,236 @@ export default function LoginContent() {
       setIsLoggingIn(false);
     }
   } 
-  const handleGoogleLogin = async () => {
+//   const handleGoogleLogin = async () => {
+//   try {
+//     // Step 1: Sign in with Firebase popup
+//     const result = await signInWithPopup(auth, provider);
+//     const firebaseUser = result.user;
+
+//     // Step 2: Show loading AFTER user selects account
+//     setIsLoading(true);
+
+//     // Step 3: Get Firebase ID token
+//     const idToken = await firebaseUser.getIdToken(true);
+
+//     // Step 4: Try backend login
+//     let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(idToken)
+//     });
+
+//     // Step 5: If user not found, register
+//     if (response.status === 401) {
+//       console.log("User not found, registering...");
+//       try {
+//         response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({
+//             firebaseIdToken: idToken,
+//             firstName: firebaseUser.displayName?.split(" ")[0] || "",
+//             lastName: firebaseUser.displayName?.split(" ")[1] || "",
+//             email: firebaseUser.email,
+//             universityId: null, // default university
+//             isSSO: true
+//           })
+//         });
+
+//         if (!response.ok) {
+//           const errText = await response.text();
+//           throw new Error("SSO registration failed: " + errText);
+//         }
+//         else{
+//           console.log("SSO REGISTRATION COMPLETE");
+//         }
+//       } 
+//       catch (sqlError) {
+//         console.error("SQL registration failed, deleting Firebase user...", sqlError);
+//         try {
+//           await firebaseUser.delete(); // Delete dangling Firebase user
+//           console.log("Firebase user deleted due to SQL failure");
+//         } catch (deleteError) {
+//           console.error("Failed to delete Firebase user:", deleteError);
+//         }
+//         throw sqlError; // propagate error
+//       }
+//     }
+
+//     // Step 6: Parse backend response
+//     const authResponse = await response.json();
+//     console.log("THE AUTHRESPONSE FROM SSO", authResponse);
+
+//     // Step 7: Merge Firebase + SQL data and store in session
+//     const combinedUser = {
+//       ...firebaseUser,
+//       firstName: authResponse.firstName,
+//       lastName: authResponse.lastName,
+//       sqlUserId: authResponse.userId,
+//       roles: authResponse.roles,
+//       tags: authResponse.tags,
+//       universityId: authResponse.universityId
+//     };
+//     console.log("HERE IS THE USER DATA AFTER LOGIN");
+//     console.log(combinedUser);
+//     login(combinedUser); // updates AuthContext + sessionStorage immediately
+//     router.replace("/");
+//   } 
+//   catch (error) {
+//     // if(error.code === "auth/popup-closed-by-user"){
+//     //   toast.error("Popup closed by user!");
+//     // }
+//     // else{
+//     //   console.error("SSO error:", error);
+//     //   await logout();
+//     //   toast.error("Google signup failed. Please try again");
+//     //   setError("Google signup failed. Please try again");
+//     // }
+//     console.error("SSO error (Caught in handleGoogleLogin):", error); // Log the full error
+
+//     // **CRITICAL CHANGE HERE:** Be more selective about `logout()` and toasts
+//     if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+//       // User likely closed the popup or mobile browser interrupted it.
+//       // Do NOT show a "failed" toast or call logout(), as the user might retry or Firebase might recover.
+//       toast.info("Google login interrupted."); // Informational toast
+//     } else if (error.message && error.message.includes("Backend login/register failed")) {
+//         // This is an error from our backend call
+//         toast.error("Google signup failed due to backend issue. Please try again.");
+//         await auth.signOut(); // Logout if backend specifically failed
+//         setUser(null);
+//     }
+//     else {
+//       // Generic error handling for truly unexpected or unrecoverable errors
+//       // toast.error("Google signup failed. Please try again");
+//       await auth.signOut(); // Default to logging out for safety in unknown error cases
+//       setUser(null);
+//     }
+//     // setError("Google signup failed. Please try again"); // Update error state for display if needed
+//   } 
+//   finally {
+//     setIsLoading(false);
+//   }
+// };
+const handleGoogleLogin = async () => {
   try {
-    // Step 1: Sign in with Firebase popup
-    const result = await signInWithPopup(auth, provider);
-    const firebaseUser = result.user;
-
-    // Step 2: Show loading AFTER user selects account
-    setIsLoading(true);
-
-    // Step 3: Get Firebase ID token
-    const idToken = await firebaseUser.getIdToken(true);
-
-    // Step 4: Try backend login
-    let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(idToken)
-    });
-
-    // Step 5: If user not found, register
-    if (response.status === 401) {
-      console.log("User not found, registering...");
-      try {
-        response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firebaseIdToken: idToken,
-            firstName: firebaseUser.displayName?.split(" ")[0] || "",
-            lastName: firebaseUser.displayName?.split(" ")[1] || "",
-            email: firebaseUser.email,
-            universityId: null, // default university
-            isSSO: true
-          })
-        });
-
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error("SSO registration failed: " + errText);
-        }
-        else{
-          console.log("SSO REGISTRATION COMPLETE");
-        }
-      } 
-      catch (sqlError) {
-        console.error("SQL registration failed, deleting Firebase user...", sqlError);
-        try {
-          await firebaseUser.delete(); // Delete dangling Firebase user
-          console.log("Firebase user deleted due to SQL failure");
-        } catch (deleteError) {
-          console.error("Failed to delete Firebase user:", deleteError);
-        }
-        throw sqlError; // propagate error
-      }
-    }
-
-    // Step 6: Parse backend response
-    const authResponse = await response.json();
-    console.log("THE AUTHRESPONSE FROM SSO", authResponse);
-
-    // Step 7: Merge Firebase + SQL data and store in session
-    const combinedUser = {
-      ...firebaseUser,
-      firstName: authResponse.firstName,
-      lastName: authResponse.lastName,
-      sqlUserId: authResponse.userId,
-      roles: authResponse.roles,
-      tags: authResponse.tags,
-      universityId: authResponse.universityId
-    };
-    console.log("HERE IS THE USER DATA AFTER LOGIN");
-    console.log(combinedUser);
-    login(combinedUser); // updates AuthContext + sessionStorage immediately
-    router.replace("/");
-  } 
-  catch (error) {
-    // if(error.code === "auth/popup-closed-by-user"){
-    //   toast.error("Popup closed by user!");
-    // }
-    // else{
-    //   console.error("SSO error:", error);
-    //   await logout();
-    //   toast.error("Google signup failed. Please try again");
-    //   setError("Google signup failed. Please try again");
-    // }
-    console.error("SSO error (Caught in handleGoogleLogin):", error); // Log the full error
-
-    // **CRITICAL CHANGE HERE:** Be more selective about `logout()` and toasts
-    if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
-      // User likely closed the popup or mobile browser interrupted it.
-      // Do NOT show a "failed" toast or call logout(), as the user might retry or Firebase might recover.
-      toast.info("Google login cancelled or interrupted."); // Informational toast
-    } else if (error.message && error.message.includes("Backend login/register failed")) {
-        // This is an error from our backend call
-        toast.error("Google signup failed due to backend issue. Please try again.");
-        await auth.signOut(); // Logout if backend specifically failed
-        setUser(null);
-        
-    }
-    else {
-      // Generic error handling for truly unexpected or unrecoverable errors
-      toast.error("Google signup failed. Please try again");
-      await auth.signOut(); // Default to logging out for safety in unknown error cases
-      setUser(null);
-    }
-    setError("Google signup failed. Please try again"); // Update error state for display if needed
-  } 
-  finally {
-    setIsLoading(false);
+    // This will redirect the user away from your page
+    await signInWithRedirect(auth, provider); 
+    // The code AFTER this line will NOT execute immediately, 
+    // as the page has redirected.
+    // The user will return to your app AFTER authentication.
+  } catch (error) {
+    console.error("Error initiating Google redirect:", error);
+    // Handle errors that occur *before* the redirect happens (e.g., network issues)
+    toast.error("Failed to initiate Google login. Please try again.");
+    setIsLoading(false); // Make sure to turn off loading if the initiation failed
   }
 };
+useEffect(() => {
+  const processRedirectResult = async () => {
+    // This function checks if the user just returned from a redirect flow
+    const result = await getRedirectResult(auth); 
+
+    if (result) {
+      // User successfully signed in via redirect
+      const firebaseUser = result.user;
+      console.log("Redirect result user:", firebaseUser);
+
+      // --- Start of your existing backend/login logic ---
+      setIsLoading(true); // Start loading after Firebase result is obtained
+
+      const idToken = await firebaseUser.getIdToken(true);
+
+      let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(idToken)
+      });
+
+      if (response.status === 401) {
+        console.log("User not found, registering...");
+        try {
+          response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firebaseIdToken: idToken,
+              firstName: firebaseUser.displayName?.split(" ")[0] || "",
+              lastName: firebaseUser.displayName?.split(" ")[1] || "",
+              email: firebaseUser.email,
+              universityId: null, // default university
+              isSSO: true
+            })
+          });
+
+          if (!response.ok) {
+            const errText = await response.text();
+            throw new Error("SSO registration failed: " + errText);
+          } else {
+            console.log("SSO REGISTRATION COMPLETE");
+          }
+        } catch (sqlError) {
+          console.error("SQL registration failed, deleting Firebase user...", sqlError);
+          try {
+            await firebaseUser.delete();
+            console.log("Firebase user deleted due to SQL failure");
+          } catch (deleteError) {
+            console.error("Failed to delete Firebase user:", deleteError);
+          }
+          throw sqlError; // Re-throw to propagate to the main catch block
+        }
+      }
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Backend login/register failed: ${response.status} - ${errorData}`);
+      }
+
+      const authResponse = await response.json();
+      console.log("THE AUTHRESPONSE FROM SSO", authResponse);
+
+      const combinedUser = {
+        ...firebaseUser,
+        firstName: authResponse.firstName,
+        lastName: authResponse.lastName,
+        sqlUserId: authResponse.userId,
+        roles: authResponse.roles,
+        tags: authResponse.tags,
+        universityId: authResponse.universityId
+      };
+      console.log("HERE IS THE USER DATA AFTER LOGIN");
+      console.log(combinedUser);
+      login(combinedUser); // updates AuthContext + sessionStorage immediately
+      router.replace("/");
+      // --- End of your existing backend/login logic ---
+
+    } else {
+      // No redirect result, maybe a direct load or initial render.
+      // Ensure loading is off if no redirect processing is needed.
+      // This is crucial to prevent perpetual loading spinner if the component is always checking.
+      // setIsLoading(false); // Only if you manage loading state globally for the auth flow
+    }
+  };
+
+  // Run this once when the component mounts
+  processRedirectResult().catch(error => {
+    console.error("SSO redirect processing error:", error);
+    // Handle errors that occur *after* the redirect (e.g., backend issues)
+    if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+        toast.info("Google login interrupted.");
+    } else if (error.message && error.message.includes("Backend login/register failed")) {
+        toast.error("Google signup failed due to backend issue. Please try again.");
+        auth.signOut();
+        setUser(null);
+    } else {
+        toast.error("An unexpected error occurred after redirect. Please try again.");
+        auth.signOut();
+        setUser(null);
+    }
+  }).finally(() => {
+      setIsLoading(false); // Ensure loading is off after processing or error
+  });
+
+}, [auth, backendUrl, login, router, setUser]);
 
 useEffect(() => {
   if (isInitialized && !isLoading && user && user?.emailVerified && !isLoggingIn) {
