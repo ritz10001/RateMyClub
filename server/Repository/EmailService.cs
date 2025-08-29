@@ -2,6 +2,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using RateMyCollegeClub.Interfaces;
+using Microsoft.Extensions.Configuration; // Ensure this is included
 
 public class EmailService : IEmailService
 {
@@ -17,16 +18,24 @@ public class EmailService : IEmailService
         try
         {
             var emailSettings = _configuration.GetSection("EmailSettings");
-            foreach (var child in emailSettings.GetChildren())
-            {
-                Console.WriteLine($"Found key: {child.Key}");
-            }
             
+            var senderName = emailSettings["SenderName"];
+            var senderEmail = emailSettings["SenderEmail"];
+            var smtpServer = emailSettings["SmtpServer"];
+            var smtpPort = int.Parse(emailSettings["SmtpPort"]);
+            var smtpUsername = emailSettings["SmtpUsername"]; // <--- NEW: Get SmtpUsername
+            var smtpPassword = emailSettings["SenderPassword"]; // Your SendGrid API Key
+
+            if (string.IsNullOrEmpty(senderName) || string.IsNullOrEmpty(senderEmail) ||
+                string.IsNullOrEmpty(smtpServer) || string.IsNullOrEmpty(smtpUsername) ||
+                string.IsNullOrEmpty(smtpPassword))
+            {
+                Console.WriteLine("One or more EmailSettings are not configured correctly.");
+                return false;
+            }
+
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(
-                emailSettings["SenderName"], 
-                emailSettings["SenderEmail"]
-            ));
+            message.From.Add(new MailboxAddress(senderName, senderEmail));
             message.To.Add(new MailboxAddress("", toEmail));
             message.Subject = "Verify Your Rate My College Club Account";
 
@@ -37,23 +46,22 @@ public class EmailService : IEmailService
             message.Body = bodyBuilder.ToMessageBody();
 
             using var client = new SmtpClient();
-            await client.ConnectAsync(
-                emailSettings["SmtpServer"], 
-                int.Parse(emailSettings["SmtpPort"]), 
-                SecureSocketOptions.StartTls
-            );
-            await client.AuthenticateAsync(
-                emailSettings["SenderEmail"], 
-                emailSettings["SenderPassword"]
-            );
+            Console.WriteLine($"Connecting to SMTP: {smtpServer}:{smtpPort} with StartTls...");
+            await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
+            Console.WriteLine("SMTP Connected. Authenticating...");
+            
+            await client.AuthenticateAsync(smtpUsername, smtpPassword); // <--- CHANGE: Use SmtpUsername here
+            Console.WriteLine("SMTP Authenticated. Sending email...");
+            
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
+            Console.WriteLine("Email sent successfully via MailKit!");
 
             return true;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Email sending failed: {ex.Message}");
+            Console.WriteLine($"Email sending failed (MailKit SMTP): {ex.Message}");
             return false;
         }
     }
