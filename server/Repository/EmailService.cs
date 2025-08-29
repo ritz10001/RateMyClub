@@ -17,6 +17,10 @@ public class EmailService : IEmailService
         try
         {
             var emailSettings = _configuration.GetSection("EmailSettings");
+            foreach (var child in emailSettings.GetChildren())
+            {
+                Console.WriteLine($"Found key: {child.Key}");
+            }
             
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(
