@@ -1,16 +1,22 @@
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using RateMyCollegeClub.Interfaces;
 using Microsoft.Extensions.Configuration; // Ensure this is included
+
+// Remove MailKit and MimeKit usings as they are no longer needed
+// using MailKit.Net.Smtp;
+// using MailKit.Security;
+// using MimeKit;
 
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _configuration;
+    private readonly ISendGridClient _sendGridClient; // Inject ISendGridClient
 
-    public EmailService(IConfiguration configuration)
+    public EmailService(IConfiguration configuration, ISendGridClient sendGridClient) // Inject ISendGridClient
     {
         _configuration = configuration;
+        _sendGridClient = sendGridClient; // Assign the injected client
     }
 
     public async Task<bool> SendVerificationEmailAsync(string toEmail, string firstName, string verificationUrl)
@@ -18,56 +24,51 @@ public class EmailService : IEmailService
         try
         {
             var emailSettings = _configuration.GetSection("EmailSettings");
-            
-            var senderName = emailSettings["SenderName"];
-            var senderEmail = emailSettings["SenderEmail"];
-            var smtpServer = emailSettings["SmtpServer"];
-            var smtpPort = int.Parse(emailSettings["SmtpPort"]);
-            var smtpUsername = emailSettings["SmtpUsername"]; // <--- NEW: Get SmtpUsername
-            var smtpPassword = emailSettings["SenderPassword"]; // Your SendGrid API Key
 
-            if (string.IsNullOrEmpty(senderName) || string.IsNullOrEmpty(senderEmail) ||
-                string.IsNullOrEmpty(smtpServer) || string.IsNullOrEmpty(smtpUsername) ||
-                string.IsNullOrEmpty(smtpPassword))
+            var fromEmail = emailSettings["SenderEmail"];
+            var fromName = emailSettings["SenderName"];
+
+            if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
             {
-                Console.WriteLine("One or more EmailSettings are not configured correctly.");
+                Console.WriteLine("EmailSettings:SenderEmail or EmailSettings:SenderName is not configured.");
                 return false;
             }
 
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(senderName, senderEmail));
-            message.To.Add(new MailboxAddress("", toEmail));
-            message.Subject = "Verify Your Rate My College Club Account";
+            var from = new EmailAddress(fromEmail, fromName);
+            var to = new EmailAddress(toEmail);
+            var subject = "Verify Your RateMyCollegeClub Account";
+            var htmlContent = GetVerificationEmailTemplate(firstName, verificationUrl);
 
-            var bodyBuilder = new BodyBuilder
+            // Create the email message using SendGrid Helpers
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent); // null for plain text content
+
+            Console.WriteLine($"Attempting to send email to {toEmail} via SendGrid API...");
+            var response = await _sendGridClient.SendEmailAsync(msg); // Send via HTTP API
+
+            if (response.IsSuccessStatusCode)
             {
-                HtmlBody = GetVerificationEmailTemplate(firstName, verificationUrl)
-            };
-            message.Body = bodyBuilder.ToMessageBody();
-
-            using var client = new SmtpClient();
-            Console.WriteLine($"Connecting to SMTP: {smtpServer}:{smtpPort} with StartTls...");
-            await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
-            Console.WriteLine("SMTP Connected. Authenticating...");
-            
-            await client.AuthenticateAsync(smtpUsername, smtpPassword); // <--- CHANGE: Use SmtpUsername here
-            Console.WriteLine("SMTP Authenticated. Sending email...");
-            
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
-            Console.WriteLine("Email sent successfully via MailKit!");
-
-            return true;
+                Console.WriteLine("Email sent successfully via SendGrid API!");
+                return true;
+            }
+            else
+            {
+                var responseBody = await response.Body.ReadAsStringAsync();
+                Console.WriteLine($"SendGrid API email failed with status {response.StatusCode}: {responseBody}");
+                // Log the full response details for debugging
+                Console.WriteLine($"SendGrid Response Headers: {response.Headers}");
+                return false;
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Email sending failed (MailKit SMTP): {ex.Message}");
+            Console.WriteLine($"Email sending failed (SendGrid API): {ex.Message}");
             return false;
         }
     }
 
     private string GetVerificationEmailTemplate(string firstName, string verificationUrl)
     {
+        // This method remains identical
         return $@"
         <div style='max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; padding: 20px;'>
             <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>

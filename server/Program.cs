@@ -15,6 +15,7 @@ using RateMyCollegeClub.Models;
 using RateMyCollegeClub.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Diagnostics;
+using SendGrid;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -122,25 +123,17 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton(new FirebaseAuthService(credential));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUserVoteResolver>();
-
-// builder.Services.AddAuthentication(options => {
-//     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-// }).AddJwtBearer(options =>
-// {
-//     options.TokenValidationParameters = new TokenValidationParameters
-//     {
-//         ValidateIssuerSigningKey = true,
-//         ValidateIssuer = true,
-//         ValidateAudience = true,
-//         ValidateLifetime = true,
-//         ClockSkew = TimeSpan.Zero,
-//         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-//         ValidAudience = builder.Configuration["JwtSettings:Audience"],
-//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-//         RoleClaimType = ClaimTypes.Role
-//     };
-// });
+builder.Services.AddSingleton<ISendGridClient>(sp => {
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var apiKey = configuration["EmailSettings:SenderPassword"]; // Your SendGrid API Key
+    if (string.IsNullOrEmpty(apiKey))
+    {
+        // This ensures a clear error if the API key is missing
+        throw new InvalidOperationException("SendGrid API Key (EmailSettings:SenderPassword) is not configured.");
+    }
+    return new SendGridClient(apiKey);
+});
+builder.Services.AddScoped<IEmailService, EmailService>(); 
 
 builder.Services.AddSwaggerGen(options =>
 {
