@@ -36,8 +36,8 @@ export default function ProfilePage() {
       setIsLoading(true);
       try {
         const [universitiesRes, tagsRes] = await Promise.all([
-          fetch(`http://localhost:5095/api/University/all-colleges`),
-          fetch('http://localhost:5095/api/Tag')
+          fetch(`${backendUrl}/api/University/all-colleges`),
+          fetch(`${backendUrl}/api/Tag`)
         ]);
 
         const universitiesData = await universitiesRes.json();
