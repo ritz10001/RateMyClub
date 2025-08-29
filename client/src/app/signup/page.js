@@ -194,7 +194,7 @@ export default function SignUpContent() {
     
     else if (response.status === 400) {
       console.log("WE ARE IN 400");
-      // const errorData = await response.json();
+      const errorData = await response.json();
       const errorText = await response.text();
       console.log("Error message: ", errorText);
       setError(true);

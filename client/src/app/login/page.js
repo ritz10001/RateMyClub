@@ -17,7 +17,7 @@ export default function LoginContent() {
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const router = useRouter();
-  const { user, isInitialized, login, logout } = useAuth();
+  const { user, setUser, isInitialized, login, logout } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -172,15 +172,36 @@ export default function LoginContent() {
     router.replace("/");
   } 
   catch (error) {
-    if(error.code === "auth/popup-closed-by-user"){
-      toast.error("Popup closed by user!");
+    // if(error.code === "auth/popup-closed-by-user"){
+    //   toast.error("Popup closed by user!");
+    // }
+    // else{
+    //   console.error("SSO error:", error);
+    //   await logout();
+    //   toast.error("Google signup failed. Please try again");
+    //   setError("Google signup failed. Please try again");
+    // }
+    console.error("SSO error (Caught in handleGoogleLogin):", error); // Log the full error
+
+    // **CRITICAL CHANGE HERE:** Be more selective about `logout()` and toasts
+    if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+      // User likely closed the popup or mobile browser interrupted it.
+      // Do NOT show a "failed" toast or call logout(), as the user might retry or Firebase might recover.
+      toast.info("Google login cancelled or interrupted."); // Informational toast
+    } else if (error.message && error.message.includes("Backend login/register failed")) {
+        // This is an error from our backend call
+        toast.error("Google signup failed due to backend issue. Please try again.");
+        await auth.signOut(); // Logout if backend specifically failed
+        setUser(null);
+        
     }
-    else{
-      console.error("SSO error:", error);
-      await logout();
+    else {
+      // Generic error handling for truly unexpected or unrecoverable errors
       toast.error("Google signup failed. Please try again");
-      setError("Google signup failed. Please try again");
+      await auth.signOut(); // Default to logging out for safety in unknown error cases
+      setUser(null);
     }
+    setError("Google signup failed. Please try again"); // Update error state for display if needed
   } 
   finally {
     setIsLoading(false);
