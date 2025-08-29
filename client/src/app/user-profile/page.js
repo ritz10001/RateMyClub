@@ -15,8 +15,6 @@ import Link from "next/link";
 
 export default function ProfilePage() {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-  console.log("this is the backend URL");
-  console.log(backendUrl);
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const [profileData, setProfileData] = useState({
@@ -38,8 +36,8 @@ export default function ProfilePage() {
       setIsLoading(true);
       try {
         const [universitiesRes, tagsRes] = await Promise.all([
-          fetch(`${backendUrl}/api/University/all-colleges`),
-          fetch(`${backendUrl}/api/Tag`)
+          fetch(`https://ratemyclub-production.up.railway.app/api/University/all-colleges`),
+          fetch(`https://ratemyclub-production.up.railway.app/api/Tag`)
         ]);
 
         const universitiesData = await universitiesRes.json();
@@ -104,7 +102,7 @@ export default function ProfilePage() {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch(`${backendUrl}/api/Account/update-profile`, {
+      const response = await fetch(`https://ratemyclub-production.up.railway.app/api/Account/update-profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
