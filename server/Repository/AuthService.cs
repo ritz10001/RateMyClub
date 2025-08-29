@@ -211,12 +211,14 @@ public class AuthService : IAuthService
         };
 
         var result = await _userManager.CreateAsync(newUser);
+        Console.WriteLine($"DEBUG: isSSO from DTO is {firebaseRegisterDTO.IsSSO} for email {email}");
         if (!result.Succeeded)
         {
             return (null, result.Errors, null);
         }
         await _userManager.AddToRoleAsync(newUser, role);
         var roles = await _userManager.GetRolesAsync(newUser);
+        Console.WriteLine($"DEBUG: isSSO from DTO is (AFTER ROLES) {firebaseRegisterDTO.IsSSO} for email {email}");
 
         if (!firebaseRegisterDTO.IsSSO)
         {
@@ -236,6 +238,7 @@ public class AuthService : IAuthService
                 }, null);
             }
         }
+        Console.WriteLine($"DEBUG: isSSO from DTO is (AFTER SENDING EMAIL) {firebaseRegisterDTO.IsSSO} for email {email}");
         // 5) Return auth response & link
         string confirmationUrl = $"http://localhost:3000/email-confirmation?uid={WebUtility.UrlEncode(firebaseUid)}";
         Console.WriteLine("IN STEP 5, RETURNING AUTH RESPONSE");
