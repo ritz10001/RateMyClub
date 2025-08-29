@@ -240,7 +240,14 @@ public class AuthService : IAuthService
         }
         Console.WriteLine($"DEBUG: isSSO from DTO is (AFTER SENDING EMAIL) {firebaseRegisterDTO.IsSSO} for email {email}");
         // 5) Return auth response & link
-        string confirmationUrl = $"http://localhost:3000/email-confirmation?uid={WebUtility.UrlEncode(firebaseUid)}";
+        var frontendBaseUrl = _configuration["FrontendSettings:BaseUrl"];
+        if (string.IsNullOrEmpty(frontendBaseUrl))
+        {
+            // Fallback or error if not configured
+            frontendBaseUrl = "http://localhost:3000"; // Or throw an exception
+            Console.WriteLine("WARNING: FrontendSettings:BaseUrl is not configured, defaulting to localhost.");
+        }
+        string confirmationUrl = $"{frontendBaseUrl}/email-confirmation?uid={WebUtility.UrlEncode(firebaseUid)}";
         Console.WriteLine("IN STEP 5, RETURNING AUTH RESPONSE");
         var authResponse = new AuthResponseDTO
         {

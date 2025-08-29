@@ -147,7 +147,7 @@ export default function EmailConfirmationContent() {
                 <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-blue-600 dark:text-blue-400 text-sm font-bold">1</span>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300">Check your email inbox (and spam folder)</p>
+                <p className="text-gray-700 dark:text-gray-300">Check your email inbox (please check your spam folder too!)</p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
