@@ -348,7 +348,7 @@ useEffect(() => {
 }, [user, isLoading, router, isRegistering, isInitialized]);
 
 // Modified loading condition - don't show loading if registering
-if (!isInitialized || isLoading) {
+if (!isInitialized || (isLoading && !isRegistering) || (user && !isRegistering)) {
   return(
    <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
       <div className="text-center">
