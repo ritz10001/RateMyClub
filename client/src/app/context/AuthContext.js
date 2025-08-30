@@ -100,6 +100,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await auth.signOut();
       setUser(null);
+      setIsLoading(false);
       sessionStorage.removeItem('combinedUserData'); // Clear stored data
     } 
     catch (error) {

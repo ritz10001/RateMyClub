@@ -132,6 +132,7 @@ export default function SignUpContent() {
     // Sign out immediately and clear user state
     await auth.signOut();
     setUser(null);
+    sessionStorage.removeItem('combinedUserData');
   } 
   catch (firebaseError) {
     console.error("Firebase registration error:", firebaseError);
@@ -180,10 +181,12 @@ export default function SignUpContent() {
         // Clear all states immediately before redirect
         setIsSubmitting(false);
         setIsRegistering(false);
+
+        sessionStorage.removeItem('combinedUserData');
         
         // Use Next.js router for SPA navigation
         const redirectPath = `/email-confirmation?email=${encodeURIComponent(formData.email)}`;
-        router.push(redirectPath);
+        router.replace(redirectPath);
         return; // Exit early
       } 
       else {
