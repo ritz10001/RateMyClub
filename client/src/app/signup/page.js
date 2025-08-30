@@ -345,7 +345,7 @@ export default function SignUpContent() {
 };
 // Modified useEffect - only redirect if NOT registering
 useEffect(() => {
-  if (isInitialized && !isLoading && user && !isRegistering) {
+  if (isInitialized && !isLoading && user && user.emailVerified && !isRegistering) {
     // User is already logged in, redirect to home
     router.replace("/");
   }
