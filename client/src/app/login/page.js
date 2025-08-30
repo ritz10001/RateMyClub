@@ -122,7 +122,7 @@ export default function LoginContent() {
           body: JSON.stringify({
             firebaseIdToken: idToken,
             firstName: firebaseUser.displayName?.split(" ")[0] || "",
-            lastName: firebaseUser.displayName?.split(" ")[1] || "",
+            lastName: firebaseUser.displayName?.split(" ")[1] || ".",
             email: firebaseUser.email,
             universityId: null, // default university
             isSSO: true
