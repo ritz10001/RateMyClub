@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "firebase/auth";
 import { app } from "../utils/firebase";
 import { toast } from "sonner";
 
@@ -19,6 +19,8 @@ export default function LoginContent() {
   const router = useRouter();
   const { user, setUser, isInitialized, login, logout } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isHandlingRedirect, setIsHandlingRedirect] = useState(false);
+  const redirectHandled = useRef(false); // Prevent multiple redirect handling
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -31,6 +33,7 @@ export default function LoginContent() {
       [field]: value,
     }))
   }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoggingIn(true);
@@ -94,202 +97,155 @@ export default function LoginContent() {
       setIsLoggingIn(false);
     }
   } 
-//   const handleGoogleLogin = async () => {
-//   try {
-//     // Step 1: Sign in with Firebase popup
-//     const result = await signInWithPopup(auth, provider);
-//     const firebaseUser = result.user;
 
-//     // Step 2: Show loading AFTER user selects account
-//     setIsLoading(true);
-
-//     // Step 3: Get Firebase ID token
-//     const idToken = await firebaseUser.getIdToken(true);
-
-//     // Step 4: Try backend login
-//     let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(idToken)
-//     });
-
-//     // Step 5: If user not found, register
-//     if (response.status === 401) {
-//       try {
-//         response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify({
-//             firebaseIdToken: idToken,
-//             firstName: firebaseUser.displayName?.split(" ")[0] || "",
-//             lastName: firebaseUser.displayName?.split(" ")[1] || "",
-//             email: firebaseUser.email,
-//             universityId: null, // default university
-//             isSSO: true
-//           })
-//         });
-
-//         if (!response.ok) {
-//           const errText = await response.text();
-//           throw new Error("SSO registration failed: " + errText);
-//         }
-//         // else{
-//         //   console.log("SSO REGISTRATION COMPLETE");
-//         // }
-//       } 
-//       catch (sqlError) {
-//         console.error("SQL registration failed, deleting Firebase user...", sqlError);
-//         try {
-//           await firebaseUser.delete(); // Delete dangling Firebase user
-//           // console.log("Firebase user deleted due to SQL failure");
-//         } 
-//         catch (deleteError) {
-//           console.error("Failed to delete Firebase user:", deleteError);
-//         }
-//         throw sqlError; // propagate error
-//       }
-//     }
-
-//     // Step 6: Parse backend response
-//     const authResponse = await response.json();
-//     // console.log("THE AUTHRESPONSE FROM SSO", authResponse);
-
-//     // Step 7: Merge Firebase + SQL data and store in session
-//     const combinedUser = {
-//       ...firebaseUser,
-//       firstName: authResponse.firstName,
-//       lastName: authResponse.lastName,
-//       sqlUserId: authResponse.userId,
-//       roles: authResponse.roles,
-//       tags: authResponse.tags,
-//       universityId: authResponse.universityId
-//     };
-//     login(combinedUser); // updates AuthContext + sessionStorage immediately
-//     router.replace("/");
-//   } 
-//   catch (error) {
-//     // if(error.code === "auth/popup-closed-by-user"){
-//     //   toast.error("Popup closed by user!");
-//     // }
-//     // else{
-//     //   console.error("SSO error:", error);
-//     //   await logout();
-//     //   toast.error("Google signup failed. Please try again");
-//     //   setError("Google signup failed. Please try again");
-//     // }
-//     console.error("SSO error (Caught in handleGoogleLogin):", error); // Log the full error
-//     if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
-//       {}
-//     } 
-//     else if (error.message && error.message.includes("Backend login/register failed")) {
-//         // This is an error from our backend call
-//         toast.error("Google signup failed due to backend issue. Please try again.");
-//         await auth.signOut(); // Logout if backend specifically failed
-//         setUser(null);
-//     }
-//     else {
-//       // Generic error handling for truly unexpected or unrecoverable errors
-//       // toast.error("Google signup failed. Please try again");
-//       await auth.signOut(); // Default to logging out for safety in unknown error cases
-//       setUser(null);
-//     }
-//     // setError("Google signup failed. Please try again"); // Update error state for display if needed
-//   } 
-//   finally {
-//     setIsLoading(false);
-//   }
-// };
-const handleGoogleLogin = async () => {
-  try {
-    setIsLoading(true);
-    // const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-
-    await signInWithRedirect(auth, provider);
-    // no result here — Firebase will redirect away, then you handle it after reload
-  } catch (error) {
-    console.error("Redirect sign-in failed:", error);
-    setIsLoading(false);
-  }
-};
-useEffect(() => {
-  const fetchRedirectResult = async () => {
+  const handleGoogleLogin = async () => {
     try {
-      const result = await getRedirectResult(auth);
-      if (result?.user) {
-        const firebaseUser = result.user;
-        const idToken = await firebaseUser.getIdToken(true);
+      setIsLoading(true);
+      provider.setCustomParameters({ 
+        prompt: "select_account",
+        // Add these for better mobile compatibility
+        display: 'popup'
+      });
 
-        // 🔹 Try backend login
-        let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(idToken)
-        });
-
-        // 🔹 If not found → register
-        if (response.status === 401) {
-          response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              firebaseIdToken: idToken,
-              firstName: firebaseUser.displayName?.split(" ")[0] || "",
-              lastName: firebaseUser.displayName?.split(" ")[1] || "",
-              email: firebaseUser.email,
-              universityId: null,
-              isSSO: true
-            })
-          });
-          if (!response.ok) throw new Error("Backend registration failed");
-        }
-
-        const authResponse = await response.json();
-        const combinedUser = {
-          ...firebaseUser,
-          firstName: authResponse.firstName,
-          lastName: authResponse.lastName,
-          sqlUserId: authResponse.userId,
-          roles: authResponse.roles,
-          tags: authResponse.tags,
-          universityId: authResponse.universityId
-        };
-
-        login(combinedUser);
-        router.replace("/");
-      }
+      // Store a flag to indicate we initiated the redirect
+      sessionStorage.setItem('googleLoginInitiated', 'true');
+      
+      await signInWithRedirect(auth, provider);
+      // Note: code after this won't execute as the page will redirect
     } catch (error) {
-      console.error("Redirect login error:", error);
-      await auth.signOut();
-      setUser(null);
-    } finally {
+      console.error("Redirect sign-in failed:", error);
       setIsLoading(false);
+      setError("Google sign-in failed. Please try again.");
+      sessionStorage.removeItem('googleLoginInitiated');
     }
   };
 
-  fetchRedirectResult();
-}, [auth, backendUrl, login, router, setUser]);
+  // Handle redirect result - this should run only once when component mounts
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      // Prevent multiple executions
+      if (redirectHandled.current) return;
+      
+      // Only handle redirect if we initiated it
+      const loginInitiated = sessionStorage.getItem('googleLoginInitiated');
+      if (!loginInitiated) return;
 
+      try {
+        setIsHandlingRedirect(true);
+        redirectHandled.current = true;
+        
+        console.log("Checking for redirect result...");
+        const result = await getRedirectResult(auth);
+        
+        // Clear the flag regardless of result
+        sessionStorage.removeItem('googleLoginInitiated');
+        
+        if (result?.user) {
+          console.log("Redirect result found, processing...");
+          const firebaseUser = result.user;
+          const idToken = await firebaseUser.getIdToken(true);
 
-useEffect(() => {
-  if (isInitialized && !isLoading && user && user?.emailVerified && !isLoggingIn) {
-    router.replace("/");
-  }
-}, [isInitialized, user, router, isLoggingIn, isLoading]);
+          // Try backend login
+          let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(idToken)
+          });
 
-// Modified loading condition - don't show loading for unverified users during login
-if (!isInitialized || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
-  return (
-    <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-        <p className="text-gray-600 dark:text-white text-lg font-medium">Loading...</p>
+          // If not found → register
+          if (response.status === 401) {
+            console.log("User not found, registering...");
+            response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                firebaseIdToken: idToken,
+                firstName: firebaseUser.displayName?.split(" ")[0] || "",
+                lastName: firebaseUser.displayName?.split(" ")[1] || "",
+                email: firebaseUser.email,
+                universityId: null,
+                isSSO: true
+              })
+            });
+            
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error("Backend registration failed:", errorText);
+              throw new Error("Backend registration failed: " + errorText);
+            }
+          } else if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Backend login failed:", errorText);
+            throw new Error("Backend login failed: " + errorText);
+          }
+
+          const authResponse = await response.json();
+          console.log("Backend response received:", authResponse);
+
+          const combinedUser = {
+            ...firebaseUser,
+            firstName: authResponse.firstName,
+            lastName: authResponse.lastName,
+            sqlUserId: authResponse.userId,
+            roles: authResponse.roles,
+            tags: authResponse.tags,
+            universityId: authResponse.universityId
+          };
+
+          console.log("Logging in user...");
+          login(combinedUser);
+          toast.success("Successfully signed in with Google!");
+          router.replace("/");
+        } else {
+          console.log("No redirect result found");
+        }
+      } catch (error) {
+        console.error("Redirect login error:", error);
+        
+        // Clean up on error
+        try {
+          await auth.signOut();
+          setUser(null);
+        } catch (signOutError) {
+          console.error("Error signing out:", signOutError);
+        }
+        
+        toast.error("Google sign-in failed. Please try again.");
+        setError("Google sign-in failed. Please try again.");
+      } finally {
+        setIsHandlingRedirect(false);
+      }
+    };
+
+    // Only run if auth is initialized
+    if (isInitialized) {
+      handleRedirectResult();
+    }
+  }, [isInitialized]); // Only depend on isInitialized
+
+  // Handle regular auth state changes
+  useEffect(() => {
+    if (isInitialized && !isLoading && !isHandlingRedirect && user && user?.emailVerified && !isLoggingIn) {
+      router.replace("/");
+    }
+  }, [isInitialized, user, router, isLoggingIn, isLoading, isHandlingRedirect]);
+
+  // Show loading screen during various states
+  if (!isInitialized || isHandlingRedirect || (isLoading && !isLoggingIn) || (user && !isLoggingIn)) {
+    return (
+      <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-gray-600 dark:text-white text-lg font-medium">
+            {isHandlingRedirect ? "Completing Google sign-in..." : "Loading..."}
+          </p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+
   if (user?.emailVerified) {
-    return null; // or just `return null`
+    return null;
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-zinc-950 dark:to-zinc-900 flex items-center justify-center py-12 px-4">
