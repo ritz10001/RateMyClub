@@ -281,7 +281,6 @@ function MyRequestsContent(){
             </div>
           </div> 
         </div>
-      </div>
         {displayedRequests.length === 0 && (
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-12 border border-blue-100 dark:border-blue-900 text-center">
             <div className="text-gray-400 dark:text-gray-500 mb-4">
@@ -296,7 +295,8 @@ function MyRequestsContent(){
             </Button>
           </div>
         )}
-        {displayedRequests.length > 0 &&
+      </div>
+      {displayedRequests.length > 0 &&
         <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-6 border border-blue-100 dark:border-blue-900 mx-4">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
               {requestType === "university" ? "University" : "Club"} Requests ({displayedRequests.length})

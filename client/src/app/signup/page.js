@@ -128,7 +128,6 @@ export default function SignUpContent() {
     const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
     firebaseUser = userCredential.user;
     idToken = await firebaseUser.getIdToken(true);
-    console.log("HERE IS ID TOKEN", idToken);
     
     // Sign out immediately and clear user state
     await auth.signOut();
@@ -184,7 +183,6 @@ export default function SignUpContent() {
         
         // Use Next.js router for SPA navigation
         const redirectPath = `/email-confirmation?email=${encodeURIComponent(formData.email)}`;
-        console.log("DEBUG: Attempting to redirect to:", redirectPath);
         router.push(redirectPath);
         return; // Exit early
       } 
@@ -195,10 +193,8 @@ export default function SignUpContent() {
     } 
     
     else if (response.status === 400) {
-      console.log("WE ARE IN 400");
       const errorData = await response.json();
       const errorText = await response.text();
-      console.log("Error message: ", errorText);
       setError(true);
       // if (errorData?.type) {
       //   console.log("some password error type");
@@ -274,7 +270,6 @@ export default function SignUpContent() {
 
     // Step 3: Get Firebase ID token
     const idToken = await firebaseUser.getIdToken();
-    console.log(idToken);
 
     // Step 4: Try backend login
     let response = await fetch(`${backendUrl}/api/Account/firebase-login`, {
@@ -286,7 +281,6 @@ export default function SignUpContent() {
     // Step 5: If user not found, register
     if (response.status === 401) {
       try {
-        console.log("trying to send API CALL");
         response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -302,7 +296,6 @@ export default function SignUpContent() {
 
         if (!response.ok) {
           const errText = await response.text();
-          console.log(errText);
           throw new Error("SSO registration failed");
         }
       } 

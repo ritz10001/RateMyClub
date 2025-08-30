@@ -39,7 +39,6 @@ export default function LoginContent() {
     try{
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
-      console.log("✅ Firebase login successful:", user);
       const idToken = await user.getIdToken(true);
 
       // Call backend login to verify user and get roles, etc.
@@ -64,7 +63,6 @@ export default function LoginContent() {
         return;
       }
       const authResponse = await response.json();
-      console.log("THIS IS THE AUTHRESPONSE", authResponse);
 
       // Merge Firebase + SQL info
       const combinedUser = {
@@ -117,7 +115,6 @@ export default function LoginContent() {
 
     // Step 5: If user not found, register
     if (response.status === 401) {
-      console.log("User not found, registering...");
       try {
         response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
           method: "POST",
@@ -136,16 +133,17 @@ export default function LoginContent() {
           const errText = await response.text();
           throw new Error("SSO registration failed: " + errText);
         }
-        else{
-          console.log("SSO REGISTRATION COMPLETE");
-        }
+        // else{
+        //   console.log("SSO REGISTRATION COMPLETE");
+        // }
       } 
       catch (sqlError) {
         console.error("SQL registration failed, deleting Firebase user...", sqlError);
         try {
           await firebaseUser.delete(); // Delete dangling Firebase user
-          console.log("Firebase user deleted due to SQL failure");
-        } catch (deleteError) {
+          // console.log("Firebase user deleted due to SQL failure");
+        } 
+        catch (deleteError) {
           console.error("Failed to delete Firebase user:", deleteError);
         }
         throw sqlError; // propagate error
@@ -154,7 +152,7 @@ export default function LoginContent() {
 
     // Step 6: Parse backend response
     const authResponse = await response.json();
-    console.log("THE AUTHRESPONSE FROM SSO", authResponse);
+    // console.log("THE AUTHRESPONSE FROM SSO", authResponse);
 
     // Step 7: Merge Firebase + SQL data and store in session
     const combinedUser = {
@@ -166,8 +164,6 @@ export default function LoginContent() {
       tags: authResponse.tags,
       universityId: authResponse.universityId
     };
-    console.log("HERE IS THE USER DATA AFTER LOGIN");
-    console.log(combinedUser);
     login(combinedUser); // updates AuthContext + sessionStorage immediately
     router.replace("/");
   } 
