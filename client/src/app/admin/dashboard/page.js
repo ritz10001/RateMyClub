@@ -379,9 +379,6 @@ export default function AdminRequestsPage() {
     }));
   };
   useEffect(() => {
-    console.log(clubData)
-  }, [clubData]);
-  useEffect(() => {
   if (modalState.isOpen && modalState.requestType === 'club' && modalState.requestId) {
     const currentClubRequest = clubRequests.find(c => c.id === modalState.requestId);
     if (currentClubRequest?.tags) {

@@ -160,7 +160,7 @@ function MyReviewsContent() {
                 You haven&apos;t made any reviews yet. Start exploring and reviewing clubs!
               </p>
               <Button className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold" asChild>
-                <Link href="/directory">Explore Clubs</Link>
+                <Link href="/all-schools">Explore Clubs</Link>
               </Button>
             </div>
           )}

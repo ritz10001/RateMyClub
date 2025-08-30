@@ -11,6 +11,7 @@ import { getAuth } from "firebase/auth"
 import { app } from "@/app/utils/firebase"
 
 export default function EditClubPage({ params }) {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { clubId } = useParams();
   const { user } = useAuth();
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function EditClubPage({ params }) {
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const response = await fetch(`http://localhost:5095/api/Club/${clubId}`, {
+        const response = await fetch(`${backendUrl}/api/Club/${clubId}`, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${idToken}`
@@ -52,8 +53,8 @@ export default function EditClubPage({ params }) {
     };
     const fetchMeta = async () => {
       const [categoriesRes, tagsRes] = await Promise.all([
-        fetch('http://localhost:5095/api/Categories'),
-        fetch('http://localhost:5095/api/Tag')
+        fetch(`${backendUrl}/api/Categories`),
+        fetch(`${backendUrl}/api/Tag`)
       ]);
       setCategories(await categoriesRes.json());
       setTags(await tagsRes.json());
@@ -80,7 +81,7 @@ export default function EditClubPage({ params }) {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const response = await fetch(`http://localhost:5095/api/AdminClub/${clubId}`, {
+      const response = await fetch(`${backendUrl}/api/AdminClub/${clubId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

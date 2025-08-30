@@ -35,14 +35,14 @@ export default function CreateClubPage({ params }) {
       })
   }, []);
   useEffect(() => {
-    fetch('http://localhost:5095/api/Categories')
+    fetch(`${backendUrl}/api/Categories`)
         .then(res => res.json())
         .then(data => {
           setCategories(data);
         });
     }, []);
   useEffect(() => {
-    fetch('http://localhost:5095/api/Tag')
+    fetch(`${backendUrl}/api/Tag`)
       .then(res => res.json())
       .then(data => {
       setTags(data);

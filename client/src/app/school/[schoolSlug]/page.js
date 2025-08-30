@@ -211,7 +211,7 @@ export default function SchoolPage({ params }) {
                   className="flex items-center gap-2 px-6 py-3 border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-300 dark:hover:border-blue-700 rounded-xl transition-all duration-200 hover:scale-105 font-semibold bg-transparent"
                   title="Edit University" 
                   onClick = {() => {
-                    router.push(`http://localhost:3000/admin/school/${university.id}/edit`);
+                    router.push(`${backendUrl}/admin/school/${university.id}/edit`);
                   }}
                 >Edit
                   <Pencil className="w-4 h-4" />
