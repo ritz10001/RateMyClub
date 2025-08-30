@@ -112,42 +112,31 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(true);
       
       if (firebaseUser) {
-        // Check if we're in the middle of handling a Google redirect
-        const isHandlingGoogleRedirect = sessionStorage.getItem('googleLoginInitiated');
+        // Try to get stored SQL data first
+        const storedSqlData = getStoredSqlData(firebaseUser.uid);
         
-        if (isHandlingGoogleRedirect) {
-          // Let the redirect handler manage the user setup
-          console.log("AuthContext: Detected Google redirect in progress, skipping SQL fetch");
-          setUser(firebaseUser); // Set basic Firebase user for now
-        } else {
-          // Normal auth flow - try to get stored SQL data first
-          const storedSqlData = getStoredSqlData(firebaseUser.uid);
-          
-          if (storedSqlData) {
-            // We have stored data, combine it with fresh Firebase data
-            setUser({
-              ...firebaseUser,
-              firstName: storedSqlData.firstName,
-              lastName: storedSqlData.lastName,
-              sqlUserId: storedSqlData.sqlUserId,
-              roles: storedSqlData.roles,
-              tags: storedSqlData.tags,
-              universityId: storedSqlData.universityId,
-            });
-          } 
-          else {
-            // No stored data, fetch from SQL (only happens on first login or new session)
-            const combinedUser = await fetchSqlUserData(firebaseUser);
-            setUser(combinedUser);
-          }
+        if (storedSqlData) {
+          // We have stored data, combine it with fresh Firebase data
+          setUser({
+            ...firebaseUser,
+            firstName: storedSqlData.firstName,
+            lastName: storedSqlData.lastName,
+            sqlUserId: storedSqlData.sqlUserId,
+            roles: storedSqlData.roles,
+            tags: storedSqlData.tags,
+            universityId: storedSqlData.universityId, // Use Firebase photoURL
+          });
+        } 
+        else {
+          // No stored data, fetch from SQL (only happens on first login or new session)
+          const combinedUser = await fetchSqlUserData(firebaseUser);
+          setUser(combinedUser);
         }
       } 
       else {
         // User is signed out
         setUser(null);
         sessionStorage.removeItem('combinedUserData');
-        // Also clear any redirect flags
-        sessionStorage.removeItem('googleLoginInitiated');
       }
       
       setIsInitialized(true);
