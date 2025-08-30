@@ -35,6 +35,7 @@ export default function SchoolPage({ params }) {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalClubs, setTotalClubs] = useState(0);
   const { user, isInitialized } = useAuth();
   const [debouncedSearchQuery] = useDebounce(searchQuery, 700);
   const [isNotFound, setIsNotFound] = useState(false);
@@ -70,6 +71,7 @@ export default function SchoolPage({ params }) {
           setClubs(data.clubs.items || []);
           setFilteredClubs(data.clubs.items || []);
           setTotalPages(Math.ceil(data.clubs.totalCount / pageSize));
+          setTotalClubs(data.clubs.totalCount);
         }
         return;
       }
@@ -311,7 +313,7 @@ export default function SchoolPage({ params }) {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-600 dark:text-gray-400">
-            Showing {filteredClubs.length} of {clubs.clubsCount} clubs
+            Showing {filteredClubs.length} of {totalClubs} clubs
           </p>
         </div>
         {clubs.length === 0 && (
