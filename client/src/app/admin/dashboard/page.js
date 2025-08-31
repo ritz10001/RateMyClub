@@ -577,6 +577,7 @@ export default function AdminRequestsPage() {
             secondaryName: universityData.secondaryName,
             location: universityData.location,
             officialWebsite: universityData.officialWebsite,
+            description: universityData.description,
             logoUrl: logoUrl
           })
         });
