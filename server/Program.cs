@@ -99,7 +99,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000", "https://rate-my-college-club.vercel.app")
+            builder.WithOrigins("http://localhost:3000", "https://rate-my-college-club.vercel.app", "https://ratemycollegeclub.com", "https://www.ratemycollegeclub.com")
                    .AllowAnyHeader()
                    .AllowAnyMethod()
                    .AllowCredentials();
