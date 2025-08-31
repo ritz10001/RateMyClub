@@ -466,7 +466,6 @@ export default function AdminRequestsPage() {
           universityName: request.universityName,
           location: request.location,
           officialWebsite: request.officialWebsite || '',
-          description: request.additionalInfo
         });
       }
     } 

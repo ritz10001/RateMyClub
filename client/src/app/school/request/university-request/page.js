@@ -34,7 +34,6 @@ function RequestUniversityContent() {
     universityName: "",
     location: "",
     officialWebsite: "",
-    additionalInfo: "",
   })
 
   const handleInputChange = (field, value) => {
@@ -61,7 +60,6 @@ function RequestUniversityContent() {
           universityName: universityData.universityName,
           location: universityData.location,
           officialWebsite: universityData.officialWebsite,
-          additionalInfo: universityData.additionalInfo,
         })
       })
       if(response.ok){
@@ -180,7 +178,7 @@ function RequestUniversityContent() {
                   />
                 </div>
                 {/* Additional Information */}
-                <div>
+                {/* <div>
                   <Label htmlFor="additionalInfo" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                     Additional Information <span className="text-gray-400 dark:text-gray-500">(Optional)</span>
                   </Label>
@@ -191,7 +189,7 @@ function RequestUniversityContent() {
                     onChange={(e) => handleInputChange("additionalInfo", e.target.value)}
                     className="min-h-32 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                   />
-                </div>
+                </div> */}
               </div>
             </div>
 
