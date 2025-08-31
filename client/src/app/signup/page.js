@@ -284,13 +284,26 @@ export default function SignUpContent() {
     // Step 5: If user not found, register
     if (response.status === 401) {
       try {
+        let firstName = "N/A";  
+        let lastName = "N/A";
+        if (firebaseUser.displayName) {
+          const nameParts = firebaseUser.displayName.trim().split(/\s+/);
+          if (nameParts.length > 1) {
+            firstName = nameParts[0];
+            lastName = nameParts.slice(1).join(" ");
+          } 
+          else if (nameParts.length === 1) {
+            firstName = nameParts[0];
+            // lastName remains "N/A"
+          }
+        }
         response = await fetch(`${backendUrl}/api/Account/firebase-register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             firebaseIdToken: idToken,
-            firstName: firebaseUser.displayName?.split(" ")[0] || "",
-            lastName: firebaseUser.displayName?.split(" ")[1] || ".",
+            firstName: firstName,
+            lastName: lastName,
             email: firebaseUser.email,
             universityId: null, // default university
             isSSO: true
