@@ -465,7 +465,8 @@ export default function AdminRequestsPage() {
         setUniversityData({
           universityName: request.universityName,
           location: request.location,
-          officialWebsite: request.officialWebsite || ''
+          officialWebsite: request.officialWebsite || '',
+          description: request.description
         });
       }
     } 

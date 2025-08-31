@@ -269,7 +269,7 @@ export default function HeroSection() {
                       />
                     </div>
                     <div className="h-15 flex flex-col items-center justify-center mb-2 px-4">
-                      <h3 className="text-lg text-center font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 leading-tight max-w-full">
+                      <h3 className="text-lg text-center font-semibold text-gray-800 dark:text-gray-200 line-clamp-1 leading-tight max-w-full">
                         {club.name}
                       </h3>
                       <p className="text-md text-center text-gray-600 dark:text-gray-400 mt-1">

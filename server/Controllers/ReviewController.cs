@@ -176,6 +176,10 @@ public class ReviewController : ControllerBase
         }
 
         _mapper.Map(updateReviewDTO, review);
+        review.OverallRating = (decimal)(updateReviewDTO.LeadershipRating + 
+                                       updateReviewDTO.InclusivityRating +
+                                       updateReviewDTO.NetworkingRating +
+                                       updateReviewDTO.SkillsDevelopmentRating) / 4;
 
         try
         {
