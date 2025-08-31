@@ -67,6 +67,7 @@ public class AdminUniversityRequestController : ControllerBase
         request.UniversityName = dto.UniversityName;
         request.Location = dto.Location;
         request.OfficialWebsite = dto.OfficialWebsite;
+        request.AdditionalInfo = dto.AdditionalInfo;
 
         await _universityRequestsRepository.UpdateAsync(request);
         return NoContent();
