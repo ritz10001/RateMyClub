@@ -328,7 +328,7 @@ export default function ClubPage({ params }) {
         <span className="text-gray-700 font-medium capitalize">{category.replace(/([A-Z])/g, " $1").trim()}</span>
         <div className="flex items-center gap-2">
           <div className="flex">{renderStars(Math.round(rating))}</div>
-          <span className="text-sm font-semibold text-gray-900 w-8">{rating}</span>
+          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 w-8">{rating}</span>
         </div>
       </div>
     )

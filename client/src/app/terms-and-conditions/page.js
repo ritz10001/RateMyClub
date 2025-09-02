@@ -112,7 +112,7 @@ export default function TermsPage() {
                 <li>We do not sell your personal information to third parties</li>
                 <li>
                     For more details, see our{" "}
-                    <Link href="/privacy" className="text-blue-600 hover:text-blue-700 underline underline-offset-4 dark:text-blue-400 dark:hover:text-blue-500">
+                    <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-700 underline underline-offset-4 dark:text-blue-400 dark:hover:text-blue-500">
                     Privacy Policy
                     </Link>
                 </li>
