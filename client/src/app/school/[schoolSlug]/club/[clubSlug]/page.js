@@ -325,7 +325,7 @@ export default function ClubPage({ params }) {
   const renderCategoryRating = (category, rating) => {
     return (
       <div className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0">
-        <span className="text-gray-700 font-medium capitalize">{category.replace(/([A-Z])/g, " $1").trim()}</span>
+        <span className="text-gray-700 dark:text-gray-100 font-medium capitalize">{category.replace(/([A-Z])/g, " $1").trim()}</span>
         <div className="flex items-center gap-2">
           <div className="flex">{renderStars(Math.round(rating))}</div>
           <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 w-8">{rating}</span>
