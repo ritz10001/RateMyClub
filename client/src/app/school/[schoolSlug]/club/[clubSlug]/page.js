@@ -328,7 +328,7 @@ export default function ClubPage({ params }) {
         <span className="text-gray-700 dark:text-gray-100 font-medium capitalize">{category.replace(/([A-Z])/g, " $1").trim()}</span>
         <div className="flex items-center gap-2">
           <div className="flex">{renderStars(Math.round(rating))}</div>
-          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 w-8">{rating}</span>
+          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 w-8">{rating.toFixed(1)}</span>
         </div>
       </div>
     )
@@ -445,7 +445,7 @@ export default function ClubPage({ params }) {
 
             {/* Overall Rating Display */}
             <div className="text-center mb-6">
-              <div className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">{club.averageRating}</div>
+              <div className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">{club.averageRating.toFixed(1)}</div>
               <div className="flex justify-center gap-1 mb-2">
                 {renderStars(Math.round(club.averageRating), "w-6 h-6")}
               </div>
