@@ -131,7 +131,7 @@ export default function PrivacyPage() {
 
             {/* Children's Privacy */}
             <section className="mb-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">6. Children&apos;s Privacy</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">7. Children&apos;s Privacy</h2>
                 <p className="text-gray-700 leading-relaxed mb-4 dark:text-gray-300">
                 Our service is not intended for children under 13 years of age.
                 </p>
@@ -144,7 +144,7 @@ export default function PrivacyPage() {
 
             {/* Changes to Policy */}
             <section className="mb-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">7. Changes to This Privacy Policy</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">8. Changes to This Privacy Policy</h2>
                 <p className="text-gray-700 leading-relaxed mb-4 dark:text-gray-300">We may update this privacy policy from time to time.</p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 dark:text-gray-300">
                 <li>We will notify you of any changes by posting the new policy</li>
@@ -155,7 +155,7 @@ export default function PrivacyPage() {
 
             {/* Contact */}
             <section className="mb-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">8. Contact Us</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">9. Contact Us</h2>
                 <p className="text-gray-700 leading-relaxed mb-4 dark:text-gray-300">
                 If you have any questions about this Privacy Policy, please contact us:
                 </p>
